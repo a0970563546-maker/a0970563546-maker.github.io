@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🏗️ 墨凡工作平台</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:"Microsoft JhengHei","PingFang TC",sans-serif;display:flex;height:100vh;overflow:hidden;background:#F4F5F7}
+#side{width:225px;background:#FAFAF8;border-right:1px solid #E5E5E0;display:flex;flex-direction:column;padding:14px 10px;flex-shrink:0}
+.brand{font-weight:800;font-size:16px;color:#2E5B8F;padding:6px 10px 12px;border-bottom:1px solid #ECECE6;margin-bottom:4px}
+.grp{font-size:11px;color:#9A9A93;font-weight:700;letter-spacing:.08em;margin:14px 10px 6px}
+.it{display:flex;gap:8px;align-items:center;padding:9px 12px;border-radius:8px;font-size:14px;color:#4A5158;cursor:pointer;border:0;background:none;width:100%;text-align:left;font-family:inherit}
+.it:hover{background:#EFEFEA}
+.it.on{background:#E7EDF5;color:#2E5B8F;font-weight:700}
+.it.dis{color:#B8B8B0;cursor:default}
+.it.dis:hover{background:none}
+.badge{margin-left:auto;font-size:10px;background:#EFE9DD;color:#8A7B5C;padding:1px 6px;border-radius:999px;white-space:nowrap}
+.foot{margin-top:auto;font-size:11px;color:#B8B8B0;padding:10px;line-height:1.6}
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+#topbar{display:none;background:#2E5B8F;color:#fff;padding:10px 14px;font-weight:700;font-size:15px;align-items:center;gap:10px}
+#burger{background:none;border:0;color:#fff;font-size:20px;cursor:pointer;padding:0}
+iframe{border:0;width:100%;height:100%;flex:1;background:#fff}
+#mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:40}
+@media(max-width:768px){
+  #side{position:fixed;left:-240px;top:0;height:100%;z-index:50;transition:left .2s;box-shadow:2px 0 12px rgba(0,0,0,.15)}
+  #side.open{left:0}
+  #topbar{display:flex}
+  #mask.open{display:block}
+}
+</style>
+</head>
+<body>
+<div id="mask" onclick="closeSide()"></div>
+<div id="side">
+  <div class="brand">🏗️ 墨凡工作平台</div>
+  <div class="grp">工程管理</div>
+  <button class="it" data-k="eng" data-src="https://a0970563546-maker.github.io/engmanagement/">📁 專案總覽</button>
+  <button class="it" data-k="sched" data-src="https://a0970563546-maker.github.io/taitung-gantt/#sched">📅 排程甘特圖</button>
+  <button class="it" data-k="vendor" data-src="https://a0970563546-maker.github.io/taitung-gantt/#vendor">🧾 廠商報價</button>
+  <button class="it" data-k="inspect" data-src="https://a0970563546-maker.github.io/taitung-gantt/#inspect">✅ 驗收表</button>
+  <div class="grp">日常</div>
+  <button class="it" data-k="todo" data-src="https://a0970563546-maker.github.io/todo/">📋 待辦追蹤</button>
+  <div class="grp">規劃中</div>
+  <button class="it dis">🗺️ 圖資管理<span class="badge">規劃中</span></button>
+  <button class="it dis">🏢 廠商資訊<span class="badge">規劃中</span></button>
+  <button class="it dis">💰 價格預估<span class="badge">規劃中</span></button>
+  <div class="foot">內部系統・資料雲端同步<br>對外分享請用分享頁連結</div>
+</div>
+<div id="main">
+  <div id="topbar"><button id="burger" onclick="openSide()">☰</button><span id="ttl">工作平台</span></div>
+  <iframe id="frame" title="模組內容"></iframe>
+</div>
+<script>
+const items=[...document.querySelectorAll('.it[data-k]')];
+function openSide(){document.getElementById('side').classList.add('open');document.getElementById('mask').classList.add('open');}
+function closeSide(){document.getElementById('side').classList.remove('open');document.getElementById('mask').classList.remove('open');}
+function go(k){
+  const it=items.find(i=>i.dataset.k===k)||items[0];
+  items.forEach(i=>i.classList.toggle('on',i===it));
+  const f=document.getElementById('frame');
+  if(f.dataset.k!==it.dataset.k){ f.src=it.dataset.src; f.dataset.k=it.dataset.k; }
+  else if(it.dataset.src.includes('#')){ try{f.contentWindow.location.hash=it.dataset.src.split('#')[1];}catch(e){} }
+  document.getElementById('ttl').textContent=it.textContent.trim();
+  try{localStorage.setItem('portal_last',k);}catch(e){}
+  closeSide();
+}
+items.forEach(i=>i.onclick=()=>go(i.dataset.k));
+let last='eng'; try{last=localStorage.getItem('portal_last')||'eng';}catch(e){}
+go(last);
+</script>
+</body>
+</html>
