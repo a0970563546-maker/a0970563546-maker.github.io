@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>專案總覽</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:"Microsoft JhengHei","PingFang TC",sans-serif;background:#FAF9F7;color:#4A5158;padding:0 0 40px}
+.top{background:#2E5B8F;color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px}
+.top h1{font-size:17px;margin:0;flex:1}
+.top a{color:#fff;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:6px 12px;font-size:12.5px;font-weight:700;text-decoration:none;white-space:nowrap}
+.wrap{max-width:1150px;margin:0 auto;padding:16px}
+.card{background:#fff;border:1px solid #E2DED8;border-radius:10px;margin-bottom:12px;overflow:hidden}
+.hd{display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;user-select:none}
+.hd:hover{background:#F7F6F3}
+.arrow{font-size:12px;color:#8A9BA8;transition:transform .15s;width:14px}
+.card.open .arrow{transform:rotate(90deg)}
+.nm{font-size:15px;font-weight:800;color:#2E5B8F;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meta{font-size:12px;color:#9A948C;white-space:nowrap}
+.pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#E7EDF5;color:#2E5B8F;white-space:nowrap}
+.bd{display:none;border-top:1px solid #EFECE7;padding:12px 16px 16px;overflow-x:auto}
+.card.open .bd{display:block}
+.note{font-size:12px;color:#9A948C;font-style:italic;margin-top:10px}
+.links{display:flex;gap:8px;margin:2px 0 10px;flex-wrap:wrap}
+.links a{font-size:12px;font-weight:700;color:#2E5B8F;background:#E8EEF5;border:1px solid #C7D5E4;border-radius:5px;padding:3px 10px;text-decoration:none}
+.empty{text-align:center;color:#9A948C;padding:60px 20px;font-size:14px;line-height:2}
+table{border-collapse:collapse;width:100%;background:#fff;font-size:12px}
+td,th{border:1px solid #D8D4CE;padding:2px 6px;height:22px;min-width:20px;text-align:center}
+</style>
+</head>
+<body>
+<div class="top"><h1>📁 專案總覽</h1><a href="https://a0970563546-maker.github.io/engmanagement/" target="_blank" rel="noopener">⚙️ 開啟完整工程管理（預算/合約）</a></div>
+<div class="wrap" id="list"><div class="empty">⏳ 載入專案資料中…</div></div>
+<script>
+const HOLS={"2026-01-01":1,"2026-02-14":1,"2026-02-15":1,"2026-02-16":1,"2026-02-17":1,"2026-02-18":1,"2026-02-19":1,"2026-02-20":1,"2026-02-21":1,"2026-02-22":1,"2026-02-27":1,"2026-02-28":1,"2026-04-03":1,"2026-04-04":1,"2026-04-05":1,"2026-04-06":1,"2026-05-01":1,"2026-06-19":1,"2026-09-25":1,"2026-09-28":1,"2026-10-09":1,"2026-10-10":1,"2026-10-25":1,"2026-10-26":1,"2026-12-25":1,"2027-01-01":1};
+const WD="一二三四五六日";
+const DOCS={"台東車站商場改造案":[["🧾 廠商報價","https://a0970563546-maker.github.io/taitung-gantt/#vendor"],["✅ 驗收表","https://a0970563546-maker.github.io/taitung-gantt/#inspect"]]};
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const pd=s=>{s=(s||"").replace(/-/g,"/");const p=s.split("/").map(Number);if(p.length!==3||p.some(isNaN))return null;return new Date(p[0],p[1]-1,p[2]);};
+const off=d=>{const w=(d.getDay()+6)%7;return w>=5||HOLS[iso(d)]===1;};
+const wdays=(s,e)=>{let n=0;const d=new Date(s);while(d<=e){if(!off(d))n++;d.setDate(d.getDate()+1);}return n;};
+const esc=t=>String(t).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+function gantt(bp){
+  const C_ON="#92A8BD",C_DONE="#9CAF88",WKND="#EDEAE5",INV="#B3A493",TXT="#4A5158";
+  const tasks=(bp.tasks||[]).map(t=>({name:t.name,done:t.done,s:pd(t.startDate),e:pd(t.endDate)})).filter(t=>t.s&&t.e&&t.e>=t.s).sort((a,b)=>a.s-b.s);
+  if(!tasks.length) return '<p class="note">此專案還沒有任務，到完整工程管理裡新增。</p>';
+  const minD=new Date(Math.min(...tasks.map(t=>t.s))),maxD=new Date(Math.max(...tasks.map(t=>t.e)));
+  const multi=minD.getFullYear()!==maxD.getFullYear();
+  let out='';
+  const cur=new Date(minD.getFullYear(),minD.getMonth(),1);
+  while(cur<=maxD){
+    const y=cur.getFullYear(),m=cur.getMonth(),nd=new Date(y,m+1,0).getDate();
+    const ms=new Date(y,m,1),me=new Date(y,m,nd);
+    const mt=tasks.filter(t=>t.s<=me&&t.e>=ms);
+    if(mt.length){
+      out+='<div style="background:#8A9BA8;color:#fff;font-weight:700;padding:4px 12px;border-radius:4px 4px 0 0;margin-top:12px;font-size:13.5px">'+(multi?y+"年 ":"")+(m+1)+'月</div><div style="overflow-x:auto"><table><tr>';
+      out+='<th style="background:#EDEAE5;color:'+TXT+'">任務</th><th style="background:#EDEAE5;color:'+TXT+'">開始</th><th style="background:#EDEAE5;color:'+TXT+'">結束</th><th style="background:#EDEAE5;color:'+TXT+'">天數</th>';
+      for(let d=1;d<=nd;d++){const dt=new Date(y,m,d),o=off(dt);
+        out+='<th style="font-size:10.5px;line-height:1.15;padding:2px 1px;'+(o?'background:'+INV+';color:#fff':'background:#EDEAE5;color:'+TXT)+'">'+d+'<br><span style="font-size:9.5px;color:'+(o?'#fff':'#8A9098')+'">'+WD[(dt.getDay()+6)%7]+'</span></th>';}
+      out+='</tr>';
+      mt.forEach(t=>{
+        const col=t.done?C_DONE:C_ON;
+        out+='<tr><td style="text-align:left;white-space:nowrap;padding:2px 8px;color:'+TXT+(t.done?';text-decoration:line-through;opacity:.7':'')+'">'+esc(t.name)+'</td><td style="color:#3E6A8E;white-space:nowrap">'+(t.s.getMonth()+1)+'/'+t.s.getDate()+'</td><td style="color:#3E6A8E;white-space:nowrap">'+(t.e.getMonth()+1)+'/'+t.e.getDate()+'</td><td>'+wdays(t.s,t.e)+'</td>';
+        for(let d=1;d<=nd;d++){const dt=new Date(y,m,d);let bg='';
+          if(t.s<=dt&&dt<=t.e&&!off(dt))bg='background:'+col;else if(off(dt))bg='background:'+WKND;
+          out+='<td style="'+bg+'"></td>';}
+        out+='</tr>';});
+      out+='</table></div>';
+    }
+    cur.setMonth(cur.getMonth()+1);
+  }
+  out+='<p class="note">■ 藍＝進行中　■ 綠＝已完成　■ 深＝週末/國定假日；天數＝工作日。資料與工程管理即時同步。</p>';
+  return out;
+}
+function render(bps){
+  const list=document.getElementById('list');
+  const act=bps.filter(b=>!b.isDaily&&!b.archived);
+  if(!act.length){ list.innerHTML='<div class="empty">目前沒有進行中的專案<br>到「⚙️ 完整工程管理」新增第一個專案</div>'; return; }
+  list.innerHTML=act.map((bp,i)=>{
+    const ds=(bp.tasks||[]).map(t=>pd(t.startDate)).filter(Boolean), de=(bp.tasks||[]).map(t=>pd(t.endDate)).filter(Boolean);
+    const rng=ds.length?((d)=>((d.getMonth()+1)+'/'+d.getDate()))(new Date(Math.min(...ds)))+' – '+((d)=>((d.getMonth()+1)+'/'+d.getDate()))(new Date(Math.max(...de))):'尚無任務';
+    const done=(bp.tasks||[]).filter(t=>t.done).length;
+    return '<div class="card" id="c'+i+'"><div class="hd" onclick="tg('+i+')"><span class="arrow">▶</span><span class="nm">'+esc(bp.name)+'</span><span class="meta">'+rng+'</span><span class="pill">'+done+'/'+(bp.tasks||[]).length+' 完成</span></div><div class="bd" data-i="'+i+'"></div></div>';
+  }).join('');
+  window.__bps=act;
+}
+function tg(i){
+  const c=document.getElementById('c'+i); c.classList.toggle('open');
+  const bd=c.querySelector('.bd');
+  if(c.classList.contains('open')&&!bd.dataset.done){
+    const bp=window.__bps[i];
+    let extra='';
+    if(DOCS[bp.name]) extra='<div class="links">'+DOCS[bp.name].map(l=>'<a href="'+l[1]+'" target="_blank" rel="noopener">'+l[0]+'</a>').join('')+'</div>';
+    bd.innerHTML=extra+gantt(bp); bd.dataset.done=1;
+  }
+}
+(function(){
+  let bps=null;
+  try{ bps=JSON.parse(localStorage.getItem('engMgmtProData')||'null'); }catch(e){}
+  if(bps){ render(bps); }
+  const cu=localStorage.getItem('engMgmtCloudUrl');
+  if(cu){ fetch(cu).then(r=>r.json()).then(arr=>{ if(Array.isArray(arr)){ try{localStorage.setItem('engMgmtProData',JSON.stringify(arr));}catch(e){} render(arr);} }).catch(()=>{ if(!bps) document.getElementById('list').innerHTML='<div class="empty">讀不到資料——請先開啟一次「⚙️ 完整工程管理」完成雲端同步設定</div>'; }); }
+  else if(!bps){ document.getElementById('list').innerHTML='<div class="empty">尚未設定資料來源——請先開啟一次「⚙️ 完整工程管理」（右上按鈕）</div>'; }
+})();
+</script>
+</body>
+</html>
