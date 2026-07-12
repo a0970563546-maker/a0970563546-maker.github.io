@@ -36,16 +36,14 @@ iframe{border:0;width:100%;height:100%;flex:1;background:#fff}
 <div id="side">
   <div class="brand">🏗️ 墨凡工作平台</div>
   <div class="grp">工程管理</div>
-  <button class="it" data-k="ov" data-src="https://a0970563546-maker.github.io/overview.html">📁 專案總覽</button>
-  <button class="it" data-k="eng" data-src="https://a0970563546-maker.github.io/engmanagement/">✏️ 專案編輯（Pro）</button>
-  <button class="it" data-k="share" data-src="https://a0970563546-maker.github.io/taitung-gantt/">🔗 對外分享頁</button>
+  <button class="it" data-k="eng" data-src="https://a0970563546-maker.github.io/engmanagement/">📁 專案管理</button>
   <div class="grp">日常</div>
   <button class="it" data-k="todo" data-src="https://a0970563546-maker.github.io/todo/">📋 待辦追蹤</button>
   <div class="grp">規劃中</div>
   <button class="it dis">🗺️ 圖資管理<span class="badge">規劃中</span></button>
   <button class="it dis">🏢 廠商資訊<span class="badge">規劃中</span></button>
   <button class="it dis">💰 價格預估<span class="badge">規劃中</span></button>
-  <div class="foot">內部系統・資料雲端同步<br>對外分享請用分享頁連結</div>
+  <div class="foot">內部系統・資料雲端同步<br>看與改同一頁，編輯需密碼<br>可直接把本頁網址給業主/廠商檢視</div>
 </div>
 <div id="main">
   <div id="topbar"><button id="burger" onclick="openSide()">☰</button><span id="ttl">工作平台</span></div>
@@ -66,7 +64,8 @@ function go(k){
   closeSide();
 }
 items.forEach(i=>i.onclick=()=>go(i.dataset.k));
-let last='ov'; try{last=localStorage.getItem('portal_last')||'ov';}catch(e){}
+let last='eng'; try{last=localStorage.getItem('portal_last')||'eng';}catch(e){}
+if(last!=='eng'&&last!=='todo') last='eng';
 go(last);
 </script>
 </body>
