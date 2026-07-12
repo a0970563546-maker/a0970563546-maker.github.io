@@ -14,6 +14,9 @@ body{margin:0;font-family:"Microsoft JhengHei","PingFang TC",sans-serif;display:
 .it:hover{background:#EFEFEA}
 .it.on{background:#E7EDF5;color:#2E5B8F;font-weight:700}
 .it.proj{font-weight:700;color:#3A4652}
+.projrow{display:flex;align-items:center}
+.pcheck{margin:0 2px 0 12px;width:15px;height:15px;cursor:pointer;flex-shrink:0;accent-color:#2E5B8F}
+.projname{padding-left:6px}
 .it.sub{padding-left:32px;font-size:13px;color:#5F6B76}
 .it.sub.on{color:#2E5B8F}
 .arrow{font-size:10px;color:#9AA7B2;width:12px;transition:transform .15s;flex-shrink:0}
@@ -44,8 +47,7 @@ iframe{border:0;width:100%;height:100%;flex:1;background:#fff}
   <div class="grp">日常</div>
   <button class="it" data-src="https://a0970563546-maker.github.io/todo/">📋 待辦追蹤</button>
 
-  <div class="grp">專案</div>
-  <button class="it" data-src="https://a0970563546-maker.github.io/allgantt.html">📊 全部專案排程</button>
+  <div class="grp">專案　<span style="font-weight:400;text-transform:none;letter-spacing:0;color:#B0ACA4">☑勾選可比對排程</span></div>
   <div id="projList"><div class="empty">⏳ 載入專案中…</div></div>
 
   <div class="grp">廠商</div>
@@ -88,9 +90,14 @@ function renderProjects(){
   box.innerHTML=projs.map((p,i)=>{
     const id=p.id!=null?p.id:i;
     const nm=(p.name||'未命名專案').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-    return '<button class="it proj" data-src="https://a0970563546-maker.github.io/project.html?p='+encodeURIComponent(id)+'" data-label="'+nm+'"><span class="nm">📐 '+nm+'</span></button>';
+    return '<div class="projrow"><input type="checkbox" class="pcheck" data-id="'+encodeURIComponent(id)+'"><button class="it proj projname" data-src="https://a0970563546-maker.github.io/project.html?p='+encodeURIComponent(id)+'" data-label="'+nm+'"><span class="nm">📐 '+nm+'</span></button></div>';
   }).join('');
-  box.querySelectorAll('.proj').forEach(b=>b.onclick=()=>nav(b.dataset.src,b.dataset.label,b));
+  box.querySelectorAll('.projname').forEach(b=>b.onclick=()=>nav(b.dataset.src,b.dataset.label,b));
+  box.querySelectorAll('.pcheck').forEach(c=>c.onchange=updateCompare);
+  function updateCompare(){
+    const ids=[...box.querySelectorAll('.pcheck:checked')].map(c=>c.dataset.id);
+    if(ids.length){ nav('https://a0970563546-maker.github.io/allgantt.html?ids='+ids.join(','),'排程比對（'+ids.length+' 案）',null); }
+  }
 }
 renderProjects();
 // refresh from cloud if configured
