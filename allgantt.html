@@ -12,28 +12,27 @@ body{margin:0;font-family:"Microsoft JhengHei","PingFang TC","Segoe UI",sans-ser
 .top h1{font-size:19px;margin:0;font-weight:800;letter-spacing:.5px;flex:1}
 .btn{border:0;border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
 .pdf{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.35)}
-.wrap{max-width:1240px;margin:0 auto;padding:20px 22px}
+.wrap{max-width:1300px;margin:0 auto;padding:20px 22px}
 .panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:0 4px 18px rgba(40,70,120,.06)}
 .gantt{overflow-x:auto}
-.gwin{min-width:760px}
-.axis{margin-left:250px;position:relative}
 .months{display:flex;position:relative;height:24px}
-.mo{position:absolute;top:0;font-size:12.5px;font-weight:800;color:var(--ink);border-left:1px solid var(--line);padding:3px 0 0 8px;height:100%}
-.days{position:relative;height:20px;border-bottom:1px solid var(--line)}
-.dtick{position:absolute;top:0;font-size:10.5px;color:var(--soft);font-weight:700;padding-left:3px;border-left:1px solid #EEF1F4}
-.tlabel{position:absolute;top:-2px;font-size:10.5px;color:#D9534F;font-weight:800;transform:translateX(-50%);z-index:3}
-.phead{display:flex;align-items:center;gap:8px;margin:16px 0 2px;font-size:14px;font-weight:800}
+.mo{position:absolute;top:0;font-size:12.5px;font-weight:800;color:var(--ink);border-left:1px solid var(--line);padding:3px 0 0 6px;height:100%;white-space:nowrap;overflow:hidden}
+.days{position:relative;height:22px;border-bottom:1px solid var(--line)}
+.dcell{position:absolute;top:0;height:100%;font-size:10px;color:var(--soft);text-align:center;border-left:1px solid #F1F3F6;padding-top:4px}
+.dcell.off{background:#F4F1EB;color:#B79E76}
+.tlabel{position:absolute;top:-2px;font-size:10.5px;color:#D9534F;font-weight:800;z-index:3;white-space:nowrap}
+.phead{display:flex;align-items:center;gap:8px;margin:14px 0 2px;font-size:14px;font-weight:800}
 .pdot{width:12px;height:12px;border-radius:4px}
-.grow{display:flex;align-items:center;height:38px}
-.glabel{width:250px;flex-shrink:0;padding-right:14px}
+.grow{display:flex;align-items:center;height:36px}
+.glabel{width:230px;flex-shrink:0;padding-right:12px}
 .glabel .t{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .glabel .d{font-size:11px;color:var(--soft)}
-.gtrack{position:relative;flex:1;height:100%;border-top:1px solid #F4F6F8}
-.gtrack .grid{position:absolute;top:0;bottom:0;width:1px;background:#F2F4F7}
-.gtrack .tline{position:absolute;top:0;bottom:0;width:2px;background:#D9534F;opacity:.6}
-.bar{position:absolute;top:50%;transform:translateY(-50%);height:20px;border-radius:10px;box-shadow:0 2px 5px rgba(40,70,120,.22)}
+.gtrack{position:relative;height:100%;flex-shrink:0;border-top:1px solid #F4F6F8}
+.gtrack .wknd{position:absolute;top:0;bottom:0;background:#FAF7F1}
+.gtrack .tline{position:absolute;top:0;bottom:0;width:2px;background:#D9534F;opacity:.6;z-index:2}
+.bar{position:absolute;top:50%;transform:translateY(-50%);height:20px;border-radius:10px;box-shadow:0 2px 5px rgba(40,70,120,.22);z-index:1}
 .empty{text-align:center;color:var(--soft);padding:50px 20px;font-size:14px;line-height:2}
-.legend{font-size:12px;color:var(--soft);margin-top:16px;display:flex;gap:16px;flex-wrap:wrap}
+.legend{font-size:12px;color:var(--soft);margin-top:16px}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -42,17 +41,18 @@ body{margin:0;font-family:"Microsoft JhengHei","PingFang TC","Segoe UI",sans-ser
 <div class="wrap"><div class="panel" id="panel"><div class="empty">載入中…</div></div></div>
 <script>
 const HOLS={"2026-01-01":1,"2026-02-14":1,"2026-02-15":1,"2026-02-16":1,"2026-02-17":1,"2026-02-18":1,"2026-02-19":1,"2026-02-20":1,"2026-02-27":1,"2026-02-28":1,"2026-04-03":1,"2026-04-04":1,"2026-04-05":1,"2026-04-06":1,"2026-05-01":1,"2026-06-19":1,"2026-09-25":1,"2026-09-28":1,"2026-10-09":1,"2026-10-10":1,"2026-10-25":1,"2026-10-26":1,"2026-12-25":1,"2027-01-01":1};
-const DAY=86400000, COLORS=["#3C6FA8","#B07A3C","#5E8C72","#8E5E8C","#A3803B","#4C7A8C","#9C5B5B"];
+const DAY=86400000, DW=24, COLORS=["#3C6FA8","#B07A3C","#5E8C72","#8E5E8C","#A3803B","#4C7A8C","#9C5B5B"];
 const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 const pd=s=>{s=(s||"").replace(/-/g,"/");const p=s.split("/").map(Number);if(p.length!==3||p.some(isNaN))return null;return new Date(p[0],p[1]-1,p[2]);};
+const off=d=>{const w=(d.getDay()+6)%7;return w>=5||HOLS[iso(d)]===1;};
 function qs(k){const m=new RegExp('[?&]'+k+'=([^&]+)').exec(location.search);return m?decodeURIComponent(m[1]):null;}
 let PROJS=[];
 function load(){
   let d=[];try{d=JSON.parse(localStorage.getItem('engMgmtProData')||'[]');}catch(e){}
   let list=(Array.isArray(d)?d:[]).filter(p=>!p.isDaily&&!p.archived);
-  const idsParam=qs('ids');
-  if(idsParam){const set=idsParam.split(',');list=list.filter((p,i)=>set.indexOf(String(p.id))>-1||set.indexOf(String(i))>-1);}
+  const ids=qs('ids');
+  if(ids){const set=ids.split(',');list=list.filter((p,i)=>set.indexOf(String(p.id))>-1||set.indexOf(String(i))>-1);}
   PROJS=list.map((p,i)=>({name:p.name||'未命名',color:COLORS[i%COLORS.length],tasks:(p.tasks||[]).map(t=>({name:t.name,s:pd(t.startDate),e:pd(t.endDate),done:t.done})).filter(t=>t.s&&t.e&&t.e>=t.s)}));
 }
 function render(){
@@ -61,28 +61,27 @@ function render(){
   if(!all.length){panel.innerHTML='<div class="empty">在左側勾選要比對的專案<br>（沒有排程資料時，先開一次專案完成雲端同步）</div>';return;}
   const minD=new Date(Math.min(...all.map(t=>+t.s))),maxD=new Date(Math.max(...all.map(t=>+t.e)));
   const rs=new Date(minD.getFullYear(),minD.getMonth(),1),re=new Date(maxD.getFullYear(),maxD.getMonth()+1,0);
-  const span=(re-rs)+DAY,pct=ms=>ms/span*100;
-  let months='',grids='',days='';
-  let cur=new Date(rs);
-  while(cur<=re){const mS=new Date(cur.getFullYear(),cur.getMonth(),1),mE=new Date(cur.getFullYear(),cur.getMonth()+1,0);
-    months+='<div class="mo" style="left:'+pct(mS-rs)+'%;width:'+pct((mE-mS)+DAY)+'%">'+cur.getFullYear()+'/'+(cur.getMonth()+1)+'</div>';cur.setMonth(cur.getMonth()+1);}
-  let wk=new Date(rs);
-  while(wk<=re){const l=pct(wk-rs);days+='<div class="dtick" style="left:'+l+'%">'+(wk.getMonth()+1)+'/'+wk.getDate()+'</div>';grids+='<div class="grid" style="left:'+l+'%"></div>';wk=new Date(+wk+7*DAY);}
-  const today=new Date();today.setHours(0,0,0,0);const inR=today>=rs&&today<=re;const tL=inR?pct(today-rs):0;
-  const tline=inR?'<div class="tline" style="left:'+tL+'%"></div>':'';
+  const totalDays=Math.round((re-rs)/DAY)+1, W=totalDays*DW, x=d=>((d-rs)/DAY)*DW;
+  let months='';let cur=new Date(rs);
+  while(cur<=re){const mS=new Date(cur.getFullYear(),cur.getMonth(),1),nd=new Date(cur.getFullYear(),cur.getMonth()+1,0).getDate();
+    months+='<div class="mo" style="left:'+x(mS)+'px;width:'+(nd*DW)+'px">'+cur.getFullYear()+'/'+(cur.getMonth()+1)+'</div>';cur.setMonth(cur.getMonth()+1);}
+  let days='',wknd='';
+  for(let d=new Date(rs);d<=re;d=new Date(+d+DAY)){const o=off(d);days+='<div class="dcell'+(o?' off':'')+'" style="left:'+x(d)+'px;width:'+DW+'px">'+d.getDate()+'</div>';if(o)wknd+='<div class="wknd" style="left:'+x(d)+'px;width:'+DW+'px"></div>';}
+  const today=new Date();today.setHours(0,0,0,0);const inR=today>=rs&&today<=re;const tx=inR?x(today):0;
+  const tline=inR?'<div class="tline" style="left:'+tx+'px"></div>':'';
   let body='';
   PROJS.forEach(p=>{
     body+='<div class="phead" style="color:'+p.color+'"><span class="pdot" style="background:'+p.color+'"></span>'+esc(p.name)+'</div>';
     p.tasks.forEach(t=>{
       body+='<div class="grow"><div class="glabel"><div class="t">'+esc(t.name)+'</div><div class="d">'+(t.s.getMonth()+1)+'/'+t.s.getDate()+'–'+(t.e.getMonth()+1)+'/'+t.e.getDate()+'</div></div>'
-        +'<div class="gtrack">'+grids+tline+'<div class="bar" style="left:'+pct(t.s-rs)+'%;width:'+pct((t.e-t.s)+DAY)+'%;background:'+p.color+(t.done?';opacity:.45':'')+'"></div></div></div>';
+        +'<div class="gtrack" style="width:'+W+'px">'+wknd+tline+'<div class="bar" style="left:'+x(t.s)+'px;width:'+((t.e-t.s)/DAY+1)*DW+'px;background:'+p.color+(t.done?';opacity:.45':'')+'"></div></div></div>';
     });
   });
-  panel.innerHTML='<div class="gantt"><div class="gwin"><div class="axis"><div class="months">'+months+(inR?'<div class="tlabel" style="left:'+tL+'%">今日</div>':'')+'</div><div class="days">'+days+'</div></div>'+body
-    +'<div class="legend"><span>每色＝一個專案</span><span>淡色＝已完成</span><span>紅線＝今日・上排為週日期</span></div></div></div>';
+  panel.innerHTML='<div class="gantt"><div style="min-width:'+(230+W)+'px"><div style="display:flex"><div style="width:230px;flex-shrink:0"></div><div style="width:'+W+'px;flex-shrink:0"><div class="months">'+months+(inR?'<div class="tlabel" style="left:'+tx+'px">今日</div>':'')+'</div><div class="days">'+days+'</div></div></div>'+body+'</div></div>'
+    +'<div class="legend">每色＝一個專案・淡色＝已完成・米色＝週末假日・紅線＝今日・上排顯示每一天</div>';
 }
 function exportPdf(){
-  const wrap=document.createElement('div');wrap.style.cssText='padding:18px;background:#fff;width:1150px;font-family:sans-serif';
+  const wrap=document.createElement('div');wrap.style.cssText='padding:18px;background:#fff;width:1200px;font-family:sans-serif';
   wrap.innerHTML='<div style="font-size:20px;font-weight:800;color:#2E5B8F;margin-bottom:10px">排程比對</div>'+document.getElementById('panel').innerHTML;
   document.body.appendChild(wrap);
   html2pdf().set({margin:8,filename:'排程比對.pdf',image:{type:'jpeg',quality:.95},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(wrap).save().then(()=>wrap.remove()).catch(()=>wrap.remove());

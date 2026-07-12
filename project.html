@@ -15,73 +15,60 @@ body{margin:0;font-family:"Microsoft JhengHei","PingFang TC","Segoe UI",sans-ser
 .spacer{flex:1}
 .btn{border:0;border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
 .pdf{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.35)}
-.lockbtn{background:#F4EEDF;color:#8A7B5C}
-.lockbtn.on{background:#6FA98A;color:#fff}
-.savenote{font-size:12.5px;font-weight:700}
-.savenote.ok{color:#CDEAD9}.savenote.ing{color:#FCE9C4}
-.tabs{display:flex;gap:4px}
-.tab{background:rgba(255,255,255,.10);color:#DCE7F2;border:0;border-radius:10px 10px 0 0;padding:10px 20px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit}
+.lockbtn{background:#F4EEDF;color:#8A7B5C}.lockbtn.on{background:#6FA98A;color:#fff}
+.savenote{font-size:12.5px;font-weight:700}.savenote.ok{color:#CDEAD9}.savenote.ing{color:#FCE9C4}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{background:rgba(255,255,255,.10);color:#DCE7F2;border:0;border-radius:10px 10px 0 0;padding:10px 18px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit}
 .tab.on{background:var(--bg);color:var(--blue)}
-.wrap{max-width:1180px;margin:0 auto;padding:22px}
+.wrap{max-width:1240px;margin:0 auto;padding:22px}
 .sec-h{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;color:var(--blue);margin:4px 0 14px}
 .sec-h .ln{flex:1;height:1px;background:var(--line)}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:0 4px 18px rgba(40,70,120,.06);margin-bottom:24px}
-/* GANTT */
+/* GANTT daily */
 .gantt{overflow-x:auto}
-.gwin{min-width:680px}
-.axis{margin-left:230px;position:relative}
 .months{display:flex;position:relative;height:24px}
-.mo{position:absolute;top:0;font-size:12.5px;font-weight:800;color:var(--ink);border-left:1px solid var(--line);padding:3px 0 0 8px;height:100%}
-.days{position:relative;height:20px;border-bottom:1px solid var(--line)}
-.dtick{position:absolute;top:0;font-size:10.5px;color:var(--soft);font-weight:700;transform:translateX(-1px);padding-left:3px;border-left:1px solid #EEF1F4}
-.tlabel{position:absolute;top:-2px;font-size:10.5px;color:#D9534F;font-weight:800;transform:translateX(-50%);z-index:3}
+.mo{position:absolute;top:0;font-size:12.5px;font-weight:800;color:var(--ink);border-left:1px solid var(--line);padding:3px 0 0 6px;height:100%;overflow:hidden;white-space:nowrap}
+.days{position:relative;height:22px;border-bottom:1px solid var(--line)}
+.dcell{position:absolute;top:0;height:100%;font-size:10px;color:var(--soft);text-align:center;border-left:1px solid #F1F3F6;padding-top:4px}
+.dcell.off{background:#F4F1EB;color:#B79E76}
+.tlabel{position:absolute;top:-2px;font-size:10.5px;color:#D9534F;font-weight:800;z-index:3;white-space:nowrap}
 .grow{display:flex;align-items:center;height:44px;border-bottom:1px solid #F1F3F6}
 .grow:last-child{border-bottom:0}
-.glabel{width:230px;flex-shrink:0;padding-right:14px}
-.glabel .t{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.glabel .d{font-size:11.5px;color:var(--soft);margin-top:1px}
-.gtrack{position:relative;flex:1;height:100%}
-.gtrack .grid{position:absolute;top:0;bottom:0;width:1px;background:#F2F4F7}
-.gtrack .tline{position:absolute;top:0;bottom:0;width:2px;background:#D9534F;opacity:.6}
-.bar{position:absolute;top:50%;transform:translateY(-50%);height:22px;border-radius:11px;box-shadow:0 2px 6px rgba(46,91,143,.28);display:flex;align-items:center;justify-content:space-between;padding:0 9px;font-size:10.5px;color:#fff;font-weight:700;white-space:nowrap;overflow:hidden;gap:6px}
-.bar.ing{background:linear-gradient(180deg,#5A88BE,#3C6FA8)}
-.bar.done{background:linear-gradient(180deg,#79AE94,#5E8C72)}
-.legend{font-size:12px;color:var(--soft);margin-top:14px;display:flex;gap:16px;flex-wrap:wrap}
-.dot{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;margin-right:5px}
-/* CARDS */
-.tcard{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px;background:#FCFDFE}
-.tcard .th{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.tt{font-size:15.5px;font-weight:800;color:var(--blue)}
-.badge{font-size:11px;font-weight:700;border-radius:999px;padding:2px 10px}
-.badge.done{background:#E4F0E9;color:#4B7A60}.badge.wait{background:#F0EDE6;color:#8A7B5C}
-.tmeta{font-size:12.5px;color:var(--soft);margin:6px 0}
-.fee{background:#EAF1E6;color:#3E6A3E;border-radius:6px;padding:1px 9px;font-weight:800;margin-left:4px}
-.nblk{margin-top:10px}
-.nblk .lb{font-size:12px;font-weight:800;color:#8A9BA8;margin-bottom:3px}
-.nblk .tx{font-size:13.5px;color:var(--ink);white-space:pre-wrap;line-height:1.65}
-.tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
-.tag{font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 11px;background:#EEF1F5;color:#8A93A0}
-.tag.on{background:#E4F0E9;color:#3E7A5B}
-.ed{display:none}.editing .ed{display:block}.editing .ro{display:none}
-.grp{border:1px solid #EDEFF3;border-radius:10px;padding:10px 12px;margin-bottom:10px}
-.grp .gh{font-size:12px;font-weight:800;color:var(--blue);margin-bottom:8px}
-.frow{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px}
-.frow label{flex:1;min-width:120px;font-size:12px;font-weight:700;color:var(--soft)}
-.frow input[type=text],.frow input[type=date],.frow textarea{width:100%;margin-top:4px;border:1px solid #D3DAE2;border-radius:8px;padding:7px 9px;font-size:13.5px;font-family:inherit;color:var(--ink)}
-.frow textarea{min-height:56px;resize:vertical}
-.checks{display:flex;flex-wrap:wrap;gap:10px 18px}
-.checks label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--soft);min-width:auto}
-.rmv{background:#fff;color:#B5564E;border:1px solid #E3B7B3;border-radius:8px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;margin-top:4px}
-.addbtn{background:var(--green);color:#fff;border:0;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px}
+.glabel{width:220px;flex-shrink:0;padding-right:12px}
+.glabel .t{font-size:13.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.glabel .d{font-size:11px;color:var(--soft);margin-top:1px}
+.gtrack{position:relative;height:100%;flex-shrink:0}
+.gtrack .wknd{position:absolute;top:0;bottom:0;background:#FAF7F1}
+.gtrack .tline{position:absolute;top:0;bottom:0;width:2px;background:#D9534F;opacity:.6;z-index:2}
+.bar{position:absolute;top:50%;transform:translateY(-50%);height:22px;border-radius:11px;box-shadow:0 2px 6px rgba(46,91,143,.28);display:flex;align-items:center;padding:0 9px;font-size:10.5px;color:#fff;font-weight:700;white-space:nowrap;overflow:hidden;z-index:1}
+.bar.ing{background:linear-gradient(180deg,#5A88BE,#3C6FA8)}.bar.done{background:linear-gradient(180deg,#79AE94,#5E8C72)}
+.legend{font-size:12px;color:var(--soft);margin-top:14px}
+/* editable task list */
+table.sch{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:16px}
+table.sch th,table.sch td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+table.sch th{background:#F4F7FA;color:var(--soft);font-size:12px;white-space:nowrap}
+table.sch input[type=text]{width:100%;border:1px solid #D3DAE2;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:13px}
+table.sch input[type=date]{border:1px solid #D3DAE2;border-radius:6px;padding:4px 6px;font-family:inherit;font-size:12.5px}
+/* note */
+.notearea{width:100%;min-height:220px;border:1px solid #D3DAE2;border-radius:12px;padding:14px 16px;font-size:15px;line-height:1.8;font-family:inherit;color:var(--ink);resize:vertical}
+.noteview{font-size:15px;line-height:1.9;white-space:pre-wrap;color:var(--ink);min-height:60px}
+/* vendor */
+.vcat{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px;background:#FCFDFE}
+.vcat .ch{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.vcat .ct{font-size:15px;font-weight:800;color:var(--blue)}
+.vcat input.catname{font-size:15px;font-weight:800;color:var(--blue);border:1px solid #D3DAE2;border-radius:8px;padding:4px 10px;font-family:inherit}
+table.v{border-collapse:collapse;width:100%;font-size:13.5px}
+table.v th,table.v td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+table.v th{background:#F4F7FA;color:var(--soft);font-size:12px;white-space:nowrap}
+table.v input{width:100%;border:1px solid #D3DAE2;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:13px}
+.vlow{margin-top:8px;font-size:13px;color:#8A7B5C;font-weight:700}
+.vlow b{color:#B5723C}
+.miniadd{background:#EAF1E6;color:#3E6A3E;border:1px solid #9CC49C;border-radius:7px;padding:5px 12px;font-size:12.5px;font-weight:700;cursor:pointer;margin-top:8px}
+.rmv{background:#fff;color:#B5564E;border:1px solid #E3B7B3;border-radius:6px;padding:4px 9px;font-size:12px;font-weight:700;cursor:pointer}
+.addbtn{background:var(--green);color:#fff;border:0;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px}
 .hint{font-size:12px;color:#A8AEB6;margin-top:8px}
 .empty{text-align:center;color:var(--soft);padding:40px 20px;font-size:14px;line-height:2}
-/* vendor table */
-table.v{border-collapse:collapse;width:100%;font-size:13.5px}
-table.v th,table.v td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:middle}
-table.v th{background:#F4F7FA;color:var(--soft);font-size:12px;white-space:nowrap}
-table.v input[type=text]{width:100%;border:1px solid #D3DAE2;border-radius:6px;padding:6px 8px;font-family:inherit;font-size:13px}
-.acc{font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 10px}
-.acc.y{background:#E4F0E9;color:#3E7A5B}.acc.n{background:#F3EFE7;color:#9A855C}
+.ed{display:none}.editing .ed{display:inline}.editing .roonly{display:none}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -96,22 +83,25 @@ table.v input[type=text]{width:100%;border:1px solid #D3DAE2;border-radius:6px;p
     <button class="btn lockbtn" id="lock" onclick="toggleEdit()">✏️ 編輯</button>
   </div>
   <div class="tabs">
-    <button class="tab on" id="tab_main" onclick="setTab('main')">📊 排程・注意事項</button>
-    <button class="tab" id="tab_vendor" onclick="setTab('vendor')">🧾 廠商報價 / 驗收</button>
+    <button class="tab on" data-t="sch" onclick="setTab('sch')">📅 排程</button>
+    <button class="tab" data-t="note" onclick="setTab('note')">📝 注意事項</button>
+    <button class="tab" data-t="vendor" onclick="setTab('vendor')">🧾 廠商報價</button>
+    <button class="tab" data-t="insp" onclick="setTab('insp')">✅ 驗收</button>
   </div>
 </div>
 <div class="wrap" id="root"><div class="empty">載入中…</div></div>
 
 <script>
 const HOLS={"2026-01-01":1,"2026-02-14":1,"2026-02-15":1,"2026-02-16":1,"2026-02-17":1,"2026-02-18":1,"2026-02-19":1,"2026-02-20":1,"2026-02-27":1,"2026-02-28":1,"2026-04-03":1,"2026-04-04":1,"2026-04-05":1,"2026-04-06":1,"2026-05-01":1,"2026-06-19":1,"2026-09-25":1,"2026-09-28":1,"2026-10-09":1,"2026-10-10":1,"2026-10-25":1,"2026-10-26":1,"2026-12-25":1,"2027-01-01":1};
-const DAY=86400000;
+const DAY=86400000, DW=26;
+const DEFAULT_CATS=['木工','水電','油漆','泥作','地板','清潔/其他'];
 const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 const pd=s=>{s=(s||"").replace(/-/g,"/");const p=s.split("/").map(Number);if(p.length!==3||p.some(isNaN))return null;return new Date(p[0],p[1]-1,p[2]);};
 const off=d=>{const w=(d.getDay()+6)%7;return w>=5||HOLS[iso(d)]===1;};
 function wdays(s,e){let n=0;const d=new Date(s);while(d<=e){if(!off(d))n++;d.setDate(d.getDate()+1);}return n;}
 function qs(k){const m=new RegExp('[?&]'+k+'=([^&]+)').exec(location.search);return m?decodeURIComponent(m[1]):null;}
-let ALL=[],P=null,PIDX=-1,editing=false,curTab='main',saveT=null;
+let ALL=[],P=null,PIDX=-1,editing=false,curTab='sch',saveT=null;
 
 function loadData(){
   try{ALL=JSON.parse(localStorage.getItem('engMgmtProData')||'[]');}catch(e){ALL=[];}
@@ -119,16 +109,13 @@ function loadData(){
   PIDX=ALL.findIndex(x=>String(x.id)===String(pid));
   if(PIDX<0&&!isNaN(pid)){const list=ALL.filter(x=>!x.isDaily&&!x.archived);const t=list[Number(pid)];if(t)PIDX=ALL.indexOf(t);}
   P=PIDX>=0?ALL[PIDX]:null;
+  if(P)ensureProject(P);
 }
-function ensure(t){
-  t.detail=t.detail||{};t.steps=t.steps||{};
-  const S=t.steps;
-  S.stamp=S.stamp||{sent:false,confirmed:false};
-  S.contract=S.contract||{signed:false,internalSeal:false,vendorSeal:false,archived:false};
-  S.contactDeposit=S.contactDeposit||{invoiceReceived:false,confirmedDate:'',remittanceDate:'',amount:'',percent:''};
-  S.contactFinal=S.contactFinal||{invoiceReceived:false,confirmedDate:'',remittanceDate:''};
-  if(t.detail.accepted===undefined)t.detail.accepted=false;
-  if(t.detail.acceptDate===undefined)t.detail.acceptDate='';
+function ensureProject(p){
+  if(p.projectNote===undefined)p.projectNote='';
+  if(!Array.isArray(p.vendorQuotes)||!p.vendorQuotes.length)
+    p.vendorQuotes=DEFAULT_CATS.map(c=>({cat:c,rows:[{n:'',d:'',a:'',m:''},{n:'',d:'',a:'',m:''},{n:'',d:'',a:'',m:''}]}));
+  if(!Array.isArray(p.inspection))p.inspection=[];
 }
 function cloudSave(){
   try{localStorage.setItem('engMgmtProData',JSON.stringify(ALL));}catch(e){}
@@ -136,110 +123,111 @@ function cloudSave(){
   let cu=null;try{cu=localStorage.getItem('engMgmtCloudUrl');}catch(e){}
   if(cu){n.textContent='☁️ 同步中…';n.className='savenote ing';
     fetch(cu,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(ALL),mode:'no-cors'})
-      .then(()=>{n.textContent='✅ 已同步';n.className='savenote ok';})
-      .catch(()=>{n.textContent='⚠️ 本機已存';n.className='savenote ing';});
+      .then(()=>{n.textContent='✅ 已同步';n.className='savenote ok';}).catch(()=>{n.textContent='⚠️ 本機已存';n.className='savenote ing';});
   }else{n.textContent='✅ 已存（本機）';n.className='savenote ok';}
 }
 function save(){ALL[PIDX]=P;clearTimeout(saveT);saveT=setTimeout(cloudSave,600);}
-function getp(o,path){return path.split('.').reduce((a,k)=>a?a[k]:undefined,o);}
-function setp(i,path,val){const t=P.tasks[i];ensure(t);const ks=path.split('.');let o=t;for(let j=0;j<ks.length-1;j++){o[ks[j]]=o[ks[j]]||{};o=o[ks[j]];}o[ks[ks.length-1]]=val;save();if(['name','startDate','endDate','done'].indexOf(path)>-1)render();}
 
+/* ---------- 排程 gantt (daily) ---------- */
 function ganttHTML(){
   const tasks=(P.tasks||[]).map(t=>({name:t.name,s:pd(t.startDate),e:pd(t.endDate),done:t.done})).filter(t=>t.s&&t.e&&t.e>=t.s);
-  if(!tasks.length) return '<div class="empty">尚無排程項目'+(editing?'，到下方可新增':'')+'</div>';
+  if(!tasks.length) return '<div class="empty">尚無排程項目'+(editing?'，於下方新增':'')+'</div>';
   const minD=new Date(Math.min(...tasks.map(t=>+t.s))),maxD=new Date(Math.max(...tasks.map(t=>+t.e)));
   const rs=new Date(minD.getFullYear(),minD.getMonth(),1),re=new Date(maxD.getFullYear(),maxD.getMonth()+1,0);
-  const span=(re-rs)+DAY, pct=ms=>ms/span*100;
-  let months='',grids='';
-  let cur=new Date(rs);
-  while(cur<=re){const mS=new Date(cur.getFullYear(),cur.getMonth(),1),mE=new Date(cur.getFullYear(),cur.getMonth()+1,0);
-    months+='<div class="mo" style="left:'+pct(mS-rs)+'%;width:'+pct((mE-mS)+DAY)+'%">'+cur.getFullYear()+'/'+(cur.getMonth()+1)+'</div>';cur.setMonth(cur.getMonth()+1);}
-  let days='';let wk=new Date(rs);
-  while(wk<=re){const l=pct(wk-rs);days+='<div class="dtick" style="left:'+l+'%">'+(wk.getMonth()+1)+'/'+wk.getDate()+'</div>';grids+='<div class="grid" style="left:'+l+'%"></div>';wk=new Date(+wk+7*DAY);}
-  const today=new Date();today.setHours(0,0,0,0);const inR=today>=rs&&today<=re;const tL=inR?pct(today-rs):0;
-  const tline=inR?'<div class="tline" style="left:'+tL+'%"></div>':'';
+  const totalDays=Math.round(((re-rs)/DAY))+1, W=totalDays*DW;
+  const x=d=>((d-rs)/DAY)*DW;
+  let months='';let cur=new Date(rs);
+  while(cur<=re){const mS=new Date(cur.getFullYear(),cur.getMonth(),1),nd=new Date(cur.getFullYear(),cur.getMonth()+1,0).getDate();
+    months+='<div class="mo" style="left:'+x(mS)+'px;width:'+(nd*DW)+'px">'+cur.getFullYear()+'/'+(cur.getMonth()+1)+'</div>';cur.setMonth(cur.getMonth()+1);}
+  let days='',wknd='';
+  for(let d=new Date(rs);d<=re;d=new Date(+d+DAY)){const o=off(d);days+='<div class="dcell'+(o?' off':'')+'" style="left:'+x(d)+'px;width:'+DW+'px">'+d.getDate()+'</div>';if(o)wknd+='<div class="wknd" style="left:'+x(d)+'px;width:'+DW+'px"></div>';}
+  const today=new Date();today.setHours(0,0,0,0);const inR=today>=rs&&today<=re;const tx=inR?x(today):0;
+  const tline=inR?'<div class="tline" style="left:'+tx+'px"></div>':'';
   let rows='';
   tasks.forEach(t=>{
-    const left=pct(t.s-rs),width=pct((t.e-t.s)+DAY),wd=wdays(t.s,t.e);
+    const left=x(t.s),width=((t.e-t.s)/DAY+1)*DW,wd=wdays(t.s,t.e);
     const sd=(t.s.getMonth()+1)+'/'+t.s.getDate(),ed=(t.e.getMonth()+1)+'/'+t.e.getDate();
     rows+='<div class="grow"><div class="glabel"><div class="t">'+esc(t.name)+'</div><div class="d">'+sd+'–'+ed+'・'+wd+'工作天</div></div>'
-      +'<div class="gtrack">'+grids+tline+'<div class="bar '+(t.done?'done':'ing')+'" style="left:'+left+'%;width:'+width+'%"><span>'+(width>12?sd:'')+'</span><span>'+(width>18?ed:'')+'</span></div></div></div>';
+      +'<div class="gtrack" style="width:'+W+'px">'+wknd+tline+'<div class="bar '+(t.done?'done':'ing')+'" style="left:'+left+'px;width:'+width+'px">'+(width>60?sd+' → '+ed:'')+'</div></div></div>';
   });
-  return '<div class="gantt"><div class="gwin"><div class="axis"><div class="months">'+months+(inR?'<div class="tlabel" style="left:'+tL+'%">今日</div>':'')+'</div><div class="days">'+days+'</div></div>'+rows
-    +'<div class="legend"><span><span class="dot" style="background:#3C6FA8"></span>進行中</span><span><span class="dot" style="background:#5E8C72"></span>已完成</span><span>紅線＝今日・上排為週日期・工作天已扣週末假日</span></div></div></div>';
+  return '<div class="gantt"><div style="min-width:'+(220+W)+'px"><div style="display:flex"><div style="width:220px;flex-shrink:0"></div><div style="width:'+W+'px;flex-shrink:0"><div class="months">'+months+(inR?'<div class="tlabel" style="left:'+tx+'px">今日</div>':'')+'</div><div class="days">'+days+'</div></div></div>'+rows
+    +'</div></div><div class="legend">■ 藍＝進行　■ 綠＝完成　■ 米色＝週末/假日　紅線＝今日・上排顯示當月每一天</div>';
 }
-
-function roTags(S){
-  const items=[['簽呈已送',S.stamp.sent],['簽呈確認',S.stamp.confirmed],['合約已簽',S.contract.signed],['內部用印',S.contract.internalSeal],['廠商用印',S.contract.vendorSeal],['合約歸檔',S.contract.archived],['訂金請款',S.contactDeposit.invoiceReceived],['尾款請款',S.contactFinal.invoiceReceived]];
-  return '<div class="tags">'+items.map(x=>'<span class="tag'+(x[1]?' on':'')+'">'+(x[1]?'✓ ':'')+x[0]+'</span>').join('')+'</div>';
-}
-function chk(i,path,label){return '<label><input type="checkbox" '+(getp(P.tasks[i],path)?'checked':'')+' onchange="setp('+i+',\''+path+'\',this.checked)"> '+label+'</label>';}
-function ti(i,path,ph){return '<input type="text" value="'+esc(getp(P.tasks[i],path)||'')+'" oninput="setp('+i+',\''+path+'\',this.value)" placeholder="'+(ph||'')+'">';}
-function di(i,path){return '<input type="date" value="'+esc((getp(P.tasks[i],path)||'').replace(/\//g,"-"))+'" onchange="setp('+i+',\''+path+'\',this.value)">';}
-
-/* TAB 1: 注意事項（內部：備註 + 簽呈/合約/請款） */
-function noteCard(t,i){
-  ensure(t);const D=t.detail,S=t.steps;
-  const ro='<div class="ro"><div class="th"><span class="tt">'+esc(t.name)+'</span>'+(t.done?'<span class="badge done">✓ 完成</span>':'<span class="badge wait">待執行</span>')+'</div>'
-    +'<div class="tmeta">'+esc(t.startDate||'—')+' ~ '+esc(t.endDate||'—')+'</div>'
-    +(D.content?'<div class="nblk"><div class="lb">備註 / 內容</div><div class="tx">'+esc(D.content)+'</div></div>':'')
-    +(D.tracking?'<div class="nblk"><div class="lb">追蹤</div><div class="tx">'+esc(D.tracking)+'</div></div>':'')
-    +roTags(S)+'</div>';
-  const ed='<div class="ed">'
-    +'<div class="frow"><label>項目名稱'+ti(i,'name')+'</label><label>開始'+di(i,'startDate')+'</label><label>結束'+di(i,'endDate')+'</label></div>'
-    +'<div class="checks" style="margin-bottom:10px">'+chk(i,'done','已完成')+'</div>'
-    +'<div class="grp"><div class="gh">📝 備註 / 追蹤</div><div class="frow"><label>備註 / 內容<textarea oninput="setp('+i+',\'detail.content\',this.value)">'+esc(D.content||'')+'</textarea></label></div><div class="frow"><label>追蹤<textarea oninput="setp('+i+',\'detail.tracking\',this.value)">'+esc(D.tracking||'')+'</textarea></label></div></div>'
-    +'<div class="grp"><div class="gh">🖋 簽呈</div><div class="checks">'+chk(i,'steps.stamp.sent','已送出')+chk(i,'steps.stamp.confirmed','已確認')+'</div></div>'
-    +'<div class="grp"><div class="gh">📄 合約</div><div class="checks">'+chk(i,'steps.contract.signed','已簽署')+chk(i,'steps.contract.internalSeal','內部用印')+chk(i,'steps.contract.vendorSeal','廠商用印')+chk(i,'steps.contract.archived','已歸檔')+'</div></div>'
-    +'<div class="grp"><div class="gh">💵 訂金</div><div class="checks" style="margin-bottom:8px">'+chk(i,'steps.contactDeposit.invoiceReceived','已收請款單')+'</div><div class="frow"><label>金額'+ti(i,'steps.contactDeposit.amount')+'</label><label>比例(%)'+ti(i,'steps.contactDeposit.percent')+'</label><label>確認日'+di(i,'steps.contactDeposit.confirmedDate')+'</label><label>匯款日'+di(i,'steps.contactDeposit.remittanceDate')+'</label></div></div>'
-    +'<div class="grp"><div class="gh">💴 尾款</div><div class="checks" style="margin-bottom:8px">'+chk(i,'steps.contactFinal.invoiceReceived','已收請款單')+'</div><div class="frow"><label>確認日'+di(i,'steps.contactFinal.confirmedDate')+'</label><label>匯款日'+di(i,'steps.contactFinal.remittanceDate')+'</label></div></div>'
-    +'<button class="rmv" onclick="rmTask('+i+')">刪除此項目</button></div>';
-  return '<div class="tcard">'+ro+ed+'</div>';
-}
-function notesHTML(){
+function schEditHTML(){
   const tasks=P.tasks||[];
-  if(!tasks.length&&!editing) return '<div class="empty">尚無項目</div>';
-  let h=tasks.map((t,i)=>noteCard(t,i)).join('');
-  if(editing) h+='<button class="addbtn" onclick="addTask()">＋ 新增項目</button><div class="hint">此頁為你公司內部備註與簽呈/合約/請款勾稽。廠商報價請切到上方「🧾 廠商報價／驗收」分頁。</div>';
-  return h;
+  const rows=tasks.map((t,i)=>'<tr><td><input type="text" value="'+esc(t.name)+'" oninput="tset('+i+',\'name\',this.value)"></td>'
+    +'<td><input type="date" value="'+esc((t.startDate||'').replace(/\//g,"-"))+'" onchange="tset('+i+',\'startDate\',this.value)"></td>'
+    +'<td><input type="date" value="'+esc((t.endDate||'').replace(/\//g,"-"))+'" onchange="tset('+i+',\'endDate\',this.value)"></td>'
+    +'<td style="text-align:center"><input type="checkbox" '+(t.done?'checked':'')+' onchange="tset('+i+',\'done\',this.checked)"></td>'
+    +'<td><button class="rmv" onclick="rmTask('+i+')">刪除</button></td></tr>').join('');
+  return '<table class="sch"><tr><th>工程項目</th><th>開始</th><th>結束</th><th>完成</th><th></th></tr>'+rows+'</table><button class="addbtn" onclick="addTask()">＋ 新增工程項目</button>';
+}
+function tset(i,k,v){P.tasks[i][k]=v;save();render();}
+function addTask(){P.tasks=P.tasks||[];const t=iso(new Date());P.tasks.push({id:'t'+Date.now(),name:'新工程項目',startDate:t,endDate:t,done:false});save();render();}
+function rmTask(i){if(!confirm('刪除此工程項目？'))return;P.tasks.splice(i,1);save();render();}
+
+/* ---------- 注意事項 ---------- */
+function noteHTML(){
+  if(editing) return '<textarea class="notearea" oninput="P.projectNote=this.value;save();" placeholder="這裡寫你自己的備註、公司內部提醒事項…（整個專案共用一個）">'+esc(P.projectNote||'')+'</textarea>';
+  return '<div class="noteview">'+(P.projectNote?esc(P.projectNote):'<span style="color:#A8AEB6">（尚無備註，點右上「✏️ 編輯」新增）</span>')+'</div>';
 }
 
-/* TAB 2: 廠商報價 / 驗收 */
+/* ---------- 廠商報價 (6 tables) ---------- */
+function num(s){const v=parseFloat(String(s==null?'':s).replace(/[^0-9.]/g,''));return isNaN(v)?null:v;}
 function vendorHTML(){
-  const tasks=P.tasks||[];
-  if(!tasks.length) return '<div class="empty">尚無工項</div>';
-  tasks.forEach(ensure);
-  const rows=tasks.map((t,i)=>{
-    const D=t.detail;
-    if(editing){
-      return '<tr><td>'+esc(t.name)+'</td><td>'+ti(i,'detail.vendor','廠商')+'</td><td>'+ti(i,'detail.estimatedCost','報價')+'</td><td>'+ti(i,'detail.actualCost','實際')+'</td>'
-        +'<td><label class="checks"><input type="checkbox" '+(D.accepted?'checked':'')+' onchange="setp('+i+',\'detail.accepted\',this.checked)"> 已驗收</label></td><td>'+di(i,'detail.acceptDate')+'</td></tr>';
-    }
-    return '<tr><td><b>'+esc(t.name)+'</b></td><td>'+esc(D.vendor||'—')+'</td><td>'+esc(D.estimatedCost||'—')+'</td><td>'+esc(D.actualCost||'—')+'</td>'
-      +'<td><span class="acc '+(D.accepted?'y':'n')+'">'+(D.accepted?'✓ 已驗收':'待驗收')+'</span></td><td>'+esc(D.acceptDate||'—')+'</td></tr>';
-  }).join('');
-  return '<div style="overflow-x:auto"><table class="v"><tr><th>工項</th><th>廠商</th><th>報價</th><th>實際金額</th><th>驗收</th><th>驗收日</th></tr>'+rows+'</table></div>'
-    +(editing?'<div class="hint" style="margin-top:12px">記錄各工項的廠商、報價、實際金額與驗收狀態。內部簽呈/合約/請款在「📊 排程・注意事項」分頁。</div>':'');
+  const V=P.vendorQuotes;
+  return V.map((cat,ci)=>{
+    const rows=cat.rows.map((r,ri)=>{
+      if(editing) return '<tr><td><input value="'+esc(r.n)+'" oninput="vset('+ci+','+ri+',\'n\',this.value)" placeholder="廠商名稱"></td><td><input value="'+esc(r.d)+'" oninput="vset('+ci+','+ri+',\'d\',this.value)" placeholder="M/D"></td><td><input value="'+esc(r.a)+'" oninput="vset('+ci+','+ri+',\'a\',this.value)" placeholder="金額"></td><td><input value="'+esc(r.m)+'" oninput="vset('+ci+','+ri+',\'m\',this.value)" placeholder="備註"></td><td><button class="rmv" onclick="vrm('+ci+','+ri+')">×</button></td></tr>';
+      return '<tr><td>'+esc(r.n||'—')+'</td><td>'+esc(r.d||'—')+'</td><td>'+esc(r.a||'—')+'</td><td>'+esc(r.m||'')+'</td></tr>';
+    }).join('');
+    const amts=cat.rows.map(r=>num(r.a)).filter(x=>x!=null);
+    const low=amts.length?Math.min(...amts):null;
+    const lowName=low!=null?(cat.rows.find(r=>num(r.a)===low)||{}).n:'';
+    const th='<tr><th style="width:26%">廠商名稱</th><th style="width:16%">現勘日期</th><th style="width:20%">報價金額</th><th>備註</th>'+(editing?'<th style="width:36px"></th>':'')+'</tr>';
+    const cathd=editing?'<input class="catname" value="'+esc(cat.cat)+'" oninput="vcat('+ci+',this.value)">':'<span class="ct">🏗️ '+esc(cat.cat)+'</span>';
+    return '<div class="vcat"><div class="ch">'+cathd+'</div><div style="overflow-x:auto"><table class="v">'+th+rows+'</table></div>'
+      +(editing?'<button class="miniadd" onclick="vadd('+ci+')">＋ 加一列廠商</button>':'')
+      +'<div class="vlow">💰 最低報價：<b>'+(low!=null?low.toLocaleString():'—')+'</b>'+(lowName?'（'+esc(lowName)+'）':'')+'</div></div>';
+  }).join('')+(editing?'<div class="hint">6 張比價表可自由填寫；類型名稱也可改。金額請填數字（可含逗號），系統自動抓最低報價。</div>':'');
 }
+function vset(ci,ri,k,v){P.vendorQuotes[ci].rows[ri][k]=v;save();if(k==='a')render();}
+function vcat(ci,v){P.vendorQuotes[ci].cat=v;save();}
+function vadd(ci){P.vendorQuotes[ci].rows.push({n:'',d:'',a:'',m:''});save();render();}
+function vrm(ci,ri){P.vendorQuotes[ci].rows.splice(ri,1);save();render();}
 
+/* ---------- 驗收 ---------- */
+const INSP_COLS=[['no','編號','8%'],['area','位置/區域','12%'],['item','工項','12%'],['defect','缺失描述',''],['vendor','負責廠商','11%'],['found','發現日期','10%'],['due','改善期限','10%'],['recheck','複驗日期','10%'],['result','複驗結果','9%'],['note','備註','']];
+function inspHTML(){
+  const rows=P.inspection.map((r,ri)=>{
+    if(editing) return '<tr>'+INSP_COLS.map(c=>'<td><input value="'+esc(r[c[0]]||'')+'" oninput="iset('+ri+',\''+c[0]+'\',this.value)"></td>').join('')+'<td><button class="rmv" onclick="irm('+ri+')">×</button></td></tr>';
+    return '<tr>'+INSP_COLS.map(c=>'<td>'+esc(r[c[0]]||'—')+'</td>').join('')+'</tr>';
+  }).join('');
+  const th='<tr>'+INSP_COLS.map(c=>'<th'+(c[2]?' style="width:'+c[2]+'"':'')+'>'+c[1]+'</th>').join('')+(editing?'<th style="width:36px"></th>':'')+'</tr>';
+  return '<div style="overflow-x:auto"><table class="v">'+th+(rows||'<tr><td colspan="'+(INSP_COLS.length+(editing?1:0))+'" style="text-align:center;color:#A8AEB6;padding:20px">尚無驗收/缺失紀錄'+(editing?'，按下方新增':'')+'</td></tr>')+'</table></div>'
+    +(editing?'<button class="addbtn" onclick="iadd()">＋ 新增一筆缺失/驗收</button><div class="hint">竣工驗收與缺失改善清單。</div>':'');
+}
+function iset(ri,k,v){P.inspection[ri][k]=v;save();}
+function iadd(){P.inspection.push({});save();render();}
+function irm(ri){if(!confirm('刪除此列？'))return;P.inspection.splice(ri,1);save();render();}
+
+/* ---------- render ---------- */
 function render(){
   const root=document.getElementById('root');
-  if(curTab==='vendor'){
-    root.innerHTML='<div class="panel"><div class="sec-h">🧾 廠商報價 / 驗收<span class="ln"></span></div>'+vendorHTML()+'</div>';
-  }else{
-    root.innerHTML='<div class="panel"><div class="sec-h">📊 排程甘特圖<span class="ln"></span></div>'+ganttHTML()+'</div>'
-      +'<div class="panel"><div class="sec-h">📝 注意事項（內部備註・簽呈・合約・請款勾稽）<span class="ln"></span></div>'+notesHTML()+'</div>';
-  }
+  let html='';
+  if(curTab==='sch') html='<div class="panel"><div class="sec-h">📅 工程排程甘特圖<span class="ln"></span></div>'+ganttHTML()+(editing?schEditHTML():'')+'</div>';
+  else if(curTab==='note') html='<div class="panel"><div class="sec-h">📝 注意事項（本專案備註）<span class="ln"></span></div>'+noteHTML()+'</div>';
+  else if(curTab==='vendor') html='<div class="panel"><div class="sec-h">🧾 廠商報價（6 類比價表）<span class="ln"></span></div>'+vendorHTML()+'</div>';
+  else if(curTab==='insp') html='<div class="panel"><div class="sec-h">✅ 驗收（竣工驗收與缺失改善）<span class="ln"></span></div>'+inspHTML()+'</div>';
+  root.innerHTML=html;
   document.body.classList.toggle('editing',editing);
 }
-function setTab(t){curTab=t;document.getElementById('tab_main').classList.toggle('on',t==='main');document.getElementById('tab_vendor').classList.toggle('on',t==='vendor');render();}
-function addTask(){P.tasks=P.tasks||[];const t=iso(new Date());const nt={id:'t'+Date.now(),name:'新項目',startDate:t,endDate:t,done:false,taskBudget:''};ensure(nt);P.tasks.push(nt);save();render();}
-function rmTask(i){if(!confirm('刪除這個項目？'))return;P.tasks.splice(i,1);save();render();}
+function setTab(t){curTab=t;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));render();}
 function toggleEdit(){editing=!editing;setLock();render();}
 function setLock(){const b=document.getElementById('lock');b.textContent=editing?'👁 切換檢視':'✏️ 編輯';b.className='btn lockbtn'+(editing?' on':'');}
 function exportPdf(){
   const wasEdit=editing;editing=false;render();
-  const wrap=document.createElement('div');wrap.style.cssText='padding:18px;background:#fff;width:1080px;font-family:sans-serif';
+  const wrap=document.createElement('div');wrap.style.cssText='padding:18px;background:#fff;width:1120px;font-family:sans-serif';
   wrap.innerHTML='<div style="font-size:20px;font-weight:800;color:#2E5B8F;margin-bottom:10px">'+esc(P.name)+'</div>'+document.getElementById('root').innerHTML;
   editing=wasEdit;render();
   document.body.appendChild(wrap);
