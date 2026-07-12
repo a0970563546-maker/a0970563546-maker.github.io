@@ -105,6 +105,9 @@ function renderProjects(){
   box.querySelectorAll('.pcheck').forEach(c=>c.onchange=updateCompare);
 }
 renderProjects();
+// auto-refresh sidebar when a project is changed (e.g. archived) from the iframe
+window.addEventListener('storage',function(e){if(e.key==='engMgmtProData')renderProjects();});
+window.addEventListener('message',function(e){if(e.data&&e.data.t==='engProChanged')renderProjects();});
 // refresh from cloud if configured
 (function(){
   let cu=null;try{cu=localStorage.getItem('engMgmtCloudUrl');}catch(e){}

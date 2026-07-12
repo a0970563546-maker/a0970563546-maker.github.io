@@ -189,13 +189,14 @@ function flowCard(t,i){
   const ro='<div class="ro"><div class="th"><span class="tt">'+esc(t.name)+'</span>'+(t.done?'<span class="badge done">✓ 完成</span>':'<span class="badge wait">待執行</span>')+'</div>'
     +'<div class="tmeta">'+esc(t.startDate||'—')+' ~ '+esc(t.endDate||'—')+'</div>'
     +(D.content?'<div class="nblk"><div class="lb">備註 / 內容</div><div class="tx">'+esc(D.content)+'</div></div>':'')
-    +(D.tracking?'<div class="nblk"><div class="lb">追蹤</div><div class="tx">'+esc(D.tracking)+'</div></div>':'')+roTags(S)+'</div>';
+    +(D.tracking?'<div class="nblk"><div class="lb">追蹤</div><div class="tx">'+esc(D.tracking)+'</div></div>':'')
+    +(D.other?'<div class="nblk"><div class="lb">其他</div><div class="tx">'+esc(D.other)+'</div></div>':'')+roTags(S)+'</div>';
   const ed='<div class="ed">'
     +'<div class="grp"><div class="gh">📝 備註 / 追蹤</div><div class="frow"><label>備註 / 內容<textarea oninput="setp('+i+',\'detail.content\',this.value)">'+esc(D.content||'')+'</textarea></label></div><div class="frow"><label>追蹤<textarea oninput="setp('+i+',\'detail.tracking\',this.value)">'+esc(D.tracking||'')+'</textarea></label></div></div>'
     +'<div class="grp"><div class="gh">🖋 簽呈</div><div class="checks">'+chk(i,'steps.stamp.sent','已送出')+chk(i,'steps.stamp.confirmed','已確認')+'</div></div>'
-    +'<div class="grp"><div class="gh">📄 合約</div><div class="checks">'+chk(i,'steps.contract.signed','已簽署')+chk(i,'steps.contract.internalSeal','內部用印')+chk(i,'steps.contract.vendorSeal','廠商用印')+chk(i,'steps.contract.archived','已歸檔')+'</div></div>'
     +'<div class="grp"><div class="gh">💵 訂金</div><div class="checks" style="margin-bottom:8px">'+chk(i,'steps.contactDeposit.invoiceReceived','已收請款單')+'</div><div class="frow"><label>金額'+ti(i,'steps.contactDeposit.amount')+'</label><label>比例(%)'+ti(i,'steps.contactDeposit.percent')+'</label><label>確認日'+di(i,'steps.contactDeposit.confirmedDate')+'</label><label>匯款日'+di(i,'steps.contactDeposit.remittanceDate')+'</label></div></div>'
-    +'<div class="grp"><div class="gh">💴 尾款</div><div class="checks" style="margin-bottom:8px">'+chk(i,'steps.contactFinal.invoiceReceived','已收請款單')+'</div><div class="frow"><label>確認日'+di(i,'steps.contactFinal.confirmedDate')+'</label><label>匯款日'+di(i,'steps.contactFinal.remittanceDate')+'</label></div></div></div>';
+    +'<div class="grp"><div class="gh">💴 尾款</div><div class="checks" style="margin-bottom:8px">'+chk(i,'steps.contactFinal.invoiceReceived','已收請款單')+'</div><div class="frow"><label>確認日'+di(i,'steps.contactFinal.confirmedDate')+'</label><label>匯款日'+di(i,'steps.contactFinal.remittanceDate')+'</label></div></div>'
+    +'<div class="grp"><div class="gh">🗂️ 其他</div><div style="font-size:12px;color:#8A9BA8;font-weight:700;margin-bottom:6px">合約</div><div class="checks" style="margin-bottom:10px">'+chk(i,'steps.contract.signed','已簽署')+chk(i,'steps.contract.internalSeal','內部用印')+chk(i,'steps.contract.vendorSeal','廠商用印')+chk(i,'steps.contract.archived','已歸檔')+'</div><div class="frow"><label>其他備註<textarea oninput="setp('+i+',\'detail.other\',this.value)">'+esc(D.other||'')+'</textarea></label></div></div></div>';
   return '<div class="tcard">'+ro+ed+'</div>';
 }
 function flowHTML(){
@@ -242,7 +243,7 @@ function irm(ri){if(!confirm('刪除此列？'))return;P.inspection.splice(ri,1)
 function render(){
   const root=document.getElementById('root');let html='';
   if(curTab==='sch') html='<div class="panel"><div class="sec-h">📅 工程排程甘特圖<span class="ln"></span></div>'+ganttHTML()+(editing?schEditHTML():'')+'</div>';
-  else if(curTab==='flow') html='<div class="panel"><div class="sec-h">🔄 內部流程（簽呈・合約・訂金・尾款勾稽）<span class="ln"></span></div>'+flowHTML()+'</div>';
+  else if(curTab==='flow') html='<div class="panel"><div class="sec-h">🔄 內部流程（簽呈・訂金・尾款・其他）<span class="ln"></span></div>'+flowHTML()+'</div>';
   else if(curTab==='vendor') html='<div class="panel"><div class="sec-h">🧾 廠商報價（6 類比價表）<span class="ln"></span></div>'+vendorHTML()+'</div>';
   else if(curTab==='insp') html='<div class="panel"><div class="sec-h">✅ 驗收（竣工驗收與缺失改善）<span class="ln"></span></div>'+inspHTML()+'</div>';
   root.innerHTML=html;document.body.classList.toggle('editing',editing);
@@ -254,6 +255,7 @@ function toggleArchive(){
   if(!P.archived){ if(!confirm('確定將「'+P.name+'」結案？結案後會移到平台左側「已結案專案」，資料保留、可隨時還原。'))return; P.archived=true; }
   else { if(!confirm('把「'+P.name+'」還原為進行中？'))return; P.archived=false; }
   save();updateArchiveUI();
+  try{if(window.parent&&window.parent!==window)window.parent.postMessage({t:'engProChanged'},'*');}catch(e){}
 }
 function updateArchiveUI(){
   const b=document.getElementById('archBtn'),badge=document.getElementById('archBadge');
