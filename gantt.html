@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>專案排程</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:"Microsoft JhengHei","PingFang TC",sans-serif;background:#FAF9F7;color:#4A5158;padding:0 0 60px}
+.top{background:#2E5B8F;color:#fff;padding:12px 20px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5;flex-wrap:wrap}
+.top h1{font-size:16px;margin:0;flex:1;min-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn{border:0;border-radius:7px;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.lockbtn{background:#EFE9DD;color:#8A7B5C}
+.lockbtn.on{background:#9CAF88;color:#fff}
+.pdf{background:#EAF1E6;color:#3E6A3E;border:1px solid #9CC49C}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+.budget{background:#F1EBDD;border:1px solid #E5D9BF;border-radius:8px;padding:8px 14px;font-size:14px;font-weight:700;color:#8A7B5C;margin-bottom:14px}
+.mlabel{background:#3A4A5A;color:#fff;font-weight:700;padding:4px 12px;border-radius:4px 4px 0 0;margin-top:12px;font-size:13px}
+.gt{overflow-x:auto}
+table.g{border-collapse:collapse;font-size:11px;background:#fff}
+table.g th,table.g td{border:1px solid #D8D4CE;padding:2px 1px;text-align:center}
+table.g th.nm,table.g td.nm{text-align:left;white-space:nowrap;padding:2px 8px;position:sticky;left:0;background:#fff}
+.legend{font-size:11px;color:#9A948C;margin-top:8px}
+/* editor */
+.edit{margin-top:20px;background:#fff;border:1px solid #E2DED8;border-radius:10px;padding:14px 16px;display:none}
+.edit.on{display:block}
+.edit h3{font-size:14px;color:#2E5B8F;margin:0 0 10px}
+table.e{border-collapse:collapse;width:100%;font-size:13px}
+table.e th,table.e td{border:1px solid #ECE7DF;padding:6px 8px;text-align:left}
+table.e th{background:#F7F6F3;color:#7A756D;font-size:12px;white-space:nowrap}
+table.e input[type=text]{width:100%;border:1px solid #CFD6DE;border-radius:5px;padding:5px 7px;font-family:inherit;font-size:13px}
+table.e input[type=date]{border:1px solid #CFD6DE;border-radius:5px;padding:4px 6px;font-family:inherit;font-size:12.5px}
+.rmv{background:#fff;color:#B5564E;border:1px solid #E3B7B3;border-radius:5px;padding:4px 9px;font-size:12px;font-weight:700;cursor:pointer}
+.addrow{margin-top:10px}
+.addrow button{background:#9CAF88;color:#fff;border:0;border-radius:6px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer}
+.savenote{font-size:12px;margin-left:10px}
+.savenote.ok{color:#5E8C61}.savenote.ing{color:#B08B4F}
+.empty{text-align:center;color:#9A948C;padding:50px 20px;font-size:14px;line-height:2}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+<div class="top">
+  <h1 id="title">📅 排程</h1>
+  <span id="savenote" class="savenote"></span>
+  <button class="btn pdf" onclick="exportPdf()">🖨 A4 PDF</button>
+  <button class="btn lockbtn" id="lock" onclick="toggleLock()">🔒 檢視・點此編輯</button>
+</div>
+<div class="wrap">
+  <div id="budget"></div>
+  <div id="chart"></div>
+  <div class="edit" id="editor">
+    <h3>✏️ 排程編輯（改完自動儲存並同步雲端）</h3>
+    <div id="etable"></div>
+    <div class="addrow"><button onclick="addTask()">＋ 新增排程項目</button></div>
+  </div>
+</div>
+<script>
+const HASH="c180f50f20f140d28d729c3596ae2644f27181c60830542cdb7730e06081e2fe";
+const HOLS={"2026-01-01":1,"2026-02-14":1,"2026-02-15":1,"2026-02-16":1,"2026-02-17":1,"2026-02-18":1,"2026-02-19":1,"2026-02-20":1,"2026-02-27":1,"2026-02-28":1,"2026-04-03":1,"2026-04-04":1,"2026-04-05":1,"2026-04-06":1,"2026-05-01":1,"2026-06-19":1,"2026-09-25":1,"2026-09-28":1,"2026-10-09":1,"2026-10-10":1,"2026-10-25":1,"2026-10-26":1,"2026-12-25":1,"2027-01-01":1};
+const WD="一二三四五六日", COL="#3E6A8E", DONE="#9CAF88";
+const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const pd=s=>{s=(s||"").replace(/-/g,"/");const p=s.split("/").map(Number);if(p.length!==3||p.some(isNaN))return null;return new Date(p[0],p[1]-1,p[2]);};
+const off=d=>{const w=(d.getDay()+6)%7;return w>=5||HOLS[iso(d)]===1;};
+function qs(k){const m=new RegExp('[?&]'+k+'=([^&]+)').exec(location.search);return m?decodeURIComponent(m[1]):null;}
+let ALL=[], P=null, PIDX=-1, editing=false;
+function loadData(){
+  try{ALL=JSON.parse(localStorage.getItem('engMgmtProData')||'[]');}catch(e){ALL=[];}
+  const pid=qs('p');
+  PIDX=ALL.findIndex(x=>String(x.id)===String(pid));
+  if(PIDX<0 && !isNaN(pid)){ const list=ALL.filter(x=>!x.isDaily&&!x.archived); const t=list[Number(pid)]; if(t)PIDX=ALL.indexOf(t); }
+  P=PIDX>=0?ALL[PIDX]:null;
+}
+function cloudSave(){
+  try{localStorage.setItem('engMgmtProData',JSON.stringify(ALL));}catch(e){}
+  const note=document.getElementById('savenote');
+  let cu=null;try{cu=localStorage.getItem('engMgmtCloudUrl');}catch(e){}
+  if(cu){ note.textContent='☁️ 同步中…';note.className='savenote ing';
+    fetch(cu,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(ALL),mode:'no-cors'})
+      .then(()=>{note.textContent='✅ 已同步';note.className='savenote ok';})
+      .catch(()=>{note.textContent='⚠️ 本機已存（雲端待重試）';note.className='savenote ing';});
+  } else { note.textContent='✅ 已存（本機）';note.className='savenote ok'; }
+}
+function renderChart(){
+  const chart=document.getElementById('chart');
+  const tasks=(P.tasks||[]).map(t=>({name:t.name,s:pd(t.startDate),e:pd(t.endDate),done:t.done})).filter(t=>t.s&&t.e&&t.e>=t.s);
+  if(!tasks.length){ chart.innerHTML='<div class="empty">此專案尚無排程項目'+(editing?'，可在下方新增':'')+'</div>'; return; }
+  const minD=new Date(Math.min(...tasks.map(t=>t.s))),maxD=new Date(Math.max(...tasks.map(t=>t.e)));
+  let html='',cur=new Date(minD.getFullYear(),minD.getMonth(),1);
+  while(cur<=maxD){const y=cur.getFullYear(),m=cur.getMonth(),nd=new Date(y,m+1,0).getDate(),ms=new Date(y,m,1),me=new Date(y,m,nd);
+    const mt=tasks.filter(t=>t.s<=me&&t.e>=ms);
+    if(mt.length){html+='<div class="mlabel">'+y+'年 '+(m+1)+'月</div><div class="gt"><table class="g"><tr><th class="nm">項目</th>';
+      for(let d=1;d<=nd;d++){const dt=new Date(y,m,d),o=off(dt);html+='<th style="min-width:16px;font-size:10px;'+(o?'background:#B3A493;color:#fff':'background:#EDEAE5')+'">'+d+'<br>'+WD[(dt.getDay()+6)%7]+'</th>';}
+      html+='</tr>';
+      mt.forEach(t=>{html+='<tr><td class="nm"'+(t.done?' style="text-decoration:line-through;opacity:.6"':'')+'>'+esc(t.name)+'</td>';
+        for(let d=1;d<=nd;d++){const dt=new Date(y,m,d);let bg='';if(t.s<=dt&&dt<=t.e&&!off(dt))bg='background:'+(t.done?DONE:COL);else if(off(dt))bg='background:#EDEAE5';html+='<td style="'+bg+'"></td>';}
+        html+='</tr>';});
+      html+='</table></div>';}
+    cur.setMonth(cur.getMonth()+1);}
+  html+='<div class="legend">■ 藍＝進行　■ 綠＝完成　■ 深灰＝週末/假日</div>';
+  chart.innerHTML=html;
+}
+function renderEditor(){
+  const et=document.getElementById('etable');
+  const tasks=P.tasks||(P.tasks=[]);
+  et.innerHTML='<table class="e"><tr><th>項目名稱</th><th>開始</th><th>結束</th><th>完成</th><th></th></tr>'
+    +tasks.map((t,i)=>'<tr>'
+      +'<td><input type="text" value="'+esc(t.name)+'" oninput="upd('+i+',\'name\',this.value)"></td>'
+      +'<td><input type="date" value="'+esc((t.startDate||'').replace(/\//g,"-"))+'" onchange="upd('+i+',\'startDate\',this.value)"></td>'
+      +'<td><input type="date" value="'+esc((t.endDate||'').replace(/\//g,"-"))+'" onchange="upd('+i+',\'endDate\',this.value)"></td>'
+      +'<td style="text-align:center"><input type="checkbox" '+(t.done?'checked':'')+' onchange="upd('+i+',\'done\',this.checked)"></td>'
+      +'<td><button class="rmv" onclick="rmTask('+i+')">刪除</button></td></tr>').join('')
+    +'</table>';
+}
+function upd(i,k,v){ P.tasks[i][k]=v; save(); if(k!=='name')renderChart(); }
+function addTask(){ P.tasks=P.tasks||[]; const today=iso(new Date()); P.tasks.push({id:'t'+Date.now(),name:'新項目',startDate:today,endDate:today,done:false,taskBudget:'',detail:'',steps:[]}); save(); renderEditor(); renderChart(); }
+function rmTask(i){ if(!confirm('刪除這個排程項目？'))return; P.tasks.splice(i,1); save(); renderEditor(); renderChart(); }
+let saveT=null;
+function save(){ ALL[PIDX]=P; clearTimeout(saveT); saveT=setTimeout(cloudSave,600); }
+async function toggleLock(){
+  if(editing){ editing=false; document.getElementById('editor').classList.remove('on'); setLockUI(); return; }
+  const p=window.prompt('請輸入編輯密碼'); if(p===null)return;
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(p));
+  const hex=[...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,'0')).join('');
+  if(hex===HASH){ editing=true; document.getElementById('editor').classList.add('on'); renderEditor(); renderChart(); setLockUI(); }
+  else alert('密碼錯誤');
+}
+function setLockUI(){ const b=document.getElementById('lock'); b.textContent=editing?'🔓 編輯中・點此鎖定':'🔒 檢視・點此編輯'; b.className='btn lockbtn'+(editing?' on':''); }
+function exportPdf(){
+  const src=document.getElementById('chart');
+  const wrap=document.createElement('div');wrap.style.cssText='padding:16px;background:#fff;width:1050px;font-family:sans-serif';
+  wrap.innerHTML='<div style="font-size:18px;font-weight:800;color:#2E5B8F;margin-bottom:8px">📅 '+esc(P.name)+' · 排程</div>'+src.innerHTML;
+  document.body.appendChild(wrap);
+  html2pdf().set({margin:6,filename:(P.name||'排程')+'.pdf',image:{type:'jpeg',quality:.95},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(wrap).save().then(()=>wrap.remove()).catch(()=>wrap.remove());
+}
+function boot(){
+  loadData();
+  if(!P){ document.querySelector('.wrap').innerHTML='<div class="empty">找不到這個專案的資料<br>請先在平台開一次以完成雲端同步</div>'; return; }
+  document.getElementById('title').textContent='📅 '+P.name+' · 排程';
+  document.getElementById('budget').innerHTML='<div class="budget">💰 總預算：'+esc(P.totalBudget||'—')+' 元（含稅）</div>';
+  renderChart(); setLockUI();
+}
+boot();
+</script>
+</body>
+</html>

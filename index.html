@@ -89,7 +89,7 @@ function renderProjects(){
     const nm=(p.name||'未命名專案').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
     return '<button class="it proj" data-i="'+i+'"><span class="arrow">▶</span><span class="nm">'+nm+'</span></button>'
       +'<div class="subs" data-subs="'+i+'">'
-      +'<button class="it sub" data-src="'+ENG+'#p='+encodeURIComponent(id)+'&v=gantt" data-label="'+nm+' · 甘特圖">📅 甘特圖／排程</button>'
+      +'<button class="it sub" data-src="https://a0970563546-maker.github.io/gantt.html?p='+encodeURIComponent(id)+'" data-label="'+nm+' · 排程">📅 甘特圖／排程</button>'
       +'<button class="it sub" data-src="https://a0970563546-maker.github.io/notes.html?p='+encodeURIComponent(id)+'" data-label="'+nm+' · 注意事項">📝 注意事項（價格/報價/簽呈）</button>'
       +'</div>';
   }).join('');
