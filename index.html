@@ -87,17 +87,9 @@ function renderProjects(){
   box.innerHTML=projs.map((p,i)=>{
     const id=p.id!=null?p.id:i;
     const nm=(p.name||'未命名專案').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-    return '<button class="it proj" data-i="'+i+'"><span class="arrow">▶</span><span class="nm">'+nm+'</span></button>'
-      +'<div class="subs" data-subs="'+i+'">'
-      +'<button class="it sub" data-src="https://a0970563546-maker.github.io/gantt.html?p='+encodeURIComponent(id)+'" data-label="'+nm+' · 排程">📅 甘特圖／排程</button>'
-      +'<button class="it sub" data-src="https://a0970563546-maker.github.io/notes.html?p='+encodeURIComponent(id)+'" data-label="'+nm+' · 注意事項">📝 注意事項（價格/報價/簽呈）</button>'
-      +'</div>';
+    return '<button class="it proj" data-src="https://a0970563546-maker.github.io/project.html?p='+encodeURIComponent(id)+'" data-label="'+nm+'"><span class="nm">📐 '+nm+'</span></button>';
   }).join('');
-  box.querySelectorAll('.proj').forEach(b=>b.onclick=()=>{
-    const subs=box.querySelector('[data-subs="'+b.dataset.i+'"]');
-    b.classList.toggle('open'); subs.classList.toggle('open');
-  });
-  box.querySelectorAll('.sub').forEach(b=>b.onclick=()=>nav(b.dataset.src,b.dataset.label,b));
+  box.querySelectorAll('.proj').forEach(b=>b.onclick=()=>nav(b.dataset.src,b.dataset.label,b));
 }
 renderProjects();
 // refresh from cloud if configured
