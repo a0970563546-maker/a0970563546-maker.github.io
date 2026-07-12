@@ -50,6 +50,9 @@ iframe{border:0;width:100%;height:100%;flex:1;background:#fff}
   <div class="grp">專案　<span style="font-weight:400;text-transform:none;letter-spacing:0;color:#B0ACA4">☑勾選可比對排程</span></div>
   <div id="projList"><div class="empty">⏳ 載入專案中…</div></div>
 
+  <div class="grp" id="archGrp" style="display:none">已結案</div>
+  <div id="archList"></div>
+
   <div class="grp">廠商</div>
   <button class="it" data-src="https://a0970563546-maker.github.io/vendors.html">🏢 廠商管理</button>
 
@@ -79,25 +82,27 @@ function nav(src,label,el){
 // static items
 document.querySelectorAll('.it[data-src]').forEach(b=>b.onclick=()=>nav(b.dataset.src,b.textContent.trim(),b));
 
-function getProjects(){
-  let d=[];try{d=JSON.parse(localStorage.getItem('engMgmtProData')||'[]');}catch(e){}
-  return Array.isArray(d)?d.filter(p=>!p.isDaily&&!p.archived):[];
+function allData(){let d=[];try{d=JSON.parse(localStorage.getItem('engMgmtProData')||'[]');}catch(e){}return Array.isArray(d)?d:[];}
+function getProjects(){return allData().filter(p=>!p.isDaily&&!p.archived);}
+function getArchived(){return allData().filter(p=>!p.isDaily&&p.archived);}
+function projRow(p,i,withCheck){
+  const id=p.id!=null?p.id:i;
+  const nm=(p.name||'未命名專案').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+  const cb=withCheck?'<input type="checkbox" class="pcheck" data-id="'+encodeURIComponent(id)+'">':'';
+  return '<div class="projrow">'+cb+'<button class="it proj projname" data-src="https://a0970563546-maker.github.io/project.html?p='+encodeURIComponent(id)+'" data-label="'+nm+'"><span class="nm">'+(withCheck?'📐 ':'📦 ')+nm+'</span></button></div>';
+}
+function updateCompare(){
+  const ids=[...document.querySelectorAll('#projList .pcheck:checked')].map(c=>c.dataset.id);
+  if(ids.length){ nav('https://a0970563546-maker.github.io/allgantt.html?ids='+ids.join(','),'排程比對（'+ids.length+' 案）',null); }
 }
 function renderProjects(){
-  const projs=getProjects();
+  const projs=getProjects(), arch=getArchived();
   const box=document.getElementById('projList');
-  if(!projs.length){ box.innerHTML='<div class="empty">尚無專案<br>先開任一模組完成雲端同步</div>'; return; }
-  box.innerHTML=projs.map((p,i)=>{
-    const id=p.id!=null?p.id:i;
-    const nm=(p.name||'未命名專案').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-    return '<div class="projrow"><input type="checkbox" class="pcheck" data-id="'+encodeURIComponent(id)+'"><button class="it proj projname" data-src="https://a0970563546-maker.github.io/project.html?p='+encodeURIComponent(id)+'" data-label="'+nm+'"><span class="nm">📐 '+nm+'</span></button></div>';
-  }).join('');
-  box.querySelectorAll('.projname').forEach(b=>b.onclick=()=>nav(b.dataset.src,b.dataset.label,b));
+  box.innerHTML=projs.length?projs.map((p,i)=>projRow(p,i,true)).join(''):'<div class="empty">尚無進行中專案<br>先開任一模組完成雲端同步</div>';
+  document.getElementById('archGrp').style.display=arch.length?'':'none';
+  document.getElementById('archList').innerHTML=arch.map((p,i)=>projRow(p,i,false)).join('');
+  document.querySelectorAll('.projname').forEach(b=>b.onclick=()=>nav(b.dataset.src,b.dataset.label,b));
   box.querySelectorAll('.pcheck').forEach(c=>c.onchange=updateCompare);
-  function updateCompare(){
-    const ids=[...box.querySelectorAll('.pcheck:checked')].map(c=>c.dataset.id);
-    if(ids.length){ nav('https://a0970563546-maker.github.io/allgantt.html?ids='+ids.join(','),'排程比對（'+ids.length+' 案）',null); }
-  }
 }
 renderProjects();
 // refresh from cloud if configured

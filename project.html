@@ -9,12 +9,14 @@
 :root{--blue:#2E5B8F;--green:#5E8C72;--ink:#33404D;--soft:#6B7885;--line:#E6E9EE;--bg:#F5F7FA;--card:#FFFFFF}
 body{margin:0;font-family:"Microsoft JhengHei","PingFang TC","Segoe UI",sans-serif;background:var(--bg);color:var(--ink);padding:0 0 70px}
 .top{background:linear-gradient(120deg,#2E5B8F,#3C6FA8);color:#fff;padding:16px 26px 0;position:sticky;top:0;z-index:8;box-shadow:0 2px 10px rgba(30,60,110,.18)}
-.toprow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-bottom:12px}
+.toprow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:12px}
 .top h1{font-size:19px;margin:0;font-weight:800;letter-spacing:.5px}
+.arch-badge{background:#8A7B5C;color:#fff;border-radius:999px;padding:3px 12px;font-size:12px;font-weight:800}
 .chip{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:5px 14px;font-size:13px;font-weight:700}
 .spacer{flex:1}
-.btn{border:0;border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn{border:0;border-radius:9px;padding:9px 15px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
 .pdf{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.35)}
+.archbtn{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.3)}
 .lockbtn{background:#F4EEDF;color:#8A7B5C}.lockbtn.on{background:#6FA98A;color:#fff}
 .savenote{font-size:12.5px;font-weight:700}.savenote.ok{color:#CDEAD9}.savenote.ing{color:#FCE9C4}
 .tabs{display:flex;gap:4px;flex-wrap:wrap}
@@ -24,7 +26,6 @@ body{margin:0;font-family:"Microsoft JhengHei","PingFang TC","Segoe UI",sans-ser
 .sec-h{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;color:var(--blue);margin:4px 0 14px}
 .sec-h .ln{flex:1;height:1px;background:var(--line)}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:0 4px 18px rgba(40,70,120,.06);margin-bottom:24px}
-/* GANTT daily */
 .gantt{overflow-x:auto}
 .months{display:flex;position:relative;height:24px}
 .mo{position:absolute;top:0;font-size:12.5px;font-weight:800;color:var(--ink);border-left:1px solid var(--line);padding:3px 0 0 6px;height:100%;overflow:hidden;white-space:nowrap}
@@ -43,32 +44,44 @@ body{margin:0;font-family:"Microsoft JhengHei","PingFang TC","Segoe UI",sans-ser
 .bar{position:absolute;top:50%;transform:translateY(-50%);height:22px;border-radius:11px;box-shadow:0 2px 6px rgba(46,91,143,.28);display:flex;align-items:center;padding:0 9px;font-size:10.5px;color:#fff;font-weight:700;white-space:nowrap;overflow:hidden;z-index:1}
 .bar.ing{background:linear-gradient(180deg,#5A88BE,#3C6FA8)}.bar.done{background:linear-gradient(180deg,#79AE94,#5E8C72)}
 .legend{font-size:12px;color:var(--soft);margin-top:14px}
-/* editable task list */
-table.sch{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:16px}
-table.sch th,table.sch td{border:1px solid var(--line);padding:7px 9px;text-align:left}
-table.sch th{background:#F4F7FA;color:var(--soft);font-size:12px;white-space:nowrap}
-table.sch input[type=text]{width:100%;border:1px solid #D3DAE2;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:13px}
+table.sch,table.v{border-collapse:collapse;width:100%;font-size:13.5px}
+table.sch th,table.sch td,table.v th,table.v td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+table.sch th,table.v th{background:#F4F7FA;color:var(--soft);font-size:12px;white-space:nowrap}
+table.sch input[type=text],table.v input{width:100%;border:1px solid #D3DAE2;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:13px}
 table.sch input[type=date]{border:1px solid #D3DAE2;border-radius:6px;padding:4px 6px;font-family:inherit;font-size:12.5px}
-/* note */
-.notearea{width:100%;min-height:220px;border:1px solid #D3DAE2;border-radius:12px;padding:14px 16px;font-size:15px;line-height:1.8;font-family:inherit;color:var(--ink);resize:vertical}
-.noteview{font-size:15px;line-height:1.9;white-space:pre-wrap;color:var(--ink);min-height:60px}
-/* vendor */
+.sch{margin-top:16px}
+/* flow cards */
+.tcard{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px;background:#FCFDFE}
+.tcard .th{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tt{font-size:15.5px;font-weight:800;color:var(--blue)}
+.badge{font-size:11px;font-weight:700;border-radius:999px;padding:2px 10px}
+.badge.done{background:#E4F0E9;color:#4B7A60}.badge.wait{background:#F0EDE6;color:#8A7B5C}
+.tmeta{font-size:12.5px;color:var(--soft);margin:6px 0}
+.nblk{margin-top:10px}.nblk .lb{font-size:12px;font-weight:800;color:#8A9BA8;margin-bottom:3px}.nblk .tx{font-size:13.5px;color:var(--ink);white-space:pre-wrap;line-height:1.65}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.tag{font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 11px;background:#EEF1F5;color:#8A93A0}
+.tag.on{background:#E4F0E9;color:#3E7A5B}
+.ed{display:none}.editing .ed{display:block}.editing .ro{display:none}
+.grp{border:1px solid #EDEFF3;border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.grp .gh{font-size:12px;font-weight:800;color:var(--blue);margin-bottom:8px}
+.frow{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.frow label{flex:1;min-width:120px;font-size:12px;font-weight:700;color:var(--soft)}
+.frow input[type=text],.frow input[type=date],.frow textarea{width:100%;margin-top:4px;border:1px solid #D3DAE2;border-radius:8px;padding:7px 9px;font-size:13.5px;font-family:inherit;color:var(--ink)}
+.frow textarea{min-height:52px;resize:vertical}
+.checks{display:flex;flex-wrap:wrap;gap:10px 18px}
+.checks label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--soft);min-width:auto}
+.notearea{width:100%;min-height:90px;border:1px solid #D3DAE2;border-radius:10px;padding:12px 14px;font-size:14.5px;line-height:1.7;font-family:inherit;resize:vertical}
+.noteview{font-size:14.5px;line-height:1.8;white-space:pre-wrap;color:var(--ink)}
 .vcat{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px;background:#FCFDFE}
 .vcat .ch{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .vcat .ct{font-size:15px;font-weight:800;color:var(--blue)}
 .vcat input.catname{font-size:15px;font-weight:800;color:var(--blue);border:1px solid #D3DAE2;border-radius:8px;padding:4px 10px;font-family:inherit}
-table.v{border-collapse:collapse;width:100%;font-size:13.5px}
-table.v th,table.v td{border:1px solid var(--line);padding:7px 9px;text-align:left}
-table.v th{background:#F4F7FA;color:var(--soft);font-size:12px;white-space:nowrap}
-table.v input{width:100%;border:1px solid #D3DAE2;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:13px}
-.vlow{margin-top:8px;font-size:13px;color:#8A7B5C;font-weight:700}
-.vlow b{color:#B5723C}
+.vlow{margin-top:8px;font-size:13px;color:#8A7B5C;font-weight:700}.vlow b{color:#B5723C}
 .miniadd{background:#EAF1E6;color:#3E6A3E;border:1px solid #9CC49C;border-radius:7px;padding:5px 12px;font-size:12.5px;font-weight:700;cursor:pointer;margin-top:8px}
 .rmv{background:#fff;color:#B5564E;border:1px solid #E3B7B3;border-radius:6px;padding:4px 9px;font-size:12px;font-weight:700;cursor:pointer}
 .addbtn{background:var(--green);color:#fff;border:0;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px}
 .hint{font-size:12px;color:#A8AEB6;margin-top:8px}
 .empty{text-align:center;color:var(--soft);padding:40px 20px;font-size:14px;line-height:2}
-.ed{display:none}.editing .ed{display:inline}.editing .roonly{display:none}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -76,15 +89,17 @@ table.v input{width:100%;border:1px solid #D3DAE2;border-radius:6px;padding:5px 
 <div class="top">
   <div class="toprow">
     <h1 id="title">專案工作頁</h1>
+    <span id="archBadge"></span>
     <span class="chip" id="budgetChip"></span>
     <span class="spacer"></span>
     <span class="savenote" id="savenote"></span>
+    <button class="btn archbtn" id="archBtn" onclick="toggleArchive()">📦 結案</button>
     <button class="btn pdf" onclick="exportPdf()">🖨 A4 PDF</button>
     <button class="btn lockbtn" id="lock" onclick="toggleEdit()">✏️ 編輯</button>
   </div>
   <div class="tabs">
     <button class="tab on" data-t="sch" onclick="setTab('sch')">📅 排程</button>
-    <button class="tab" data-t="note" onclick="setTab('note')">📝 注意事項</button>
+    <button class="tab" data-t="flow" onclick="setTab('flow')">🔄 內部流程</button>
     <button class="tab" data-t="vendor" onclick="setTab('vendor')">🧾 廠商報價</button>
     <button class="tab" data-t="insp" onclick="setTab('insp')">✅ 驗收</button>
   </div>
@@ -93,8 +108,7 @@ table.v input{width:100%;border:1px solid #D3DAE2;border-radius:6px;padding:5px 
 
 <script>
 const HOLS={"2026-01-01":1,"2026-02-14":1,"2026-02-15":1,"2026-02-16":1,"2026-02-17":1,"2026-02-18":1,"2026-02-19":1,"2026-02-20":1,"2026-02-27":1,"2026-02-28":1,"2026-04-03":1,"2026-04-04":1,"2026-04-05":1,"2026-04-06":1,"2026-05-01":1,"2026-06-19":1,"2026-09-25":1,"2026-09-28":1,"2026-10-09":1,"2026-10-10":1,"2026-10-25":1,"2026-10-26":1,"2026-12-25":1,"2027-01-01":1};
-const DAY=86400000, DW=26;
-const DEFAULT_CATS=['木工','水電','油漆','泥作','地板','清潔/其他'];
+const DAY=86400000, DW=26, DEFAULT_CATS=['木工','水電','油漆','泥作','地板','清潔/其他'];
 const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 const pd=s=>{s=(s||"").replace(/-/g,"/");const p=s.split("/").map(Number);if(p.length!==3||p.some(isNaN))return null;return new Date(p[0],p[1]-1,p[2]);};
@@ -107,7 +121,7 @@ function loadData(){
   try{ALL=JSON.parse(localStorage.getItem('engMgmtProData')||'[]');}catch(e){ALL=[];}
   const pid=qs('p');
   PIDX=ALL.findIndex(x=>String(x.id)===String(pid));
-  if(PIDX<0&&!isNaN(pid)){const list=ALL.filter(x=>!x.isDaily&&!x.archived);const t=list[Number(pid)];if(t)PIDX=ALL.indexOf(t);}
+  if(PIDX<0&&!isNaN(pid)){const list=ALL.filter(x=>!x.isDaily);const t=list[Number(pid)];if(t)PIDX=ALL.indexOf(t);}
   P=PIDX>=0?ALL[PIDX]:null;
   if(P)ensureProject(P);
 }
@@ -116,6 +130,14 @@ function ensureProject(p){
   if(!Array.isArray(p.vendorQuotes)||!p.vendorQuotes.length)
     p.vendorQuotes=DEFAULT_CATS.map(c=>({cat:c,rows:[{n:'',d:'',a:'',m:''},{n:'',d:'',a:'',m:''},{n:'',d:'',a:'',m:''}]}));
   if(!Array.isArray(p.inspection))p.inspection=[];
+  (p.tasks||[]).forEach(ensureTask);
+}
+function ensureTask(t){
+  t.detail=t.detail||{};t.steps=t.steps||{};const S=t.steps;
+  S.stamp=S.stamp||{sent:false,confirmed:false};
+  S.contract=S.contract||{signed:false,internalSeal:false,vendorSeal:false,archived:false};
+  S.contactDeposit=S.contactDeposit||{invoiceReceived:false,confirmedDate:'',remittanceDate:'',amount:'',percent:''};
+  S.contactFinal=S.contactFinal||{invoiceReceived:false,confirmedDate:'',remittanceDate:''};
 }
 function cloudSave(){
   try{localStorage.setItem('engMgmtProData',JSON.stringify(ALL));}catch(e){}
@@ -127,15 +149,19 @@ function cloudSave(){
   }else{n.textContent='✅ 已存（本機）';n.className='savenote ok';}
 }
 function save(){ALL[PIDX]=P;clearTimeout(saveT);saveT=setTimeout(cloudSave,600);}
+function getp(o,path){return path.split('.').reduce((a,k)=>a?a[k]:undefined,o);}
+function setp(i,path,val){const t=P.tasks[i];ensureTask(t);const ks=path.split('.');let o=t;for(let j=0;j<ks.length-1;j++){o[ks[j]]=o[ks[j]]||{};o=o[ks[j]];}o[ks[ks.length-1]]=val;save();if(['name','startDate','endDate','done'].indexOf(path)>-1)render();}
+function chk(i,path,label){return '<label><input type="checkbox" '+(getp(P.tasks[i],path)?'checked':'')+' onchange="setp('+i+',\''+path+'\',this.checked)"> '+label+'</label>';}
+function ti(i,path,ph){return '<input type="text" value="'+esc(getp(P.tasks[i],path)||'')+'" oninput="setp('+i+',\''+path+'\',this.value)" placeholder="'+(ph||'')+'">';}
+function di(i,path){return '<input type="date" value="'+esc((getp(P.tasks[i],path)||'').replace(/\//g,"-"))+'" onchange="setp('+i+',\''+path+'\',this.value)">';}
 
-/* ---------- 排程 gantt (daily) ---------- */
+/* 排程 */
 function ganttHTML(){
   const tasks=(P.tasks||[]).map(t=>({name:t.name,s:pd(t.startDate),e:pd(t.endDate),done:t.done})).filter(t=>t.s&&t.e&&t.e>=t.s);
   if(!tasks.length) return '<div class="empty">尚無排程項目'+(editing?'，於下方新增':'')+'</div>';
   const minD=new Date(Math.min(...tasks.map(t=>+t.s))),maxD=new Date(Math.max(...tasks.map(t=>+t.e)));
   const rs=new Date(minD.getFullYear(),minD.getMonth(),1),re=new Date(maxD.getFullYear(),maxD.getMonth()+1,0);
-  const totalDays=Math.round(((re-rs)/DAY))+1, W=totalDays*DW;
-  const x=d=>((d-rs)/DAY)*DW;
+  const totalDays=Math.round((re-rs)/DAY)+1, W=totalDays*DW, x=d=>((d-rs)/DAY)*DW;
   let months='';let cur=new Date(rs);
   while(cur<=re){const mS=new Date(cur.getFullYear(),cur.getMonth(),1),nd=new Date(cur.getFullYear(),cur.getMonth()+1,0).getDate();
     months+='<div class="mo" style="left:'+x(mS)+'px;width:'+(nd*DW)+'px">'+cur.getFullYear()+'/'+(cur.getMonth()+1)+'</div>';cur.setMonth(cur.getMonth()+1);}
@@ -144,93 +170,101 @@ function ganttHTML(){
   const today=new Date();today.setHours(0,0,0,0);const inR=today>=rs&&today<=re;const tx=inR?x(today):0;
   const tline=inR?'<div class="tline" style="left:'+tx+'px"></div>':'';
   let rows='';
-  tasks.forEach(t=>{
-    const left=x(t.s),width=((t.e-t.s)/DAY+1)*DW,wd=wdays(t.s,t.e);
-    const sd=(t.s.getMonth()+1)+'/'+t.s.getDate(),ed=(t.e.getMonth()+1)+'/'+t.e.getDate();
-    rows+='<div class="grow"><div class="glabel"><div class="t">'+esc(t.name)+'</div><div class="d">'+sd+'–'+ed+'・'+wd+'工作天</div></div>'
-      +'<div class="gtrack" style="width:'+W+'px">'+wknd+tline+'<div class="bar '+(t.done?'done':'ing')+'" style="left:'+left+'px;width:'+width+'px">'+(width>60?sd+' → '+ed:'')+'</div></div></div>';
-  });
-  return '<div class="gantt"><div style="min-width:'+(220+W)+'px"><div style="display:flex"><div style="width:220px;flex-shrink:0"></div><div style="width:'+W+'px;flex-shrink:0"><div class="months">'+months+(inR?'<div class="tlabel" style="left:'+tx+'px">今日</div>':'')+'</div><div class="days">'+days+'</div></div></div>'+rows
-    +'</div></div><div class="legend">■ 藍＝進行　■ 綠＝完成　■ 米色＝週末/假日　紅線＝今日・上排顯示當月每一天</div>';
+  tasks.forEach(t=>{const left=x(t.s),width=((t.e-t.s)/DAY+1)*DW,wd=wdays(t.s,t.e),sd=(t.s.getMonth()+1)+'/'+t.s.getDate(),ed=(t.e.getMonth()+1)+'/'+t.e.getDate();
+    rows+='<div class="grow"><div class="glabel"><div class="t">'+esc(t.name)+'</div><div class="d">'+sd+'–'+ed+'・'+wd+'工作天</div></div><div class="gtrack" style="width:'+W+'px">'+wknd+tline+'<div class="bar '+(t.done?'done':'ing')+'" style="left:'+left+'px;width:'+width+'px">'+(width>60?sd+' → '+ed:'')+'</div></div></div>';});
+  return '<div class="gantt"><div style="min-width:'+(220+W)+'px"><div style="display:flex"><div style="width:220px;flex-shrink:0"></div><div style="width:'+W+'px;flex-shrink:0"><div class="months">'+months+(inR?'<div class="tlabel" style="left:'+tx+'px">今日</div>':'')+'</div><div class="days">'+days+'</div></div></div>'+rows+'</div></div><div class="legend">■ 藍＝進行　■ 綠＝完成　■ 米色＝週末/假日　紅線＝今日・上排顯示當月每一天</div>';
 }
 function schEditHTML(){
-  const tasks=P.tasks||[];
-  const rows=tasks.map((t,i)=>'<tr><td><input type="text" value="'+esc(t.name)+'" oninput="tset('+i+',\'name\',this.value)"></td>'
-    +'<td><input type="date" value="'+esc((t.startDate||'').replace(/\//g,"-"))+'" onchange="tset('+i+',\'startDate\',this.value)"></td>'
-    +'<td><input type="date" value="'+esc((t.endDate||'').replace(/\//g,"-"))+'" onchange="tset('+i+',\'endDate\',this.value)"></td>'
-    +'<td style="text-align:center"><input type="checkbox" '+(t.done?'checked':'')+' onchange="tset('+i+',\'done\',this.checked)"></td>'
-    +'<td><button class="rmv" onclick="rmTask('+i+')">刪除</button></td></tr>').join('');
+  const rows=(P.tasks||[]).map((t,i)=>'<tr><td>'+ti(i,'name')+'</td><td>'+di(i,'startDate')+'</td><td>'+di(i,'endDate')+'</td><td style="text-align:center"><input type="checkbox" '+(t.done?'checked':'')+' onchange="setp('+i+',\'done\',this.checked)"></td><td><button class="rmv" onclick="rmTask('+i+')">刪除</button></td></tr>').join('');
   return '<table class="sch"><tr><th>工程項目</th><th>開始</th><th>結束</th><th>完成</th><th></th></tr>'+rows+'</table><button class="addbtn" onclick="addTask()">＋ 新增工程項目</button>';
 }
-function tset(i,k,v){P.tasks[i][k]=v;save();render();}
-function addTask(){P.tasks=P.tasks||[];const t=iso(new Date());P.tasks.push({id:'t'+Date.now(),name:'新工程項目',startDate:t,endDate:t,done:false});save();render();}
+function addTask(){P.tasks=P.tasks||[];const t=iso(new Date());const nt={id:'t'+Date.now(),name:'新工程項目',startDate:t,endDate:t,done:false};ensureTask(nt);P.tasks.push(nt);save();render();}
 function rmTask(i){if(!confirm('刪除此工程項目？'))return;P.tasks.splice(i,1);save();render();}
 
-/* ---------- 注意事項 ---------- */
-function noteHTML(){
-  if(editing) return '<textarea class="notearea" oninput="P.projectNote=this.value;save();" placeholder="這裡寫你自己的備註、公司內部提醒事項…（整個專案共用一個）">'+esc(P.projectNote||'')+'</textarea>';
-  return '<div class="noteview">'+(P.projectNote?esc(P.projectNote):'<span style="color:#A8AEB6">（尚無備註，點右上「✏️ 編輯」新增）</span>')+'</div>';
+/* 內部流程 */
+function roTags(S){const items=[['簽呈已送',S.stamp.sent],['簽呈確認',S.stamp.confirmed],['合約已簽',S.contract.signed],['內部用印',S.contract.internalSeal],['廠商用印',S.contract.vendorSeal],['合約歸檔',S.contract.archived],['訂金請款',S.contactDeposit.invoiceReceived],['尾款請款',S.contactFinal.invoiceReceived]];
+  return '<div class="tags">'+items.map(x=>'<span class="tag'+(x[1]?' on':'')+'">'+(x[1]?'✓ ':'')+x[0]+'</span>').join('')+'</div>';}
+function flowCard(t,i){
+  ensureTask(t);const D=t.detail,S=t.steps;
+  const ro='<div class="ro"><div class="th"><span class="tt">'+esc(t.name)+'</span>'+(t.done?'<span class="badge done">✓ 完成</span>':'<span class="badge wait">待執行</span>')+'</div>'
+    +'<div class="tmeta">'+esc(t.startDate||'—')+' ~ '+esc(t.endDate||'—')+'</div>'
+    +(D.content?'<div class="nblk"><div class="lb">備註 / 內容</div><div class="tx">'+esc(D.content)+'</div></div>':'')
+    +(D.tracking?'<div class="nblk"><div class="lb">追蹤</div><div class="tx">'+esc(D.tracking)+'</div></div>':'')+roTags(S)+'</div>';
+  const ed='<div class="ed">'
+    +'<div class="grp"><div class="gh">📝 備註 / 追蹤</div><div class="frow"><label>備註 / 內容<textarea oninput="setp('+i+',\'detail.content\',this.value)">'+esc(D.content||'')+'</textarea></label></div><div class="frow"><label>追蹤<textarea oninput="setp('+i+',\'detail.tracking\',this.value)">'+esc(D.tracking||'')+'</textarea></label></div></div>'
+    +'<div class="grp"><div class="gh">🖋 簽呈</div><div class="checks">'+chk(i,'steps.stamp.sent','已送出')+chk(i,'steps.stamp.confirmed','已確認')+'</div></div>'
+    +'<div class="grp"><div class="gh">📄 合約</div><div class="checks">'+chk(i,'steps.contract.signed','已簽署')+chk(i,'steps.contract.internalSeal','內部用印')+chk(i,'steps.contract.vendorSeal','廠商用印')+chk(i,'steps.contract.archived','已歸檔')+'</div></div>'
+    +'<div class="grp"><div class="gh">💵 訂金</div><div class="checks" style="margin-bottom:8px">'+chk(i,'steps.contactDeposit.invoiceReceived','已收請款單')+'</div><div class="frow"><label>金額'+ti(i,'steps.contactDeposit.amount')+'</label><label>比例(%)'+ti(i,'steps.contactDeposit.percent')+'</label><label>確認日'+di(i,'steps.contactDeposit.confirmedDate')+'</label><label>匯款日'+di(i,'steps.contactDeposit.remittanceDate')+'</label></div></div>'
+    +'<div class="grp"><div class="gh">💴 尾款</div><div class="checks" style="margin-bottom:8px">'+chk(i,'steps.contactFinal.invoiceReceived','已收請款單')+'</div><div class="frow"><label>確認日'+di(i,'steps.contactFinal.confirmedDate')+'</label><label>匯款日'+di(i,'steps.contactFinal.remittanceDate')+'</label></div></div></div>';
+  return '<div class="tcard">'+ro+ed+'</div>';
+}
+function flowHTML(){
+  const note=editing
+    ? '<div class="grp"><div class="gh">📌 專案總備註</div><textarea class="notearea" oninput="P.projectNote=this.value;save();" placeholder="整個專案共用的備註…">'+esc(P.projectNote||'')+'</textarea></div>'
+    : (P.projectNote?'<div class="tcard"><div class="nblk"><div class="lb">📌 專案總備註</div><div class="noteview">'+esc(P.projectNote)+'</div></div></div>':'');
+  const tasks=P.tasks||[];
+  let cards=tasks.length?tasks.map((t,i)=>flowCard(t,i)).join(''):'<div class="empty">尚無工程項目（到「📅 排程」新增）</div>';
+  return note+cards+(editing?'<div class="hint">公司內部流程：每個工程項目的簽呈／合約／訂金／尾款勾稽與備註。</div>':'');
 }
 
-/* ---------- 廠商報價 (6 tables) ---------- */
+/* 廠商報價 */
 function num(s){const v=parseFloat(String(s==null?'':s).replace(/[^0-9.]/g,''));return isNaN(v)?null:v;}
 function vendorHTML(){
-  const V=P.vendorQuotes;
-  return V.map((cat,ci)=>{
-    const rows=cat.rows.map((r,ri)=>{
-      if(editing) return '<tr><td><input value="'+esc(r.n)+'" oninput="vset('+ci+','+ri+',\'n\',this.value)" placeholder="廠商名稱"></td><td><input value="'+esc(r.d)+'" oninput="vset('+ci+','+ri+',\'d\',this.value)" placeholder="M/D"></td><td><input value="'+esc(r.a)+'" oninput="vset('+ci+','+ri+',\'a\',this.value)" placeholder="金額"></td><td><input value="'+esc(r.m)+'" oninput="vset('+ci+','+ri+',\'m\',this.value)" placeholder="備註"></td><td><button class="rmv" onclick="vrm('+ci+','+ri+')">×</button></td></tr>';
-      return '<tr><td>'+esc(r.n||'—')+'</td><td>'+esc(r.d||'—')+'</td><td>'+esc(r.a||'—')+'</td><td>'+esc(r.m||'')+'</td></tr>';
-    }).join('');
-    const amts=cat.rows.map(r=>num(r.a)).filter(x=>x!=null);
-    const low=amts.length?Math.min(...amts):null;
-    const lowName=low!=null?(cat.rows.find(r=>num(r.a)===low)||{}).n:'';
+  return P.vendorQuotes.map((cat,ci)=>{
+    const rows=cat.rows.map((r,ri)=>editing
+      ? '<tr><td><input value="'+esc(r.n)+'" oninput="vset('+ci+','+ri+',\'n\',this.value)" placeholder="廠商名稱"></td><td><input value="'+esc(r.d)+'" oninput="vset('+ci+','+ri+',\'d\',this.value)" placeholder="M/D"></td><td><input value="'+esc(r.a)+'" oninput="vset('+ci+','+ri+',\'a\',this.value)" placeholder="金額"></td><td><input value="'+esc(r.m)+'" oninput="vset('+ci+','+ri+',\'m\',this.value)" placeholder="備註"></td><td><button class="rmv" onclick="vrm('+ci+','+ri+')">×</button></td></tr>'
+      : '<tr><td>'+esc(r.n||'—')+'</td><td>'+esc(r.d||'—')+'</td><td>'+esc(r.a||'—')+'</td><td>'+esc(r.m||'')+'</td></tr>').join('');
+    const amts=cat.rows.map(r=>num(r.a)).filter(x=>x!=null),low=amts.length?Math.min(...amts):null,lowName=low!=null?(cat.rows.find(r=>num(r.a)===low)||{}).n:'';
     const th='<tr><th style="width:26%">廠商名稱</th><th style="width:16%">現勘日期</th><th style="width:20%">報價金額</th><th>備註</th>'+(editing?'<th style="width:36px"></th>':'')+'</tr>';
     const cathd=editing?'<input class="catname" value="'+esc(cat.cat)+'" oninput="vcat('+ci+',this.value)">':'<span class="ct">🏗️ '+esc(cat.cat)+'</span>';
-    return '<div class="vcat"><div class="ch">'+cathd+'</div><div style="overflow-x:auto"><table class="v">'+th+rows+'</table></div>'
-      +(editing?'<button class="miniadd" onclick="vadd('+ci+')">＋ 加一列廠商</button>':'')
-      +'<div class="vlow">💰 最低報價：<b>'+(low!=null?low.toLocaleString():'—')+'</b>'+(lowName?'（'+esc(lowName)+'）':'')+'</div></div>';
-  }).join('')+(editing?'<div class="hint">6 張比價表可自由填寫；類型名稱也可改。金額請填數字（可含逗號），系統自動抓最低報價。</div>':'');
+    return '<div class="vcat"><div class="ch">'+cathd+'</div><div style="overflow-x:auto"><table class="v">'+th+rows+'</table></div>'+(editing?'<button class="miniadd" onclick="vadd('+ci+')">＋ 加一列廠商</button>':'')+'<div class="vlow">💰 最低報價：<b>'+(low!=null?low.toLocaleString():'—')+'</b>'+(lowName?'（'+esc(lowName)+'）':'')+'</div></div>';
+  }).join('')+(editing?'<div class="hint">6 張比價表可自由填寫；類型名稱也可改。金額填數字，自動抓最低報價。</div>':'');
 }
 function vset(ci,ri,k,v){P.vendorQuotes[ci].rows[ri][k]=v;save();if(k==='a')render();}
 function vcat(ci,v){P.vendorQuotes[ci].cat=v;save();}
 function vadd(ci){P.vendorQuotes[ci].rows.push({n:'',d:'',a:'',m:''});save();render();}
 function vrm(ci,ri){P.vendorQuotes[ci].rows.splice(ri,1);save();render();}
 
-/* ---------- 驗收 ---------- */
+/* 驗收 */
 const INSP_COLS=[['no','編號','8%'],['area','位置/區域','12%'],['item','工項','12%'],['defect','缺失描述',''],['vendor','負責廠商','11%'],['found','發現日期','10%'],['due','改善期限','10%'],['recheck','複驗日期','10%'],['result','複驗結果','9%'],['note','備註','']];
 function inspHTML(){
-  const rows=P.inspection.map((r,ri)=>{
-    if(editing) return '<tr>'+INSP_COLS.map(c=>'<td><input value="'+esc(r[c[0]]||'')+'" oninput="iset('+ri+',\''+c[0]+'\',this.value)"></td>').join('')+'<td><button class="rmv" onclick="irm('+ri+')">×</button></td></tr>';
-    return '<tr>'+INSP_COLS.map(c=>'<td>'+esc(r[c[0]]||'—')+'</td>').join('')+'</tr>';
-  }).join('');
+  const rows=P.inspection.map((r,ri)=>editing
+    ? '<tr>'+INSP_COLS.map(c=>'<td><input value="'+esc(r[c[0]]||'')+'" oninput="iset('+ri+',\''+c[0]+'\',this.value)"></td>').join('')+'<td><button class="rmv" onclick="irm('+ri+')">×</button></td></tr>'
+    : '<tr>'+INSP_COLS.map(c=>'<td>'+esc(r[c[0]]||'—')+'</td>').join('')+'</tr>').join('');
   const th='<tr>'+INSP_COLS.map(c=>'<th'+(c[2]?' style="width:'+c[2]+'"':'')+'>'+c[1]+'</th>').join('')+(editing?'<th style="width:36px"></th>':'')+'</tr>';
-  return '<div style="overflow-x:auto"><table class="v">'+th+(rows||'<tr><td colspan="'+(INSP_COLS.length+(editing?1:0))+'" style="text-align:center;color:#A8AEB6;padding:20px">尚無驗收/缺失紀錄'+(editing?'，按下方新增':'')+'</td></tr>')+'</table></div>'
-    +(editing?'<button class="addbtn" onclick="iadd()">＋ 新增一筆缺失/驗收</button><div class="hint">竣工驗收與缺失改善清單。</div>':'');
+  return '<div style="overflow-x:auto"><table class="v">'+th+(rows||'<tr><td colspan="'+(INSP_COLS.length+(editing?1:0))+'" style="text-align:center;color:#A8AEB6;padding:20px">尚無驗收/缺失紀錄'+(editing?'，按下方新增':'')+'</td></tr>')+'</table></div>'+(editing?'<button class="addbtn" onclick="iadd()">＋ 新增一筆缺失/驗收</button><div class="hint">竣工驗收與缺失改善清單。</div>':'');
 }
 function iset(ri,k,v){P.inspection[ri][k]=v;save();}
 function iadd(){P.inspection.push({});save();render();}
 function irm(ri){if(!confirm('刪除此列？'))return;P.inspection.splice(ri,1);save();render();}
 
-/* ---------- render ---------- */
+/* render */
 function render(){
-  const root=document.getElementById('root');
-  let html='';
+  const root=document.getElementById('root');let html='';
   if(curTab==='sch') html='<div class="panel"><div class="sec-h">📅 工程排程甘特圖<span class="ln"></span></div>'+ganttHTML()+(editing?schEditHTML():'')+'</div>';
-  else if(curTab==='note') html='<div class="panel"><div class="sec-h">📝 注意事項（本專案備註）<span class="ln"></span></div>'+noteHTML()+'</div>';
+  else if(curTab==='flow') html='<div class="panel"><div class="sec-h">🔄 內部流程（簽呈・合約・訂金・尾款勾稽）<span class="ln"></span></div>'+flowHTML()+'</div>';
   else if(curTab==='vendor') html='<div class="panel"><div class="sec-h">🧾 廠商報價（6 類比價表）<span class="ln"></span></div>'+vendorHTML()+'</div>';
   else if(curTab==='insp') html='<div class="panel"><div class="sec-h">✅ 驗收（竣工驗收與缺失改善）<span class="ln"></span></div>'+inspHTML()+'</div>';
-  root.innerHTML=html;
-  document.body.classList.toggle('editing',editing);
+  root.innerHTML=html;document.body.classList.toggle('editing',editing);
 }
 function setTab(t){curTab=t;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));render();}
 function toggleEdit(){editing=!editing;setLock();render();}
 function setLock(){const b=document.getElementById('lock');b.textContent=editing?'👁 切換檢視':'✏️ 編輯';b.className='btn lockbtn'+(editing?' on':'');}
+function toggleArchive(){
+  if(!P.archived){ if(!confirm('確定將「'+P.name+'」結案？結案後會移到平台左側「已結案專案」，資料保留、可隨時還原。'))return; P.archived=true; }
+  else { if(!confirm('把「'+P.name+'」還原為進行中？'))return; P.archived=false; }
+  save();updateArchiveUI();
+}
+function updateArchiveUI(){
+  const b=document.getElementById('archBtn'),badge=document.getElementById('archBadge');
+  if(P.archived){b.textContent='↩️ 還原';badge.innerHTML='<span class="arch-badge">📦 已結案</span>';}
+  else{b.textContent='📦 結案';badge.innerHTML='';}
+}
 function exportPdf(){
   const wasEdit=editing;editing=false;render();
   const wrap=document.createElement('div');wrap.style.cssText='padding:18px;background:#fff;width:1120px;font-family:sans-serif';
   wrap.innerHTML='<div style="font-size:20px;font-weight:800;color:#2E5B8F;margin-bottom:10px">'+esc(P.name)+'</div>'+document.getElementById('root').innerHTML;
-  editing=wasEdit;render();
-  document.body.appendChild(wrap);
+  editing=wasEdit;render();document.body.appendChild(wrap);
   html2pdf().set({margin:8,filename:(P.name||'專案')+'.pdf',image:{type:'jpeg',quality:.95},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(wrap).save().then(()=>wrap.remove()).catch(()=>wrap.remove());
 }
 function boot(){
@@ -238,7 +272,7 @@ function boot(){
   if(!P){document.getElementById('root').innerHTML='<div class="empty">找不到這個專案<br>請先在平台開一次以完成雲端同步</div>';return;}
   document.getElementById('title').textContent='📐 '+P.name;
   document.getElementById('budgetChip').textContent='💰 總預算 '+(P.totalBudget||'—')+' 元';
-  setLock();render();
+  setLock();updateArchiveUI();render();
 }
 boot();
 </script>
