@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>廠商管理</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:"Microsoft JhengHei","PingFang TC",sans-serif;background:#FAF9F7;color:#4A5158;padding:0 0 60px}
+.top{background:#2E5B8F;color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
+.top h1{font-size:17px;margin:0;flex:1}
+.btn{border:0;border-radius:7px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn.add{background:#9CAF88;color:#fff}
+.btn.pri{background:#2E5B8F;color:#fff}
+.btn.gho{background:#fff;color:#5F6B76;border:1px solid #C7D5E4}
+.btn.del{background:#fff;color:#B5564E;border:1px solid #E3B7B3}
+.wrap{max-width:1000px;margin:0 auto;padding:18px}
+.catblk{margin-bottom:22px}
+.cathd{font-size:13px;font-weight:800;color:#8A7B5C;background:#F1EBDD;border-radius:8px 8px 0 0;padding:8px 14px}
+.card{background:#fff;border:1px solid #E2DED8;border-top:0;padding:14px 16px;display:flex;gap:16px;flex-wrap:wrap}
+.card+.card{border-top:1px dashed #ECE7DF}
+.card:last-child{border-radius:0 0 8px 8px}
+.f{min-width:150px}
+.f .lb{font-size:11px;color:#9A948C;margin-bottom:2px}
+.f .vl{font-size:14px;color:#3A4652;font-weight:600}
+.f.big{flex:1;min-width:220px}
+.bank{background:#F5F7FA;border:1px solid #DDE6EF;border-radius:6px;padding:8px 12px;font-size:13px;color:#3E5772}
+.acts{margin-left:auto;display:flex;gap:8px;align-items:flex-start}
+.empty{text-align:center;color:#9A948C;padding:60px 20px;font-size:14px;line-height:2}
+.mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:20;align-items:flex-start;justify-content:center;overflow:auto;padding:30px 14px}
+.mask.on{display:flex}
+.modal{background:#fff;border-radius:12px;width:560px;max-width:100%;padding:20px 22px}
+.modal h2{font-size:16px;color:#2E5B8F;margin:0 0 14px}
+.row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+label{display:block;flex:1;min-width:150px;font-size:12px;color:#7A756D;font-weight:700}
+label input,label select,label textarea{width:100%;margin-top:4px;border:1px solid #CFD6DE;border-radius:6px;padding:8px 10px;font-size:14px;font-family:inherit;color:#3A4652}
+label textarea{resize:vertical;min-height:44px}
+.modacts{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
+.sec{font-size:12px;font-weight:800;color:#8A9BA8;margin:8px 0 4px;border-top:1px solid #EEE;padding-top:10px}
+</style>
+</head>
+<body>
+<div class="top"><h1>🏢 廠商管理</h1><button class="btn add" onclick="openForm()">＋ 新增廠商</button></div>
+<div class="wrap" id="list"></div>
+
+<div class="mask" id="mask">
+  <div class="modal">
+    <h2 id="mtitle">新增廠商</h2>
+    <div class="row">
+      <label>廠商名稱*<input id="f_name" placeholder="例：大順水電行"></label>
+      <label>分類<input id="f_cat" list="catlist" placeholder="例：水電"><datalist id="catlist"></datalist></label>
+    </div>
+    <div class="sec">聯絡資訊</div>
+    <div class="row">
+      <label>聯絡人<input id="f_person"></label>
+      <label>電話<input id="f_phone"></label>
+    </div>
+    <div class="row">
+      <label>Email / LINE<input id="f_line"></label>
+      <label>地址<input id="f_addr"></label>
+    </div>
+    <div class="sec">匯款資訊</div>
+    <div class="row">
+      <label>銀行<input id="f_bank"></label>
+      <label>帳號<input id="f_acct"></label>
+      <label>戶名<input id="f_holder"></label>
+    </div>
+    <div class="row">
+      <label>備註<textarea id="f_note"></textarea></label>
+    </div>
+    <div class="modacts">
+      <button class="btn gho" onclick="closeForm()">取消</button>
+      <button class="btn pri" onclick="save()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY='mofan_vendors_v1';
+let data=[]; try{data=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}
+let editId=null;
+const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}}
+function render(){
+  const list=document.getElementById('list');
+  // categories datalist
+  const cats=[...new Set(data.map(v=>v.cat).filter(Boolean))];
+  document.getElementById('catlist').innerHTML=cats.map(c=>'<option value="'+esc(c)+'">').join('');
+  if(!data.length){ list.innerHTML='<div class="empty">還沒有廠商資料<br>按右上「＋ 新增廠商」開始建立</div>'; return; }
+  const groups={};
+  data.forEach(v=>{const c=v.cat||'未分類';(groups[c]=groups[c]||[]).push(v);});
+  list.innerHTML=Object.keys(groups).sort().map(cat=>{
+    const rows=groups[cat].map(v=>{
+      const bank=(v.bank||v.acct||v.holder)?'<div class="bank">🏦 '+esc(v.bank||'')+'　'+esc(v.acct||'')+'　'+(v.holder?'戶名：'+esc(v.holder):'')+'</div>':'';
+      return '<div class="card">'
+        +'<div class="f"><div class="lb">廠商</div><div class="vl">'+esc(v.name)+'</div></div>'
+        +'<div class="f"><div class="lb">聯絡人</div><div class="vl">'+esc(v.person||'—')+'</div></div>'
+        +'<div class="f"><div class="lb">電話</div><div class="vl">'+esc(v.phone||'—')+'</div></div>'
+        +'<div class="f big"><div class="lb">Email / LINE・地址</div><div class="vl">'+esc([v.line,v.addr].filter(Boolean).join('　')||'—')+'</div></div>'
+        +(bank?'<div class="f big" style="flex-basis:100%">'+bank+(v.note?'<div style="font-size:12px;color:#9A948C;margin-top:6px">📝 '+esc(v.note)+'</div>':'')+'</div>':(v.note?'<div class="f big" style="flex-basis:100%;font-size:12px;color:#9A948C">📝 '+esc(v.note)+'</div>':''))
+        +'<div class="acts"><button class="btn gho" onclick="openForm(\''+v.id+'\')">編輯</button><button class="btn del" onclick="del(\''+v.id+'\')">刪除</button></div>'
+        +'</div>';
+    }).join('');
+    return '<div class="catblk"><div class="cathd">'+esc(cat)+'（'+groups[cat].length+'）</div>'+rows+'</div>';
+  }).join('');
+}
+function openForm(id){
+  editId=id||null;
+  const v=id?data.find(x=>x.id===id):{};
+  document.getElementById('mtitle').textContent=id?'編輯廠商':'新增廠商';
+  ['name','cat','person','phone','line','addr','bank','acct','holder','note'].forEach(k=>{document.getElementById('f_'+k).value=v[k]||'';});
+  document.getElementById('mask').classList.add('on');
+}
+function closeForm(){document.getElementById('mask').classList.remove('on');}
+function save(){
+  const g=k=>document.getElementById('f_'+k).value.trim();
+  if(!g('name')){alert('請填廠商名稱');return;}
+  const obj={id:editId||('v'+Date.now()),name:g('name'),cat:g('cat'),person:g('person'),phone:g('phone'),line:g('line'),addr:g('addr'),bank:g('bank'),acct:g('acct'),holder:g('holder'),note:g('note')};
+  if(editId){const i=data.findIndex(x=>x.id===editId);data[i]=obj;}else{data.push(obj);}
+  persist();render();closeForm();
+}
+function del(id){ if(!confirm('確定刪除此廠商？'))return; data=data.filter(x=>x.id!==id); persist(); render(); }
+render();
+</script>
+</body>
+</html>

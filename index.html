@@ -3,20 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>🏗️ 墨凡工作平台</title>
+<title>🏗️ 墨凡設計工程平台</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:"Microsoft JhengHei","PingFang TC",sans-serif;display:flex;height:100vh;overflow:hidden;background:#F4F5F7}
-#side{width:225px;background:#FAFAF8;border-right:1px solid #E5E5E0;display:flex;flex-direction:column;padding:14px 10px;flex-shrink:0}
-.brand{font-weight:800;font-size:16px;color:#2E5B8F;padding:6px 10px 12px;border-bottom:1px solid #ECECE6;margin-bottom:4px}
+#side{width:248px;background:#FAFAF8;border-right:1px solid #E5E5E0;display:flex;flex-direction:column;padding:12px 8px;flex-shrink:0;overflow-y:auto}
+.brand{font-weight:800;font-size:15.5px;color:#2E5B8F;padding:6px 10px 12px;border-bottom:1px solid #ECECE6;margin-bottom:2px;line-height:1.3}
 .grp{font-size:11px;color:#9A9A93;font-weight:700;letter-spacing:.08em;margin:14px 10px 6px}
-.it{display:flex;gap:8px;align-items:center;padding:9px 12px;border-radius:8px;font-size:14px;color:#4A5158;cursor:pointer;border:0;background:none;width:100%;text-align:left;font-family:inherit}
+.it{display:flex;gap:8px;align-items:center;padding:8px 12px;border-radius:8px;font-size:14px;color:#4A5158;cursor:pointer;border:0;background:none;width:100%;text-align:left;font-family:inherit;line-height:1.3}
 .it:hover{background:#EFEFEA}
 .it.on{background:#E7EDF5;color:#2E5B8F;font-weight:700}
-.it.sub{padding-left:34px;font-size:13px;color:#5F6B76}
-.it.dis{color:#B8B8B0;cursor:default}
-.it.dis:hover{background:none}
-.badge{margin-left:auto;font-size:10px;background:#EFE9DD;color:#8A7B5C;padding:1px 6px;border-radius:999px;white-space:nowrap}
+.it.proj{font-weight:700;color:#3A4652}
+.it.sub{padding-left:32px;font-size:13px;color:#5F6B76}
+.it.sub.on{color:#2E5B8F}
+.arrow{font-size:10px;color:#9AA7B2;width:12px;transition:transform .15s;flex-shrink:0}
+.proj.open .arrow{transform:rotate(90deg)}
+.nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.subs{display:none}
+.subs.open{display:block}
+.empty{font-size:12px;color:#B0ACA4;padding:6px 12px;line-height:1.6}
 .foot{margin-top:auto;font-size:11px;color:#B8B8B0;padding:10px;line-height:1.6}
 #main{flex:1;display:flex;flex-direction:column;min-width:0}
 #topbar{display:none;background:#2E5B8F;color:#fff;padding:10px 14px;font-weight:700;font-size:15px;align-items:center;gap:10px}
@@ -24,7 +29,7 @@ body{margin:0;font-family:"Microsoft JhengHei","PingFang TC",sans-serif;display:
 iframe{border:0;width:100%;height:100%;flex:1;background:#fff}
 #mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:40}
 @media(max-width:768px){
-  #side{position:fixed;left:-240px;top:0;height:100%;z-index:50;transition:left .2s;box-shadow:2px 0 12px rgba(0,0,0,.15)}
+  #side{position:fixed;left:-260px;top:0;height:100%;z-index:50;transition:left .2s;box-shadow:2px 0 12px rgba(0,0,0,.15)}
   #side.open{left:0}
   #topbar{display:flex}
   #mask.open{display:block}
@@ -34,40 +39,78 @@ iframe{border:0;width:100%;height:100%;flex:1;background:#fff}
 <body>
 <div id="mask" onclick="closeSide()"></div>
 <div id="side">
-  <div class="brand">🏗️ 墨凡工作平台</div>
-  <div class="grp">工程管理</div>
-  <button class="it" data-k="eng" data-src="https://a0970563546-maker.github.io/engmanagement/">📁 專案管理</button>
-  <button class="it" data-k="quote" data-src="https://a0970563546-maker.github.io/taitung-gantt/">🧾 廠商報價／驗收</button>
+  <div class="brand">🏗️ 墨凡設計工程平台</div>
+
   <div class="grp">日常</div>
-  <button class="it" data-k="todo" data-src="https://a0970563546-maker.github.io/todo/">📋 待辦追蹤</button>
-  <div class="grp">規劃中</div>
-  <button class="it dis">🗺️ 圖資管理<span class="badge">規劃中</span></button>
-  <button class="it dis">🏢 廠商資訊<span class="badge">規劃中</span></button>
-  <button class="it dis">💰 價格預估<span class="badge">規劃中</span></button>
-  <div class="foot">內部系統・資料雲端同步<br>看與改同一頁，編輯需密碼<br>可直接把本頁網址給業主/廠商檢視</div>
+  <button class="it" data-src="https://a0970563546-maker.github.io/todo/">📋 待辦追蹤</button>
+
+  <div class="grp">專案</div>
+  <div id="projList"><div class="empty">⏳ 載入專案中…</div></div>
+
+  <div class="grp">廠商</div>
+  <button class="it" data-src="https://a0970563546-maker.github.io/vendors.html">🏢 廠商管理</button>
+
+  <div class="grp">圖檔</div>
+  <button class="it" data-src="https://a0970563546-maker.github.io/drawings.html">🗂️ 圖檔資訊</button>
+
+  <div class="foot">墨凡設計工程平台<br>資料雲端同步・編輯需密碼</div>
 </div>
 <div id="main">
   <div id="topbar"><button id="burger" onclick="openSide()">☰</button><span id="ttl">工作平台</span></div>
   <iframe id="frame" title="模組內容"></iframe>
 </div>
 <script>
-const items=[...document.querySelectorAll('.it[data-k]')];
+const ENG="https://a0970563546-maker.github.io/engmanagement/";
 function openSide(){document.getElementById('side').classList.add('open');document.getElementById('mask').classList.add('open');}
 function closeSide(){document.getElementById('side').classList.remove('open');document.getElementById('mask').classList.remove('open');}
-function go(k){
-  const it=items.find(i=>i.dataset.k===k)||items[0];
-  items.forEach(i=>i.classList.toggle('on',i===it));
-  const f=document.getElementById('frame');
-  if(f.dataset.k!==it.dataset.k){ f.src=it.dataset.src; f.dataset.k=it.dataset.k; }
-  else if(it.dataset.src.includes('#')){ try{f.contentWindow.location.hash=it.dataset.src.split('#')[1];}catch(e){} }
-  document.getElementById('ttl').textContent=it.textContent.trim();
-  try{localStorage.setItem('portal_last',k);}catch(e){}
+const frame=document.getElementById('frame'), ttl=document.getElementById('ttl');
+let curSrc=null;
+function nav(src,label,el){
+  document.querySelectorAll('.it').forEach(i=>i.classList.remove('on'));
+  if(el)el.classList.add('on');
+  if(src!==curSrc){ frame.src=src; curSrc=src; }
+  ttl.textContent=label||'工作平台';
+  try{localStorage.setItem('portal_last',JSON.stringify({src,label}));}catch(e){}
   closeSide();
 }
-items.forEach(i=>i.onclick=()=>go(i.dataset.k));
-let last='eng'; try{last=localStorage.getItem('portal_last')||'eng';}catch(e){}
-if(!['eng','todo','quote'].includes(last)) last='eng';
-go(last);
+// static items
+document.querySelectorAll('.it[data-src]').forEach(b=>b.onclick=()=>nav(b.dataset.src,b.textContent.trim(),b));
+
+function getProjects(){
+  let d=[];try{d=JSON.parse(localStorage.getItem('engMgmtProData')||'[]');}catch(e){}
+  return Array.isArray(d)?d.filter(p=>!p.isDaily&&!p.archived):[];
+}
+function renderProjects(){
+  const projs=getProjects();
+  const box=document.getElementById('projList');
+  if(!projs.length){ box.innerHTML='<div class="empty">尚無專案<br>先開任一模組完成雲端同步</div>'; return; }
+  box.innerHTML=projs.map((p,i)=>{
+    const id=p.id!=null?p.id:i;
+    const nm=(p.name||'未命名專案').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+    return '<button class="it proj" data-i="'+i+'"><span class="arrow">▶</span><span class="nm">'+nm+'</span></button>'
+      +'<div class="subs" data-subs="'+i+'">'
+      +'<button class="it sub" data-src="'+ENG+'#p='+encodeURIComponent(id)+'&v=gantt" data-label="'+nm+' · 甘特圖">📅 甘特圖／排程</button>'
+      +'<button class="it sub" data-src="'+ENG+'#p='+encodeURIComponent(id)+'&v=notes" data-label="'+nm+' · 注意事項">📝 注意事項（價格/報價/簽呈）</button>'
+      +'</div>';
+  }).join('');
+  box.querySelectorAll('.proj').forEach(b=>b.onclick=()=>{
+    const subs=box.querySelector('[data-subs="'+b.dataset.i+'"]');
+    b.classList.toggle('open'); subs.classList.toggle('open');
+  });
+  box.querySelectorAll('.sub').forEach(b=>b.onclick=()=>nav(b.dataset.src,b.dataset.label,b));
+}
+renderProjects();
+// refresh from cloud if configured
+(function(){
+  let cu=null;try{cu=localStorage.getItem('engMgmtCloudUrl');}catch(e){}
+  if(cu){ fetch(cu).then(r=>r.json()).then(arr=>{ if(Array.isArray(arr)){ try{localStorage.setItem('engMgmtProData',JSON.stringify(arr));}catch(e){} renderProjects(); } }).catch(()=>{}); }
+})();
+// restore last view or default to todo
+(function(){
+  let last=null;try{last=JSON.parse(localStorage.getItem('portal_last')||'null');}catch(e){}
+  if(last&&last.src){ nav(last.src,last.label,[...document.querySelectorAll('.it[data-src]')].find(b=>b.dataset.src===last.src)); }
+  else{ const t=document.querySelector('.it[data-src]'); nav(t.dataset.src,t.textContent.trim(),t); }
+})();
 </script>
 </body>
 </html>

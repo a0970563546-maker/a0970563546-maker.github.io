@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>圖檔資訊</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:"Microsoft JhengHei","PingFang TC",sans-serif;background:#FAF9F7;color:#4A5158;padding:0 0 60px}
+.top{background:#2E5B8F;color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
+.top h1{font-size:17px;margin:0;flex:1}
+.btn{border:0;border-radius:7px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn.add{background:#9CAF88;color:#fff}
+.btn.pri{background:#2E5B8F;color:#fff}
+.btn.gho{background:#fff;color:#5F6B76;border:1px solid #C7D5E4}
+.btn.del{background:#fff;color:#B5564E;border:1px solid #E3B7B3}
+.wrap{max-width:1050px;margin:0 auto;padding:18px}
+.projblk{margin-bottom:22px}
+.projhd{font-size:13px;font-weight:800;color:#2E5B8F;background:#E7EDF5;border-radius:8px 8px 0 0;padding:8px 14px}
+table{border-collapse:collapse;width:100%;background:#fff;border:1px solid #E2DED8;border-top:0;font-size:13px}
+th,td{border:1px solid #ECE7DF;padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#F7F6F3;color:#7A756D;font-size:12px;white-space:nowrap}
+td a{color:#2E5B8F;font-weight:700;text-decoration:none}
+td a:hover{text-decoration:underline}
+.empty{text-align:center;color:#9A948C;padding:60px 20px;font-size:14px;line-height:2}
+.mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:20;align-items:flex-start;justify-content:center;overflow:auto;padding:30px 14px}
+.mask.on{display:flex}
+.modal{background:#fff;border-radius:12px;width:560px;max-width:100%;padding:20px 22px}
+.modal h2{font-size:16px;color:#2E5B8F;margin:0 0 14px}
+.rw{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+label{display:block;flex:1;min-width:150px;font-size:12px;color:#7A756D;font-weight:700}
+label input,label textarea{width:100%;margin-top:4px;border:1px solid #CFD6DE;border-radius:6px;padding:8px 10px;font-size:14px;font-family:inherit;color:#3A4652}
+label textarea{resize:vertical;min-height:44px}
+.modacts{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
+.hint{font-size:11px;color:#A8A29A;margin-top:2px;font-weight:400}
+</style>
+</head>
+<body>
+<div class="top"><h1>🗂️ 圖檔資訊</h1><button class="btn add" onclick="openForm()">＋ 新增圖檔</button></div>
+<div class="wrap" id="list"></div>
+
+<div class="mask" id="mask">
+  <div class="modal">
+    <h2 id="mtitle">新增圖檔</h2>
+    <div class="rw">
+      <label>圖號<input id="f_no" placeholder="例：A-101"></label>
+      <label>圖名*<input id="f_name" placeholder="例：一樓平面圖"></label>
+    </div>
+    <div class="rw">
+      <label>所屬專案<input id="f_proj" list="projlist" placeholder="例：台東車站商場改造案"><datalist id="projlist"></datalist></label>
+      <label>版本<input id="f_ver" placeholder="例：v2"></label>
+      <label>日期<input id="f_date" type="date"></label>
+    </div>
+    <div class="rw">
+      <label>檔案連結<input id="f_link" placeholder="貼上雲端/圖檔網址"><div class="hint">可貼 Google Drive、Dropbox 等連結</div></label>
+    </div>
+    <div class="rw">
+      <label>備註<textarea id="f_note"></textarea></label>
+    </div>
+    <div class="modacts">
+      <button class="btn gho" onclick="closeForm()">取消</button>
+      <button class="btn pri" onclick="save()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY='mofan_drawings_v1';
+let data=[]; try{data=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}
+let editId=null;
+const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}}
+function projOptions(){
+  const set=new Set(data.map(d=>d.proj).filter(Boolean));
+  try{const eng=JSON.parse(localStorage.getItem('engMgmtProData')||'[]');if(Array.isArray(eng))eng.forEach(p=>{if(!p.isDaily&&!p.archived&&p.name)set.add(p.name);});}catch(e){}
+  document.getElementById('projlist').innerHTML=[...set].map(p=>'<option value="'+esc(p)+'">').join('');
+}
+function render(){
+  projOptions();
+  const list=document.getElementById('list');
+  if(!data.length){ list.innerHTML='<div class="empty">還沒有圖檔資料<br>按右上「＋ 新增圖檔」開始登錄</div>'; return; }
+  const groups={};
+  data.forEach(d=>{const p=d.proj||'未分類';(groups[p]=groups[p]||[]).push(d);});
+  list.innerHTML=Object.keys(groups).sort().map(proj=>{
+    const rows=groups[proj].map(d=>{
+      const link=d.link?'<a href="'+esc(d.link)+'" target="_blank" rel="noopener">開啟 ↗</a>':'—';
+      return '<tr><td>'+esc(d.no||'—')+'</td><td><b>'+esc(d.name)+'</b></td><td>'+esc(d.ver||'—')+'</td><td>'+esc(d.date||'—')+'</td><td>'+link+'</td><td>'+esc(d.note||'')+'</td>'
+        +'<td style="white-space:nowrap"><button class="btn gho" onclick="openForm(\''+d.id+'\')">編輯</button> <button class="btn del" onclick="del(\''+d.id+'\')">刪除</button></td></tr>';
+    }).join('');
+    return '<div class="projblk"><div class="projhd">'+esc(proj)+'（'+groups[proj].length+'）</div>'
+      +'<table><tr><th>圖號</th><th>圖名</th><th>版本</th><th>日期</th><th>連結</th><th>備註</th><th></th></tr>'+rows+'</table></div>';
+  }).join('');
+}
+function openForm(id){
+  editId=id||null;
+  const d=id?data.find(x=>x.id===id):{};
+  document.getElementById('mtitle').textContent=id?'編輯圖檔':'新增圖檔';
+  ['no','name','proj','ver','date','link','note'].forEach(k=>{document.getElementById('f_'+k).value=d[k]||'';});
+  document.getElementById('mask').classList.add('on');
+}
+function closeForm(){document.getElementById('mask').classList.remove('on');}
+function save(){
+  const g=k=>document.getElementById('f_'+k).value.trim();
+  if(!g('name')){alert('請填圖名');return;}
+  const obj={id:editId||('d'+Date.now()),no:g('no'),name:g('name'),proj:g('proj'),ver:g('ver'),date:g('date'),link:g('link'),note:g('note')};
+  if(editId){const i=data.findIndex(x=>x.id===editId);data[i]=obj;}else{data.push(obj);}
+  persist();render();closeForm();
+}
+function del(id){ if(!confirm('確定刪除此圖檔紀錄？'))return; data=data.filter(x=>x.id!==id); persist(); render(); }
+render();
+</script>
+</body>
+</html>
