@@ -220,14 +220,8 @@ function render(){
 }
 function addTask(){P.tasks=P.tasks||[];const t=iso(new Date());const nt={id:'t'+Date.now(),name:'新項目',startDate:t,endDate:t,done:false,taskBudget:''};ensure(nt);P.tasks.push(nt);save();render();}
 function rmTask(i){if(!confirm('刪除這個項目？'))return;P.tasks.splice(i,1);save();render();}
-async function toggleLock(){
-  if(editing){editing=false;setLock();render();return;}
-  const p=window.prompt('請輸入編輯密碼');if(p===null)return;
-  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(p));
-  const hex=[...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,'0')).join('');
-  if(hex===HASH){editing=true;setLock();render();}else alert('密碼錯誤');
-}
-function setLock(){const b=document.getElementById('lock');b.textContent=editing?'🔓 編輯中・點此鎖定':'🔒 檢視・點此編輯';b.className='btn lockbtn'+(editing?' on':'');}
+function toggleLock(){editing=!editing;setLock();render();}
+function setLock(){const b=document.getElementById('lock');b.textContent=editing?'👁 切換檢視':'✏️ 編輯';b.className='btn lockbtn'+(editing?' on':'');}
 function exportPdf(){
   const wasEdit=editing;editing=false;render();
   const wrap=document.createElement('div');wrap.style.cssText='padding:18px;background:#fff;width:1080px;font-family:sans-serif';
