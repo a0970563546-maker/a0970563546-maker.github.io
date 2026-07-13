@@ -145,6 +145,7 @@ function ensureProject(p){
   p.vendorQuotes.forEach(c=>{if(c.sel===undefined)c.sel=-1;if(c.confirmed===undefined)c.confirmed=false;});
   if(!Array.isArray(p.inspection))p.inspection=[];
   if(!Array.isArray(p.pettyCash))p.pettyCash=[];
+  if(!Array.isArray(p.startupSteps))p.startupSteps=[{name:'立案',date:''},{name:'主管核准',date:''},{name:'預算確認',date:''},{name:'正式啟動',date:''}];
   (p.tasks||[]).forEach(t=>{t.detail=t.detail||{};if(!Array.isArray(t.flow))t.flow=[];});
 }
 function cloudSave(){
@@ -229,10 +230,38 @@ function setNote(i,v){P.tasks[i].detail=P.tasks[i].detail||{};P.tasks[i].detail.
 function addFlow(i){const sel=document.getElementById('add_'+i);const ty=sel.value;if(!ty)return;const it={type:ty};if(ty==='其他')it.text='';else (FTYPES[ty]||[]).forEach(x=>it[x[0]]=false);P.tasks[i].flow.push(it);save();render();}
 function fset(i,fi,k,v){P.tasks[i].flow[fi][k]=v;save();}
 function rmFlow(i,fi){P.tasks[i].flow.splice(fi,1);save();render();}
+function ensureProc(c){c.proc=c.proc||{};c.proc.contract=c.proc.contract||{sign:'',seal:'',archive:''};c.proc.deposit=c.proc.deposit||{apply:'',transfer:''};c.proc.final=c.proc.final||{apply:'',transfer:''};}
+function getpc(c,path){return path.split('.').reduce((a,k)=>a?a[k]:undefined,c);}
+function setpc(ci,path,val){const c=P.vendorQuotes[ci];ensureProc(c);const ks=path.split('.');let o=c;for(let j=0;j<ks.length-1;j++){o[ks[j]]=o[ks[j]]||{};o=o[ks[j]];}o[ks[ks.length-1]]=val;save();}
+function ssset(i,k,v){P.startupSteps[i][k]=v;save();}
+function ssadd(){P.startupSteps=P.startupSteps||[];P.startupSteps.push({name:'',date:''});save();render();}
+function ssrm(i){P.startupSteps.splice(i,1);save();render();}
+function startupHTML(){
+  P.startupSteps=P.startupSteps||[];const steps=P.startupSteps;
+  if(editing){
+    return steps.map((s,i)=>'<div class="sstep"><input type="text" class="ssname" value="'+esc(s.name)+'" oninput="ssset('+i+',\'name\',this.value)" placeholder="步驟名稱（例：立案簽呈、主管核准）"><input type="date" value="'+esc((s.date||'').replace(/\//g,"-"))+'" onchange="ssset('+i+',\'date\',this.value)"><button class="rmv" onclick="ssrm('+i+')">×</button></div>').join('')+'<button class="miniadd" onclick="ssadd()">＋ 新增步驟</button>';
+  }
+  if(!steps.length) return '<div style="color:#B0ACA4;font-size:13px">（尚無啟動步驟，點右上「✏️ 編輯」新增）</div>';
+  return '<div class="ssrow">'+steps.map(s=>'<div class="schip'+(s.date?' on':'')+'"><span class="scn">'+esc(s.name||'步驟')+'</span><span class="scd">'+(s.date?esc(s.date):'未進行')+'</span></div>').join('')+'</div>';
+}
+function procCard(c,ci){
+  ensureProc(c);const v=c.rows[c.sel]||{};
+  const head='<div class="th"><span class="tt">'+esc(c.cat||'工項')+'　·　'+esc(v.n||'（未填廠商）')+'</span><span class="badge" style="background:#EEF4FB;color:#3C6FA8">'+money(num(v.a))+'</span></div>';
+  const df=(path,label)=>editing
+    ?'<div class="pfld"><span class="pl">'+label+'</span><input type="date" value="'+esc((getpc(c,path)||'').replace(/\//g,"-"))+'" onchange="setpc('+ci+',\''+path+'\',this.value)"></div>'
+    :'<div class="pfld"><span class="pl">'+label+'</span><span class="pv'+(getpc(c,path)?' on':'')+'">'+(getpc(c,path)?esc(getpc(c,path)):'—')+'</span></div>';
+  const contract='<div class="pblock"><div class="pbt">📄 合約</div>'+df('proc.contract.sign','簽約日')+df('proc.contract.seal','用印日')+df('proc.contract.archive','歸檔日')+'</div>';
+  const deposit='<div class="pblock"><div class="pbt">💵 訂金</div>'+df('proc.deposit.apply','申請日')+df('proc.deposit.transfer','轉帳日')+'</div>';
+  const fin='<div class="pblock"><div class="pbt">💴 尾款</div>'+df('proc.final.apply','申請日')+df('proc.final.transfer','轉帳日')+'</div>';
+  return '<div class="tcard">'+head+'<div class="prow">'+contract+deposit+fin+'</div></div>';
+}
 function flowHTML(){
-  const tasks=P.tasks||[];
-  if(!tasks.length) return '<div class="empty">尚無工程項目（到「📅 排程」新增）</div>';
-  return tasks.map((t,i)=>flowCard(t,i)).join('')+(editing?'<div class="hint">每個工程項目：一個備註 ＋ 需要時用下拉「＋ 新增流程項目」加入 合約／訂金／尾款／其他。</div>':'');
+  let h='<div class="flab">① 專案啟動（公司內部）</div>'+startupHTML();
+  const items=P.vendorQuotes.map((c,ci)=>({c,ci})).filter(x=>x.c.sel>=0);
+  h+='<div class="flab" style="margin-top:22px">② 各確認廠商流程（合約 / 訂金 / 尾款）</div>';
+  h+=items.length?items.map(x=>procCard(x.c,x.ci)).join(''):'<div style="color:#B0ACA4;font-size:13px;padding:8px 0">尚無確認配合的廠商——到「🧾 廠商報價」點廠商前的「選定」，這裡就會自動列出，跑合約／訂金／尾款流程。</div>';
+  h+=editing?'<div class="hint">填日期＝已進行該步驟（例：合約簽約日、訂金申請日）。廠商流程只列出「廠商報價」中已選定的廠商。</div>':'';
+  return h;
 }
 
 /* 廠商報價 */

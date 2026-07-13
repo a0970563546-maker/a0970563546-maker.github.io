@@ -44,7 +44,7 @@ table.e input[type=date]{border:1px solid #CFD6DE;border-radius:5px;padding:4px 
   <h1 id="title">📅 排程</h1>
   <span id="savenote" class="savenote"></span>
   <button class="btn pdf" onclick="exportPdf()">🖨 A4 PDF</button>
-  <button class="btn lockbtn" id="lock" onclick="toggleLock()">🔒 檢視・點此編輯</button>
+  <button class="btn lockbtn" id="lock" onclick="toggleLock()">✏️ 編輯</button>
 </div>
 <div class="wrap">
   <div id="budget"></div>
@@ -56,7 +56,6 @@ table.e input[type=date]{border:1px solid #CFD6DE;border-radius:5px;padding:4px 
   </div>
 </div>
 <script>
-const HASH="c180f50f20f140d28d729c3596ae2644f27181c60830542cdb7730e06081e2fe";
 const HOLS={"2026-01-01":1,"2026-02-14":1,"2026-02-15":1,"2026-02-16":1,"2026-02-17":1,"2026-02-18":1,"2026-02-19":1,"2026-02-20":1,"2026-02-27":1,"2026-02-28":1,"2026-04-03":1,"2026-04-04":1,"2026-04-05":1,"2026-04-06":1,"2026-05-01":1,"2026-06-19":1,"2026-09-25":1,"2026-09-28":1,"2026-10-09":1,"2026-10-10":1,"2026-10-25":1,"2026-10-26":1,"2026-12-25":1,"2027-01-01":1};
 const WD="一二三四五六日", COL="#3E6A8E", DONE="#9CAF88";
 const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
@@ -118,15 +117,13 @@ function addTask(){ P.tasks=P.tasks||[]; const today=iso(new Date()); P.tasks.pu
 function rmTask(i){ if(!confirm('刪除這個排程項目？'))return; P.tasks.splice(i,1); save(); renderEditor(); renderChart(); }
 let saveT=null;
 function save(){ ALL[PIDX]=P; clearTimeout(saveT); saveT=setTimeout(cloudSave,600); }
-async function toggleLock(){
-  if(editing){ editing=false; document.getElementById('editor').classList.remove('on'); setLockUI(); return; }
-  const p=window.prompt('請輸入編輯密碼'); if(p===null)return;
-  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(p));
-  const hex=[...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,'0')).join('');
-  if(hex===HASH){ editing=true; document.getElementById('editor').classList.add('on'); renderEditor(); renderChart(); setLockUI(); }
-  else alert('密碼錯誤');
+function toggleLock(){
+  editing=!editing;
+  document.getElementById('editor').classList.toggle('on',editing);
+  if(editing){renderEditor();renderChart();}
+  setLockUI();
 }
-function setLockUI(){ const b=document.getElementById('lock'); b.textContent=editing?'🔓 編輯中・點此鎖定':'🔒 檢視・點此編輯'; b.className='btn lockbtn'+(editing?' on':''); }
+function setLockUI(){const b=document.getElementById('lock');b.textContent=editing?'👁 切換檢視':'✏️ 編輯';b.className='btn lockbtn'+(editing?' on':'');}
 function exportPdf(){
   const src=document.getElementById('chart');
   const wrap=document.createElement('div');wrap.style.cssText='padding:16px;background:#fff;width:1050px;font-family:sans-serif';
