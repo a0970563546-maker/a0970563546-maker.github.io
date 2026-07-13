@@ -86,8 +86,8 @@ table.sch input[type=date]{border:1px solid #D3DAE2;border-radius:6px;padding:4p
 .vcat .ch{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
 .vcat .ct{font-size:15px;font-weight:800;color:var(--blue)}
 .vcat input.catname{font-size:15px;font-weight:800;color:var(--blue);border:1px solid #D3DAE2;border-radius:8px;padding:4px 10px;font-family:inherit}
-.confirmbtn{border:1px solid #DDD3BE;background:#F5F1E8;color:#9A855C;border-radius:999px;padding:6px 15px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit}
-.confirmbtn.on{background:#5E8C72;border-color:#5E8C72;color:#fff}
+.selbtn{border:1px solid #C7D5E4;background:#fff;color:#5F6B76;border-radius:8px;padding:4px 12px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit}
+.selbtn.on{background:#3C6FA8;border-color:#3C6FA8;color:#fff}
 .vlow{margin-top:8px;font-size:13px;color:#8A7B5C;font-weight:700}.vlow b{color:#B5723C}
 .selmark{color:#3C6FA8;font-weight:800}
 .miniadd{background:#EAF1E6;color:#3E6A3E;border:1px solid #9CC49C;border-radius:7px;padding:5px 12px;font-size:12.5px;font-weight:700;cursor:pointer;margin-top:8px}
@@ -159,7 +159,7 @@ function cloudSave(){
 function save(){ALL[PIDX]=P;clearTimeout(saveT);saveT=setTimeout(cloudSave,600);}
 
 /* budget */
-function confirmedVendorTotal(){return P.vendorQuotes.reduce((s,c)=>{const v=(c.confirmed&&c.sel>=0&&c.rows[c.sel])?num(c.rows[c.sel].a):null;return s+(v||0);},0);}
+function confirmedVendorTotal(){return P.vendorQuotes.reduce((s,c)=>{const v=(c.sel>=0&&c.rows[c.sel])?num(c.rows[c.sel].a):null;return s+(v||0);},0);}
 function pettyTotal(){return (P.pettyCash||[]).reduce((s,p)=>s+(num(p.amount)||0),0);}
 function actTotal(){return confirmedVendorTotal()+pettyTotal();}
 function budgetHTML(){
@@ -167,7 +167,7 @@ function budgetHTML(){
   const tbCell=editing?'<input type="text" value="'+esc(P.totalBudget||'')+'" oninput="P.totalBudget=this.value;save();refreshBudget();" placeholder="0">':money(tb);
   const overAct=tb!=null&&act>tb;
   const pctW=tb&&tb>0?Math.min(100,act/tb*100):0;
-  const confCats=P.vendorQuotes.filter(c=>c.confirmed&&c.sel>=0).map(c=>esc(c.cat)+(c.rows[c.sel]&&c.rows[c.sel].n?'('+esc(c.rows[c.sel].n)+')':''));
+  const confCats=P.vendorQuotes.filter(c=>c.sel>=0).map(c=>esc(c.cat)+(c.rows[c.sel]&&c.rows[c.sel].n?'('+esc(c.rows[c.sel].n)+')':''));
   const pc=(P.pettyCash||[]).length;
   const bd=[];if(confCats.length)bd.push('發包：'+confCats.join('、'));if(pc)bd.push('零用金 '+pc+' 筆');
   return '<div class="bstrip">'
@@ -207,7 +207,8 @@ function rmTask(i){if(!confirm('刪除此工程項目？'))return;P.tasks.splice
 /* 內部流程 */
 function flowCard(t,i){
   t.flow=t.flow||[];t.detail=t.detail||{};
-  const ro='<div class="ro"><div class="th"><span class="tt">'+esc(t.name)+'</span>'+(t.done?'<span class="badge done">✓ 完成</span>':'<span class="badge wait">待執行</span>')+'</div>'
+  const head='<div class="th"><span class="tt">'+esc(t.name)+'</span>'+(t.done?'<span class="badge done">✓ 完成</span>':'<span class="badge wait">待執行</span>')+'</div>';
+  const ro='<div class="ro">'
     +(t.detail.content?'<div class="noteview" style="margin-bottom:8px">📝 '+esc(t.detail.content)+'</div>':'')
     +t.flow.map(f=>{
         if(f.type==='其他') return f.text?'<div class="fitem"><div class="ft">🗂️ 其他</div><div class="noteview">'+esc(f.text)+'</div></div>':'';
@@ -222,7 +223,7 @@ function flowCard(t,i){
     ed+='</div>';
   });
   ed+='<div class="adder"><select id="add_'+i+'"><option value="">＋ 新增流程項目…</option><option value="合約">合約</option><option value="訂金">訂金</option><option value="尾款">尾款</option><option value="其他">其他</option></select><button class="miniadd" onclick="addFlow('+i+')">加入</button></div></div>';
-  return '<div class="tcard">'+ro+ed+'</div>';
+  return '<div class="tcard">'+head+ro+ed+'</div>';
 }
 function setNote(i,v){P.tasks[i].detail=P.tasks[i].detail||{};P.tasks[i].detail.content=v;save();}
 function addFlow(i){const sel=document.getElementById('add_'+i);const ty=sel.value;if(!ty)return;const it={type:ty};if(ty==='其他')it.text='';else (FTYPES[ty]||[]).forEach(x=>it[x[0]]=false);P.tasks[i].flow.push(it);save();render();}
@@ -238,7 +239,7 @@ function flowHTML(){
 function vendorHTML(){
   return P.vendorQuotes.map((cat,ci)=>{
     const rows=cat.rows.map((r,ri)=>{
-      const selCell=editing?'<td style="text-align:center"><input type="radio" name="sel'+ci+'" '+(cat.sel===ri?'checked':'')+' onchange="vselCat('+ci+','+ri+')"></td>':'<td style="text-align:center">'+(cat.sel===ri?'<span class="selmark">✔ 選定</span>':'')+'</td>';
+      const selCell='<td style="text-align:center">'+((r.n||editing)?'<button type="button" class="selbtn'+(cat.sel===ri?' on':'')+'" onclick="vselToggle('+ci+','+ri+')">'+(cat.sel===ri?'✔ 選定':'選定')+'</button>':'')+'</td>';
       if(editing) return '<tr>'+selCell+'<td><input type="text" value="'+esc(r.n)+'" oninput="vset('+ci+','+ri+',\'n\',this.value)" placeholder="廠商名稱"></td><td><input type="text" value="'+esc(r.d)+'" oninput="vset('+ci+','+ri+',\'d\',this.value)" placeholder="M/D"></td><td><input type="text" value="'+esc(r.a)+'" oninput="vset('+ci+','+ri+',\'a\',this.value)" placeholder="金額"></td><td><input type="text" value="'+esc(r.m)+'" oninput="vset('+ci+','+ri+',\'m\',this.value)" placeholder="備註"></td><td><button class="rmv" onclick="vrm('+ci+','+ri+')">×</button></td></tr>';
       return '<tr'+(cat.sel===ri?' style="background:#EEF4FB"':'')+'>'+selCell+'<td>'+esc(r.n||'—')+'</td><td>'+esc(r.d||'—')+'</td><td>'+esc(r.a||'—')+'</td><td>'+esc(r.m||'')+'</td></tr>';
     }).join('');
@@ -247,18 +248,17 @@ function vendorHTML(){
     const th='<tr><th style="width:52px;text-align:center">選定</th><th style="width:24%">廠商名稱</th><th style="width:15%">現勘日期</th><th style="width:18%">報價金額</th><th>備註</th>'+(editing?'<th style="width:36px"></th>':'')+'</tr>';
     const cathd=editing?'<input class="catname" value="'+esc(cat.cat)+'" oninput="vcat('+ci+',this.value)" placeholder="工項名稱">':'<span class="ct">🏗️ '+esc(cat.cat||'（未命名工項）')+'</span>';
     const catDel=editing?'<button class="rmv" onclick="vrmCat('+ci+')">刪除工項</button>':'';
-    const confirmBtn=(cat.sel>=0)?'<button type="button" class="confirmbtn'+(cat.confirmed?' on':'')+'" onclick="vconfirm('+ci+','+(cat.confirmed?'false':'true')+')">'+(cat.confirmed?'✔ 已確認配合（計入實際支出）':'○ 確認配合此廠商')+'</button>':'';
-    return '<div class="vcat"><div class="ch">'+cathd+confirmBtn+catDel+'</div><div style="overflow-x:auto"><table class="v">'+th+rows+'</table></div>'+(editing?'<button class="miniadd" onclick="vadd('+ci+')">＋ 廠商</button>':'')
-      +'<div class="vlow">💰 最低報價：<b>'+money(low)+'</b>　｜　選定金額：<b class="selmark">'+money(selAmt)+'</b>'+(cat.confirmed&&selAmt!=null?'　→ 已計入實際支出':'')+'</div></div>';
+    return '<div class="vcat"><div class="ch">'+cathd+catDel+'</div><div style="overflow-x:auto"><table class="v">'+th+rows+'</table></div>'+(editing?'<button class="miniadd" onclick="vadd('+ci+')">＋ 廠商</button>':'')
+      +'<div class="vlow">💰 最低報價：<b>'+money(low)+'</b>　｜　選定（發包）金額：<b class="selmark">'+money(selAmt)+'</b>'+(cat.sel>=0&&selAmt!=null?'　→ 已計入實際支出':'')+'</div></div>';
   }).join('')
-  +(editing?'<button class="addbtn" onclick="vaddCat()">＋ 工項</button>':(P.vendorQuotes.length?'':'<div class="empty">尚無工項，點「✏️ 編輯」後用「＋ 工項」新增比價表</div>'))
-  +(editing?'<div class="hint">「＋ 工項」新增一張比價表並自行命名；每張點「選定」廠商，再按「確認配合」，金額計入下方實際支出。金額填數字即可。</div>':'');
+  +(P.vendorQuotes.length?'':'<div class="empty">尚無工項，點右上「✏️ 編輯」後用上方「＋ 工項」新增比價表</div>')
+  +(editing?'<div class="hint">上方「＋ 工項」新增比價表並自行命名；每張點廠商前的「選定」，該廠商金額即計入下方實際支出（選定＝確認配合）。金額填數字即可。</div>':'');
 }
 function vaddCat(){P.vendorQuotes.push({cat:'新工項',rows:[{n:'',d:'',a:'',m:''},{n:'',d:'',a:'',m:''},{n:'',d:'',a:'',m:''}],sel:-1,confirmed:false});save();render();}
 function vrmCat(ci){if(!confirm('刪除此工項比價表？'))return;P.vendorQuotes.splice(ci,1);save();render();}
 function expenseHTML(){
-  const conf=P.vendorQuotes.filter(c=>c.confirmed&&c.sel>=0).map(c=>({cat:c.cat,n:(c.rows[c.sel]||{}).n,a:num((c.rows[c.sel]||{}).a)}));
-  const confRows=conf.length?conf.map(x=>'<tr><td>'+esc(x.cat)+'</td><td>'+esc(x.n||'—')+'</td><td>'+money(x.a)+'</td></tr>').join(''):'<tr><td colspan="3" style="text-align:center;color:#A8AEB6;padding:14px">尚無已確認發包（到上方各類勾「✅ 確認配合此廠商」）</td></tr>';
+  const conf=P.vendorQuotes.filter(c=>c.sel>=0).map(c=>({cat:c.cat,n:(c.rows[c.sel]||{}).n,a:num((c.rows[c.sel]||{}).a)}));
+  const confRows=conf.length?conf.map(x=>'<tr><td>'+esc(x.cat)+'</td><td>'+esc(x.n||'—')+'</td><td>'+money(x.a)+'</td></tr>').join(''):'<tr><td colspan="3" style="text-align:center;color:#A8AEB6;padding:14px">尚無選定發包（到上方各工項點廠商前的「選定」）</td></tr>';
   const STA=['申請中','已核准','已支出'];
   const pcRows=(P.pettyCash||[]).map((p,i)=>editing
     ?'<tr><td><input type="text" value="'+esc(p.name)+'" oninput="pset('+i+',\'name\',this.value)" placeholder="項目名稱"></td><td><input type="text" value="'+esc(p.amount)+'" oninput="pset('+i+',\'amount\',this.value)" placeholder="金額"></td><td><select onchange="pset('+i+',\'status\',this.value)">'+STA.map(s=>'<option'+(p.status===s?' selected':'')+'>'+s+'</option>').join('')+'</select></td><td><input type="date" value="'+esc((p.date||'').replace(/\//g,"-"))+'" onchange="pset('+i+',\'date\',this.value)"></td><td><input type="text" value="'+esc(p.note)+'" oninput="pset('+i+',\'note\',this.value)" placeholder="備註"></td><td><button class="rmv" onclick="prm('+i+')">×</button></td></tr>'
@@ -273,8 +273,7 @@ function pset(i,k,v){P.pettyCash[i][k]=v;save();if(k==='amount')refreshBudget();
 function padd(){P.pettyCash=P.pettyCash||[];P.pettyCash.push({name:'',amount:'',status:'申請中',date:'',note:''});save();render();}
 function prm(i){if(!confirm('刪除此零用金項目？'))return;P.pettyCash.splice(i,1);save();render();}
 function vset(ci,ri,k,v){P.vendorQuotes[ci].rows[ri][k]=v;save();if(k==='a')refreshBudget();}
-function vselCat(ci,ri){P.vendorQuotes[ci].sel=ri;save();render();}
-function vconfirm(ci,v){P.vendorQuotes[ci].confirmed=v;save();render();}
+function vselToggle(ci,ri){const c=P.vendorQuotes[ci];c.sel=(c.sel===ri?-1:ri);save();render();}
 function vcat(ci,v){P.vendorQuotes[ci].cat=v;save();}
 function vadd(ci){P.vendorQuotes[ci].rows.push({n:'',d:'',a:'',m:''});save();render();}
 function vrm(ci,ri){const c=P.vendorQuotes[ci];c.rows.splice(ri,1);if(c.sel===ri)c.sel=-1;else if(c.sel>ri)c.sel--;save();render();}
@@ -295,7 +294,7 @@ function render(){
   const root=document.getElementById('root');let html='<div id="bstripWrap">'+budgetHTML()+'</div>';
   if(curTab==='sch') html+='<div class="panel"><div class="sec-h">📅 '+esc(P.name)+' 排程<span class="ln"></span></div>'+ganttHTML()+(editing?schEditHTML():'')+'</div>';
   else if(curTab==='flow') html+='<div class="panel"><div class="sec-h">🔄 內部流程<span class="ln"></span></div>'+flowHTML()+'</div>';
-  else if(curTab==='vendor') html+='<div class="panel"><div class="sec-h">🧾 廠商報價（各工項比價表）<span class="ln"></span></div>'+vendorHTML()+'</div>'+expenseHTML();
+  else if(curTab==='vendor') html+='<div class="panel"><div class="sec-h">🧾 廠商報價<span class="ln"></span>'+(editing?'<button class="addbtn" style="margin:0" onclick="vaddCat()">＋ 工項</button>':'')+'</div>'+vendorHTML()+'</div>'+expenseHTML();
   else if(curTab==='insp') html+='<div class="panel"><div class="sec-h">✅ 驗收<span class="ln"></span></div>'+inspHTML()+'</div>';
   root.innerHTML=html;document.body.classList.toggle('editing',editing);
 }
