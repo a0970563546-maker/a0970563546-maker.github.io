@@ -228,7 +228,7 @@ function schEditHTML(){
     const vendor=scheduleVendor(t),confirmed=t.confirmedStartDate&&t.confirmedEndDate;
     const planned='<div class="sch-dates"><input type="date" value="'+esc((t.startDate||'').replace(/\//g,"-"))+'" onchange="tset('+i+',\'startDate\',this.value)"><span>～</span><input type="date" value="'+esc((t.endDate||'').replace(/\//g,"-"))+'" onchange="tset('+i+',\'endDate\',this.value)"></div>';
     const finalDates=confirmed?'<div class="sch-dates"><input type="date" value="'+esc((t.confirmedStartDate||'').replace(/\//g,"-"))+'" onchange="tset('+i+',\'confirmedStartDate\',this.value)"><span>～</span><input type="date" value="'+esc((t.confirmedEndDate||'').replace(/\//g,"-"))+'" onchange="tset('+i+',\'confirmedEndDate\',this.value)"><button class="rmv" onclick="tunconfirm('+i+')">取消</button></div>':'<button class="miniadd" onclick="tconfirm('+i+')">確認排程</button><div class="sch-state">先複製預排日期，再自行調整</div>';
-    return '<tr><td><input type="text" value="'+esc(t.name)+'" oninput="tset('+i+',\'name\',this.value)"></td><td>'+planned+'</td><td><div class="sch-vendor">'+esc(vendor||'尚未選定')+'</div><div class="sch-state">由廠商報價自動帶入</div></td><td>'+finalDates+'</td><td style="text-align:center"><input type="checkbox" '+(t.done?'checked':'')+' onchange="tset('+i+',\'done\',this.checked)"></td><td><button class="rmv" onclick="rmTask('+i+')">刪除</button></td></tr>';
+    return '<tr><td><input type="text" value="'+esc(t.name)+'" onchange="tset('+i+',\'name\',this.value)"></td><td>'+planned+'</td><td><div class="sch-vendor">'+esc(vendor||'尚未選定')+'</div><div class="sch-state">由廠商報價自動帶入</div></td><td>'+finalDates+'</td><td style="text-align:center"><input type="checkbox" '+(t.done?'checked':'')+' onchange="tset('+i+',\'done\',this.checked)"></td><td><button class="rmv" onclick="rmTask('+i+')">刪除</button></td></tr>';
   }).join('');
   return '<div style="overflow-x:auto"><table class="sch"><tr><th>工程項目</th><th>預排起訖</th><th>選定廠商</th><th>確認起訖</th><th>完成</th><th></th></tr>'+rows+'</table></div><button class="addbtn" onclick="addTask()">＋ 新增工程項目</button>';
 }
@@ -366,15 +366,17 @@ function iadd(){P.inspection.push({});save();render();}
 function irm(ri){if(!confirm('刪除此列？'))return;P.inspection.splice(ri,1);save();render();}
 
 /* render */
-function render(){
+function render(keepScroll=true){
+  const sx=window.scrollX,sy=window.scrollY;
   const root=document.getElementById('root');let html='<div id="bstripWrap">'+budgetHTML()+'</div>';
   if(curTab==='sch') html+='<div class="panel"><div class="sec-h">📅 '+esc(P.name)+' 排程<span class="ln"></span></div>'+ganttHTML()+(editing?schEditHTML():'')+'</div>';
   else if(curTab==='flow') html+='<div class="panel"><div class="sec-h">🔄 內部流程<span class="ln"></span></div>'+flowHTML()+'</div>';
   else if(curTab==='vendor') html+='<div class="panel"><div class="sec-h">🧾 廠商報價<span class="ln"></span>'+(editing?'<button class="addbtn" style="margin:0" onclick="vaddCat()">＋ 工項</button>':'')+'</div>'+vendorHTML()+'</div>'+expenseHTML();
   else if(curTab==='insp') html+='<div class="panel"><div class="sec-h">✅ 驗收<span class="ln"></span></div>'+inspHTML()+'</div>';
   root.innerHTML=html;document.body.classList.toggle('editing',editing);
+  if(keepScroll)requestAnimationFrame(()=>window.scrollTo(sx,sy));
 }
-function setTab(t){curTab=t;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));render();}
+function setTab(t){curTab=t;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));render(false);window.scrollTo(0,0);}
 function toggleEdit(){editing=!editing;setLock();render();}
 function setLock(){const b=document.getElementById('lock');b.textContent=editing?'👁 切換檢視':'✏️ 編輯';b.className='btn lockbtn'+(editing?' on':'');}
 function toggleArchive(){
