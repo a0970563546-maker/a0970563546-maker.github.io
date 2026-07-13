@@ -120,6 +120,7 @@ table.sch input[type=date]{border:1px solid #D3DAE2;border-radius:6px;padding:4p
 <script>
 const HOLS={"2026-01-01":1,"2026-02-14":1,"2026-02-15":1,"2026-02-16":1,"2026-02-17":1,"2026-02-18":1,"2026-02-19":1,"2026-02-20":1,"2026-02-27":1,"2026-02-28":1,"2026-04-03":1,"2026-04-04":1,"2026-04-05":1,"2026-04-06":1,"2026-05-01":1,"2026-06-19":1,"2026-09-25":1,"2026-09-28":1,"2026-10-09":1,"2026-10-10":1,"2026-10-25":1,"2026-10-26":1,"2026-12-25":1,"2027-01-01":1};
 const DAY=86400000, DW=26, DEFAULT_CATS=[];
+const LEGACY_CATS=['木工','水電','油漆','泥作','地板','清潔/其他'];
 const FTYPES={'合約':[['sign','簽約'],['seal','用印'],['archive','歸檔']],'訂金':[['stamp','簽呈'],['transferred','已轉帳']],'尾款':[['contact','聯絡單'],['transferred','已轉帳']]};
 const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
@@ -142,6 +143,12 @@ function ensureProject(p){
   if(p.projectNote===undefined)p.projectNote='';
   if(!Array.isArray(p.vendorQuotes)||!p.vendorQuotes.length)
     p.vendorQuotes=DEFAULT_CATS.map(c=>({cat:c,rows:[{n:'',d:'',a:'',m:''},{n:'',d:'',a:'',m:''},{n:'',d:'',a:'',m:''}],sel:-1,confirmed:false}));
+  // 舊版曾自動建立六種工項及三列空白廠商；只移除完全未填寫的舊預設卡片，保留所有已有內容。
+  p.vendorQuotes=p.vendorQuotes.filter(c=>{
+    if(!LEGACY_CATS.includes(c.cat)||Number(c.sel)>=0)return true;
+    const rows=Array.isArray(c.rows)?c.rows:[];
+    return rows.some(r=>r&&['n','d','a','m'].some(k=>String(r[k]||'').trim()));
+  });
   p.vendorQuotes.forEach(c=>{if(c.sel===undefined)c.sel=-1;if(c.confirmed===undefined)c.confirmed=false;});
   if(!Array.isArray(p.inspection))p.inspection=[];
   if(!Array.isArray(p.pettyCash))p.pettyCash=[];
