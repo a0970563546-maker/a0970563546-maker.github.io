@@ -242,7 +242,7 @@ function irm(ri){if(!confirm('刪除此列？'))return;P.inspection.splice(ri,1)
 /* render */
 function render(){
   const root=document.getElementById('root');let html='';
-  if(curTab==='sch') html='<div class="panel"><div class="sec-h">📅 工程排程甘特圖<span class="ln"></span></div>'+ganttHTML()+(editing?schEditHTML():'')+'</div>';
+  if(curTab==='sch') html='<div class="panel"><div class="sec-h">📅 '+esc(P.name)+' 排程<span class="ln"></span></div>'+ganttHTML()+(editing?schEditHTML():'')+'</div>';
   else if(curTab==='flow') html='<div class="panel"><div class="sec-h">🔄 內部流程（簽呈・訂金・尾款・其他）<span class="ln"></span></div>'+flowHTML()+'</div>';
   else if(curTab==='vendor') html='<div class="panel"><div class="sec-h">🧾 廠商報價（6 類比價表）<span class="ln"></span></div>'+vendorHTML()+'</div>';
   else if(curTab==='insp') html='<div class="panel"><div class="sec-h">✅ 驗收（竣工驗收與缺失改善）<span class="ln"></span></div>'+inspHTML()+'</div>';
