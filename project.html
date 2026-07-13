@@ -304,8 +304,8 @@ function startupHTML(){
     const val=ty==='總預算'?money(num(P.totalBudget)):(s.date?esc(s.date):'未進行');
     return '<div class="schip'+((ty==='總預算'?P.totalBudget:s.date)?' on':'')+'"><span class="scn">'+esc(ty==='其他'?(s.text||'其他'):ty)+'</span><span class="scd">'+val+'</span></div>';
   }).join('');
-  const add=editing?'<div class="adder"><select id="ssAdd"><option value="">＋ 新增墨凡流程…</option><option>簽呈</option><option>核准</option><option>合約</option><option>總預算</option><option>其他</option></select><button class="miniadd" onclick="ssadd()">加入</button></div>':'';
-  return (cards?'<div class="ssrow">'+cards+'</div>':'<div style="color:#B0ACA4;font-size:13px">尚未新增墨凡流程</div>')+add;
+  const add=editing?'<div class="adder"><select id="ssAdd"><option value="">＋ 新增內部流程…</option><option>簽呈</option><option>核准</option><option>合約</option><option>總預算</option><option>其他</option></select><button class="miniadd" onclick="ssadd()">加入</button></div>':'';
+  return (cards?'<div class="ssrow">'+cards+'</div>':'<div style="color:#B0ACA4;font-size:13px">尚未新增內部流程</div>')+add;
 }
 function pseti(ci,pi,k,v){const c=P.vendorQuotes[ci];ensureProc(c);c.procItems[pi][k]=v;save();}
 function paddi(ci){const e=document.getElementById('procAdd_'+ci),ty=e&&e.value;if(!ty)return;const c=P.vendorQuotes[ci];ensureProc(c);c.procItems.push({type:ty,text:'',sign:'',seal:'',archive:'',apply:'',transfer:'',date:''});save();render();}
@@ -325,9 +325,9 @@ function procCard(c,ci){
   return '<div class="tcard">'+head+(blocks?'<div class="prow">'+blocks+'</div>':'<div class="hint">尚未新增工項流程</div>')+add+'</div>';
 }
 function flowHTML(){
-  let h='<div class="flab">① 墨凡</div>'+startupHTML();
+  let h=startupHTML();
   const items=P.vendorQuotes.map((c,ci)=>({c,ci})).filter(x=>x.c.sel>=0);
-  h+='<div class="flab" style="margin-top:22px">② 工項</div>';
+  h+='<div class="flab" style="margin-top:22px">工項流程</div>';
   h+=items.length?items.map(x=>procCard(x.c,x.ci)).join(''):'<div style="color:#B0ACA4;font-size:13px;padding:8px 0">尚無確認配合的廠商——到「🧾 廠商報價」點廠商前的「選定」，這裡就會自動列出，跑合約／訂金／尾款流程。</div>';
   h+=editing?'<div class="hint">填日期＝已進行該步驟（例：合約簽約日、訂金申請日）。廠商流程只列出「廠商報價」中已選定的廠商。</div>':'';
   return h;
@@ -422,5 +422,6 @@ function boot(){
 }
 boot();
 </script>
+<script src="cats.js?v=20260713-cats"></script>
 </body>
 </html>
