@@ -86,7 +86,8 @@ table.sch input[type=date]{border:1px solid #D3DAE2;border-radius:6px;padding:4p
 .vcat .ch{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
 .vcat .ct{font-size:15px;font-weight:800;color:var(--blue)}
 .vcat input.catname{font-size:15px;font-weight:800;color:var(--blue);border:1px solid #D3DAE2;border-radius:8px;padding:4px 10px;font-family:inherit}
-.confirmbox{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:#3E7A5B;background:#E9F3ED;border:1px solid #BFE0CC;border-radius:999px;padding:4px 12px;cursor:pointer}
+.confirmbtn{border:1px solid #DDD3BE;background:#F5F1E8;color:#9A855C;border-radius:999px;padding:6px 15px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit}
+.confirmbtn.on{background:#5E8C72;border-color:#5E8C72;color:#fff}
 .vlow{margin-top:8px;font-size:13px;color:#8A7B5C;font-weight:700}.vlow b{color:#B5723C}
 .selmark{color:#3C6FA8;font-weight:800}
 .miniadd{background:#EAF1E6;color:#3E6A3E;border:1px solid #9CC49C;border-radius:7px;padding:5px 12px;font-size:12.5px;font-weight:700;cursor:pointer;margin-top:8px}
@@ -118,7 +119,7 @@ table.sch input[type=date]{border:1px solid #D3DAE2;border-radius:6px;padding:4p
 
 <script>
 const HOLS={"2026-01-01":1,"2026-02-14":1,"2026-02-15":1,"2026-02-16":1,"2026-02-17":1,"2026-02-18":1,"2026-02-19":1,"2026-02-20":1,"2026-02-27":1,"2026-02-28":1,"2026-04-03":1,"2026-04-04":1,"2026-04-05":1,"2026-04-06":1,"2026-05-01":1,"2026-06-19":1,"2026-09-25":1,"2026-09-28":1,"2026-10-09":1,"2026-10-10":1,"2026-10-25":1,"2026-10-26":1,"2026-12-25":1,"2027-01-01":1};
-const DAY=86400000, DW=26, DEFAULT_CATS=['木工','水電','油漆','泥作','地板','清潔/其他'];
+const DAY=86400000, DW=26, DEFAULT_CATS=[];
 const FTYPES={'合約':[['sign','簽約'],['seal','用印'],['archive','歸檔']],'訂金':[['stamp','簽呈'],['transferred','已轉帳']],'尾款':[['contact','聯絡單'],['transferred','已轉帳']]};
 const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
@@ -244,12 +245,17 @@ function vendorHTML(){
     const amts=cat.rows.map(r=>num(r.a)).filter(x=>x!=null),low=amts.length?Math.min(...amts):null;
     const selAmt=(cat.sel>=0&&cat.rows[cat.sel])?num(cat.rows[cat.sel].a):null;
     const th='<tr><th style="width:52px;text-align:center">選定</th><th style="width:24%">廠商名稱</th><th style="width:15%">現勘日期</th><th style="width:18%">報價金額</th><th>備註</th>'+(editing?'<th style="width:36px"></th>':'')+'</tr>';
-    const cathd=editing?'<input class="catname" value="'+esc(cat.cat)+'" oninput="vcat('+ci+',this.value)">':'<span class="ct">🏗️ '+esc(cat.cat)+'</span>';
-    const confirmBtn=(cat.sel>=0)?'<label class="confirmbox" style="'+(cat.confirmed?'':'background:#F2F0EB;color:#9A855C;border-color:#DDD3BE')+'"><input type="checkbox" '+(cat.confirmed?'checked':'')+' onchange="vconfirm('+ci+',this.checked)"> ✅ 確認配合此廠商</label>':'';
-    return '<div class="vcat"><div class="ch">'+cathd+confirmBtn+'</div><div style="overflow-x:auto"><table class="v">'+th+rows+'</table></div>'+(editing?'<button class="miniadd" onclick="vadd('+ci+')">＋ 加一列廠商</button>':'')
+    const cathd=editing?'<input class="catname" value="'+esc(cat.cat)+'" oninput="vcat('+ci+',this.value)" placeholder="工項名稱">':'<span class="ct">🏗️ '+esc(cat.cat||'（未命名工項）')+'</span>';
+    const catDel=editing?'<button class="rmv" onclick="vrmCat('+ci+')">刪除工項</button>':'';
+    const confirmBtn=(cat.sel>=0)?'<button type="button" class="confirmbtn'+(cat.confirmed?' on':'')+'" onclick="vconfirm('+ci+','+(cat.confirmed?'false':'true')+')">'+(cat.confirmed?'✔ 已確認配合（計入實際支出）':'○ 確認配合此廠商')+'</button>':'';
+    return '<div class="vcat"><div class="ch">'+cathd+confirmBtn+catDel+'</div><div style="overflow-x:auto"><table class="v">'+th+rows+'</table></div>'+(editing?'<button class="miniadd" onclick="vadd('+ci+')">＋ 廠商</button>':'')
       +'<div class="vlow">💰 最低報價：<b>'+money(low)+'</b>　｜　選定金額：<b class="selmark">'+money(selAmt)+'</b>'+(cat.confirmed&&selAmt!=null?'　→ 已計入實際支出':'')+'</div></div>';
-  }).join('')+'<div class="hint">每類點「選定」一間廠商，再勾「✅ 確認配合此廠商」，該金額就計入下方<b>實際支出</b>。'+(editing?'金額填數字即可。':'')+'</div>';
+  }).join('')
+  +(editing?'<button class="addbtn" onclick="vaddCat()">＋ 工項</button>':(P.vendorQuotes.length?'':'<div class="empty">尚無工項，點「✏️ 編輯」後用「＋ 工項」新增比價表</div>'))
+  +(editing?'<div class="hint">「＋ 工項」新增一張比價表並自行命名；每張點「選定」廠商，再按「確認配合」，金額計入下方實際支出。金額填數字即可。</div>':'');
 }
+function vaddCat(){P.vendorQuotes.push({cat:'新工項',rows:[{n:'',d:'',a:'',m:''},{n:'',d:'',a:'',m:''},{n:'',d:'',a:'',m:''}],sel:-1,confirmed:false});save();render();}
+function vrmCat(ci){if(!confirm('刪除此工項比價表？'))return;P.vendorQuotes.splice(ci,1);save();render();}
 function expenseHTML(){
   const conf=P.vendorQuotes.filter(c=>c.confirmed&&c.sel>=0).map(c=>({cat:c.cat,n:(c.rows[c.sel]||{}).n,a:num((c.rows[c.sel]||{}).a)}));
   const confRows=conf.length?conf.map(x=>'<tr><td>'+esc(x.cat)+'</td><td>'+esc(x.n||'—')+'</td><td>'+money(x.a)+'</td></tr>').join(''):'<tr><td colspan="3" style="text-align:center;color:#A8AEB6;padding:14px">尚無已確認發包（到上方各類勾「✅ 確認配合此廠商」）</td></tr>';
@@ -289,7 +295,7 @@ function render(){
   const root=document.getElementById('root');let html='<div id="bstripWrap">'+budgetHTML()+'</div>';
   if(curTab==='sch') html+='<div class="panel"><div class="sec-h">📅 '+esc(P.name)+' 排程<span class="ln"></span></div>'+ganttHTML()+(editing?schEditHTML():'')+'</div>';
   else if(curTab==='flow') html+='<div class="panel"><div class="sec-h">🔄 內部流程<span class="ln"></span></div>'+flowHTML()+'</div>';
-  else if(curTab==='vendor') html+='<div class="panel"><div class="sec-h">🧾 廠商報價（6 類比價表）<span class="ln"></span></div>'+vendorHTML()+'</div>'+expenseHTML();
+  else if(curTab==='vendor') html+='<div class="panel"><div class="sec-h">🧾 廠商報價（各工項比價表）<span class="ln"></span></div>'+vendorHTML()+'</div>'+expenseHTML();
   else if(curTab==='insp') html+='<div class="panel"><div class="sec-h">✅ 驗收<span class="ln"></span></div>'+inspHTML()+'</div>';
   root.innerHTML=html;document.body.classList.toggle('editing',editing);
 }
