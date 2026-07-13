@@ -67,6 +67,7 @@ iframe{border:0;width:100%;height:100%;flex:1;background:#fff}
 </div>
 <script>
 const ENG="https://a0970563546-maker.github.io/engmanagement/";
+const PROJECT_BUILD="20260713-weekday";
 function openSide(){document.getElementById('side').classList.add('open');document.getElementById('mask').classList.add('open');}
 function closeSide(){document.getElementById('side').classList.remove('open');document.getElementById('mask').classList.remove('open');}
 const frame=document.getElementById('frame'), ttl=document.getElementById('ttl');
@@ -89,7 +90,7 @@ function projRow(p,i,withCheck){
   const id=p.id!=null?p.id:i;
   const nm=(p.name||'未命名專案').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
   const cb=withCheck?'<input type="checkbox" class="pcheck" data-id="'+encodeURIComponent(id)+'">':'';
-  return '<div class="projrow">'+cb+'<button class="it proj projname" data-src="https://a0970563546-maker.github.io/project.html?p='+encodeURIComponent(id)+'" data-label="'+nm+'"><span class="nm">'+(withCheck?'📐 ':'📦 ')+nm+'</span></button></div>';
+  return '<div class="projrow">'+cb+'<button class="it proj projname" data-src="https://a0970563546-maker.github.io/project.html?p='+encodeURIComponent(id)+'&v='+PROJECT_BUILD+'" data-label="'+nm+'"><span class="nm">'+(withCheck?'📐 ':'📦 ')+nm+'</span></button></div>';
 }
 function updateCompare(){
   const ids=[...document.querySelectorAll('#projList .pcheck:checked')].map(c=>c.dataset.id);
@@ -116,6 +117,7 @@ window.addEventListener('message',function(e){if(e.data&&e.data.t==='engProChang
 // restore last view or default to todo
 (function(){
   let last=null;try{last=JSON.parse(localStorage.getItem('portal_last')||'null');}catch(e){}
+  if(last&&last.src&&last.src.includes('/project.html')){try{const u=new URL(last.src);u.searchParams.set('v',PROJECT_BUILD);last.src=u.href;}catch(e){}}
   if(last&&last.src){ nav(last.src,last.label,[...document.querySelectorAll('.it[data-src]')].find(b=>b.dataset.src===last.src)); }
   else{ const t=document.querySelector('.it[data-src]'); nav(t.dataset.src,t.textContent.trim(),t); }
 })();
