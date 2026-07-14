@@ -77,6 +77,8 @@ table.sch input[type=date]{border:1px solid #D3DAE2;border-radius:6px;padding:4p
 .badge.done{background:#E4F0E9;color:#4B7A60}.badge.wait{background:#F0EDE6;color:#8A7B5C}
 .tmeta{font-size:12.5px;color:var(--soft);margin-bottom:8px}
 .flab{font-size:12px;font-weight:800;color:#8A9BA8;margin:2px 0 3px}
+.flow-section-title{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;color:#60788E;margin:4px 0 10px}.flow-section-title::after{content:"";height:1px;background:var(--line);flex:1}
+.item-no{display:inline-flex;align-items:center;border-radius:999px;padding:3px 9px;background:#EAF0F7;color:#3C6FA8;font-size:11.5px;font-weight:800;white-space:nowrap}
 .notebox{width:100%;min-height:54px;border:1px solid #D3DAE2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-family:inherit;resize:vertical}
 .noteview{font-size:13.5px;color:var(--ink);white-space:pre-wrap;line-height:1.6}
 .fitem{border:1px solid #EDEFF3;border-radius:10px;padding:9px 12px;margin-top:8px;background:#fff}
@@ -128,7 +130,7 @@ table.sch input[type=date]{border:1px solid #D3DAE2;border-radius:6px;padding:4p
   </div>
   <div class="tabs">
     <button class="tab on" data-t="sch" onclick="setTab('sch')">📅 排程</button>
-    <button class="tab" data-t="flow" onclick="setTab('flow')">🔄 內部流程</button>
+    <button class="tab" data-t="flow" onclick="setTab('flow')">🔄 流程</button>
     <button class="tab" data-t="vendor" onclick="setTab('vendor')">🧾 廠商報價</button>
     <button class="tab" data-t="insp" onclick="setTab('insp')">✅ 驗收</button>
   </div>
@@ -338,7 +340,7 @@ function paddi(ci){const e=document.getElementById('procAdd_'+ci),ty=e&&e.value;
 function prmi(ci,pi){const c=P.vendorQuotes[ci];ensureProc(c);c.procItems.splice(pi,1);save();render();}
 function procCard(c,ci){
   ensureProc(c);const v=c.rows[c.sel]||{};
-  const head='<div class="th"><span class="tt">'+esc(c.cat||'工項')+'　·　'+esc(v.n||'（未填廠商）')+'</span><span class="badge" style="background:#EEF4FB;color:#3C6FA8">'+money(num(v.a))+'</span></div>';
+  const head='<div class="th"><span class="item-no">項次 '+(ci+1)+'</span><span class="tt">'+esc(c.cat||'工項')+'　·　'+esc(v.n||'（未填廠商）')+'</span><span class="badge" style="background:#EEF4FB;color:#3C6FA8">'+money(num(v.a))+'</span></div>';
   const blocks=c.procItems.map((it,pi)=>{
     const defs=PROC_TYPES[it.type]||[];
     let fields='';
@@ -351,9 +353,9 @@ function procCard(c,ci){
   return '<div class="tcard">'+head+(blocks?'<div class="prow">'+blocks+'</div>':'<div class="hint">尚未新增工項流程</div>')+add+'</div>';
 }
 function flowHTML(){
-  let h=startupHTML();
+  let h='<div class="flow-section-title">內部流程</div>'+startupHTML();
   const items=P.vendorQuotes.map((c,ci)=>({c,ci})).filter(x=>x.c.sel>=0);
-  h+='<div class="flab" style="margin-top:22px">工項流程</div>';
+  h+='<div class="flow-section-title" style="margin-top:22px">工項流程</div>';
   h+=items.length?items.map(x=>procCard(x.c,x.ci)).join(''):'<div style="color:#B0ACA4;font-size:13px;padding:8px 0">尚無確認配合的廠商——到「🧾 廠商報價」點廠商前的「選定」，這裡就會自動列出，跑合約／訂金／尾款流程。</div>';
   h+=editing?'<div class="hint">勾選已完成的步驟；每個合約／訂金／尾款／其他流程右上角都有「×」可刪除。廠商流程只列出「廠商報價」中已選定的廠商。</div>':'';
   return h;
@@ -370,7 +372,7 @@ function vendorHTML(){
     const amts=cat.rows.map(r=>num(r.a)).filter(x=>x!=null),low=amts.length?Math.min(...amts):null;
     const selAmt=(cat.sel>=0&&cat.rows[cat.sel])?num(cat.rows[cat.sel].a):null;
     const th='<tr><th style="width:52px;text-align:center">選定</th><th style="width:24%">廠商名稱</th><th style="width:15%">現勘日期</th><th style="width:18%">報價金額</th><th>備註</th>'+(editing?'<th style="width:36px"></th>':'')+'</tr>';
-    const cathd=editing?'<input class="catname" value="'+esc(cat.cat)+'" oninput="vcat('+ci+',this.value)" placeholder="工項名稱">':'<span class="ct">🏗️ '+esc(cat.cat||'（未命名工項）')+'</span>';
+    const cathd='<span class="item-no">項次 '+(ci+1)+'</span>'+(editing?'<input class="catname" value="'+esc(cat.cat)+'" oninput="vcat('+ci+',this.value)" placeholder="工項名稱">':'<span class="ct">🏗️ '+esc(cat.cat||'（未命名工項）')+'</span>');
     const catDel=editing?'<button class="rmv" onclick="vrmCat('+ci+')">刪除工項</button>':'';
     return '<div class="vcat"><div class="ch">'+cathd+catDel+'</div><div style="overflow-x:auto"><table class="v">'+th+rows+'</table></div>'+(editing?'<button class="miniadd" onclick="vadd('+ci+')">＋ 廠商</button>':'')
       +'<div class="vlow">💰 最低報價：<b>'+money(low)+'</b>　｜　選定（發包）金額：<b class="selmark">'+money(selAmt)+'</b>'+(cat.sel>=0&&selAmt!=null?'　→ 已計入實際支出':'')+'</div></div>';
@@ -418,7 +420,7 @@ function render(keepScroll=true){
   const sx=window.scrollX,sy=window.scrollY;
   const root=document.getElementById('root');let html='<div id="bstripWrap">'+budgetHTML()+'</div>';
   if(curTab==='sch') html+='<div class="panel"><div class="sec-h">📅 '+esc(P.name)+' 排程<span class="ln"></span></div>'+ganttHTML()+(editing?schEditHTML():'')+'</div>';
-  else if(curTab==='flow') html+='<div class="panel"><div class="sec-h">🔄 內部流程<span class="ln"></span></div>'+flowHTML()+'</div>';
+  else if(curTab==='flow') html+='<div class="panel"><div class="sec-h">🔄 流程<span class="ln"></span></div>'+flowHTML()+'</div>';
   else if(curTab==='vendor') html+='<div class="panel"><div class="sec-h">🧾 廠商報價<span class="ln"></span>'+(editing?'<button class="addbtn" style="margin:0" onclick="vaddCat()">＋ 工項</button>':'')+'</div>'+vendorHTML()+'</div>'+expenseHTML();
   else if(curTab==='insp') html+='<div class="panel"><div class="sec-h">✅ 驗收<span class="ln"></span></div>'+inspHTML()+'</div>';
   root.innerHTML=html;document.body.classList.toggle('editing',editing);
@@ -435,10 +437,10 @@ function toggleArchive(){
 function updateArchiveUI(){const b=document.getElementById('archBtn'),badge=document.getElementById('archBadge');if(P.archived){b.textContent='↩️ 還原';badge.innerHTML='<span class="arch-badge">📦 已結案</span>';}else{b.textContent='📦 結案';badge.innerHTML='';}}
 function pdfReportHTML(){
   const tb=num(P.totalBudget),act=actTotal(),remain=tb!=null?tb-act:null,ratio=tb&&tb>0?(Math.round(act/tb*1000)/10)+'%':'—';
-  const selected=(P.vendorQuotes||[]).filter(c=>c.sel>=0&&c.rows&&c.rows[c.sel]).map(c=>({cat:c.cat||'工項',vendor:c.rows[c.sel].n||'—',amount:num(c.rows[c.sel].a)}));
-  const vendorRows=selected.length?selected.map(x=>'<tr><td>'+esc(x.cat)+'</td><td>'+esc(x.vendor)+'</td><td>'+money(x.amount)+'</td></tr>').join(''):'<tr><td colspan="3" style="text-align:center;color:#9AA4AE">尚無選定廠商</td></tr>';
+  const selected=[];(P.vendorQuotes||[]).forEach((c,ci)=>{if(c.sel>=0&&c.rows&&c.rows[c.sel])selected.push({no:ci+1,cat:c.cat||'工項',vendor:c.rows[c.sel].n||'—',amount:num(c.rows[c.sel].a)});});
+  const vendorRows=selected.length?selected.map(x=>'<tr><td>'+x.no+'</td><td>'+esc(x.cat)+'</td><td>'+esc(x.vendor)+'</td><td>'+money(x.amount)+'</td></tr>').join(''):'<tr><td colspan="4" style="text-align:center;color:#9AA4AE">尚無選定廠商</td></tr>';
   const metrics=[['專案名稱',esc(P.name||'未命名專案')],['總預算',money(tb)],['實際支出',money(act)],['餘額',money(remain)],['實際支出／總預算',ratio]].map(x=>'<div class="pdf-metric"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');
-  return '<div class="pdf-title">'+esc(P.name||'未命名專案')+'</div><div class="pdf-sub">'+(P.archived?'專案結案報告':'專案進度報告')+'・A4 橫式預覽</div><div class="pdf-summary">'+metrics+'</div><div class="pdf-section">甘特圖</div>'+ganttHTML()+'<div class="pdf-section">已選定廠商報價</div><table class="pdf-vendors"><tr><th>工項</th><th>廠商</th><th style="width:24%">選定報價金額</th></tr>'+vendorRows+'</table>';
+  return '<div class="pdf-title">'+esc(P.name||'未命名專案')+'</div><div class="pdf-sub">'+(P.archived?'專案結案報告':'專案進度報告')+'・A4 橫式預覽</div><div class="pdf-summary">'+metrics+'</div><div class="pdf-section">甘特圖</div>'+ganttHTML()+'<div class="pdf-section">已選定廠商報價</div><table class="pdf-vendors"><tr><th style="width:9%">項次</th><th>工項</th><th>廠商</th><th style="width:24%">選定報價金額</th></tr>'+vendorRows+'</table>';
 }
 function openPdfPreview(){document.getElementById('pdfSheet').innerHTML=pdfReportHTML();document.getElementById('pdfPreview').classList.add('on');document.body.style.overflow='hidden';}
 function closePdfPreview(){document.getElementById('pdfPreview').classList.remove('on');document.body.style.overflow='';}
