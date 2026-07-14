@@ -84,6 +84,7 @@ table.sch input[type=date]{border:1px solid #D3DAE2;border-radius:6px;padding:4p
 .fitem .ft{font-size:13px;font-weight:800;color:var(--blue)}
 .checks{display:flex;flex-wrap:wrap;gap:10px 16px}
 .checks label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--soft)}
+.ssrow{display:flex;flex-wrap:wrap;gap:10px}.sstep,.schip{border:1px solid #E1E6EC;border-radius:10px;padding:10px 12px;background:#FCFDFE;min-width:220px}.sstep b,.schip .scn{display:block;color:var(--blue);font-size:13px;font-weight:800;margin-bottom:7px}.sstep .rmv{float:right;margin-top:-30px}.sstep input[type=text]{border:1px solid #D3DAE2;border-radius:7px;padding:6px 8px;font-family:inherit}.schip .scd{font-size:12px;color:var(--soft)}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .tag{font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 10px;background:#EEF1F5;color:#8A93A0}
 .tag.on{background:#E4F0E9;color:#3E7A5B}
@@ -103,6 +104,14 @@ table.sch input[type=date]{border:1px solid #D3DAE2;border-radius:6px;padding:4p
 .addbtn{background:var(--green);color:#fff;border:0;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px}
 .hint{font-size:12px;color:#A8AEB6;margin-top:8px}
 .empty{text-align:center;color:var(--soft);padding:40px 20px;font-size:14px;line-height:2}
+.flow-x{float:right;border-radius:50%;width:26px;height:26px;padding:0;font-size:16px;line-height:24px}
+.pdf-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(20,33,50,.72);padding:18px;overflow:auto}
+.pdf-overlay.on{display:block}.pdf-dialog{max-width:1180px;margin:0 auto}.pdf-actions{position:sticky;top:0;z-index:2;display:flex;justify-content:flex-end;gap:10px;padding:10px 0}
+.pdf-sheet{width:1120px;max-width:100%;min-height:760px;margin:0 auto;background:#fff;color:#293746;padding:28px;box-shadow:0 10px 35px rgba(0,0,0,.24);font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif}
+.pdf-title{font-size:22px;font-weight:800;color:#2E5B8F;margin-bottom:5px}.pdf-sub{font-size:12px;color:#7F8B96;margin-bottom:16px}
+.pdf-summary{display:grid;grid-template-columns:1.4fr repeat(4,1fr);border:1px solid #DDE3EA;margin-bottom:18px}.pdf-metric{padding:10px 12px;border-right:1px solid #DDE3EA}.pdf-metric:last-child{border-right:0}.pdf-metric span{display:block;font-size:11px;color:#7F8B96;margin-bottom:4px}.pdf-metric b{font-size:16px;color:#2F4152}
+.pdf-section{font-size:15px;font-weight:800;color:#2E5B8F;margin:16px 0 8px;padding-bottom:5px;border-bottom:1px solid #DDE3EA}.pdf-vendors{width:100%;border-collapse:collapse;font-size:13px}.pdf-vendors th,.pdf-vendors td{border:1px solid #DDE3EA;padding:7px 9px;text-align:left}.pdf-vendors th{background:#F4F7FA;color:#647789}
+@media(max-width:760px){.pdf-summary{grid-template-columns:1fr 1fr}.pdf-metric{border-bottom:1px solid #DDE3EA}.pdf-sheet{padding:16px}.pdf-overlay{padding:8px}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -114,7 +123,7 @@ table.sch input[type=date]{border:1px solid #D3DAE2;border-radius:6px;padding:4p
     <span class="spacer"></span>
     <span class="savenote" id="savenote"></span>
     <button class="btn archbtn" id="archBtn" onclick="toggleArchive()">📦 結案</button>
-    <button class="btn pdf" onclick="exportPdf()">🖨 A4 PDF</button>
+    <button class="btn pdf" onclick="openPdfPreview()">🖨 A4 PDF</button>
     <button class="btn lockbtn" id="lock" onclick="toggleEdit()">✏️ 編輯</button>
   </div>
   <div class="tabs">
@@ -125,6 +134,12 @@ table.sch input[type=date]{border:1px solid #D3DAE2;border-radius:6px;padding:4p
   </div>
 </div>
 <div class="wrap" id="root"><div class="empty">載入中…</div></div>
+<div class="pdf-overlay" id="pdfPreview" onclick="if(event.target===this)closePdfPreview()">
+  <div class="pdf-dialog">
+    <div class="pdf-actions"><button class="btn" onclick="closePdfPreview()">關閉預覽</button><button class="btn pdf" onclick="downloadPdf()">⬇ 下載 A4 PDF</button></div>
+    <div id="pdfSheet" class="pdf-sheet"></div>
+  </div>
+</div>
 
 <script>
 const HOLS={"2026-01-01":1,"2026-02-14":1,"2026-02-15":1,"2026-02-16":1,"2026-02-17":1,"2026-02-18":1,"2026-02-19":1,"2026-02-20":1,"2026-02-27":1,"2026-02-28":1,"2026-04-03":1,"2026-04-04":1,"2026-04-05":1,"2026-04-06":1,"2026-05-01":1,"2026-06-19":1,"2026-09-25":1,"2026-09-28":1,"2026-10-09":1,"2026-10-10":1,"2026-10-25":1,"2026-10-26":1,"2026-12-25":1,"2027-01-01":1};
@@ -142,6 +157,8 @@ const HOL_LABELS={
 const DAY=86400000, DW=26, DEFAULT_CATS=[];
 const LEGACY_CATS=['木工','水電','油漆','泥作','地板','清潔/其他'];
 const FTYPES={'合約':[['sign','簽約'],['seal','用印'],['archive','歸檔']],'訂金':[['stamp','簽呈'],['transferred','已轉帳']],'尾款':[['contact','聯絡單'],['transferred','已轉帳']]};
+const STARTUP_TYPES={'簽呈':[['form','簽呈單'],['review','審核中'],['done','已完成']],'合約':[['sign','簽約'],['seal','用印'],['archive','歸檔']]};
+const PROC_TYPES={'合約':[['sign','簽約'],['seal','用印'],['archive','歸檔']],'訂金':[['apply','簽呈單'],['review','審核中'],['transfer','已匯款']],'尾款':[['apply','聯絡單'],['review','審核中'],['transfer','已匯款']]};
 const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 const pd=s=>{s=(s||"").replace(/-/g,"/");const p=s.split("/").map(Number);if(p.length!==3||p.some(isNaN))return null;return new Date(p[0],p[1]-1,p[2]);};
@@ -291,35 +308,44 @@ function fset(i,fi,k,v){P.tasks[i].flow[fi][k]=v;save();}
 function rmFlow(i,fi){P.tasks[i].flow.splice(fi,1);save();render();}
 function ensureProc(c){if(!Array.isArray(c.procItems))c.procItems=[];}
 function ssset(i,k,v){P.startupSteps[i][k]=v;save();}
-function ssadd(){const e=document.getElementById('ssAdd'),ty=e&&e.value;if(!ty)return;P.startupSteps=P.startupSteps||[];P.startupSteps.push({type:ty,text:'',date:''});save();render();}
+function ssadd(){const e=document.getElementById('ssAdd'),ty=e&&e.value;if(!ty)return;P.startupSteps=P.startupSteps||[];const it={type:ty,text:''};(STARTUP_TYPES[ty]||[]).forEach(x=>it[x[0]]=false);P.startupSteps.push(it);save();render();}
 function ssrm(i){P.startupSteps.splice(i,1);save();render();}
 function startupHTML(){
   P.startupSteps=P.startupSteps||[];const steps=P.startupSteps;
   const cards=steps.map((s,i)=>{
     const ty=s.type||s.name||'其他';
+    const defs=STARTUP_TYPES[ty]||[];
     if(editing){
-      const main=ty==='總預算'?'<input type="text" value="'+esc(P.totalBudget||'')+'" oninput="P.totalBudget=this.value;save();refreshBudget()" placeholder="總預算金額">':(ty==='其他'?'<input type="text" class="ssname" value="'+esc(s.text||'')+'" oninput="ssset('+i+',\'text\',this.value)" placeholder="流程名稱">':'<span class="scn">'+esc(ty)+'</span>')+'<input type="date" value="'+esc((s.date||'').replace(/\//g,"-"))+'" onchange="ssset('+i+',\'date\',this.value)">';
+      let main='';
+      if(ty==='總預算')main='<input type="text" value="'+esc(P.totalBudget||'')+'" oninput="P.totalBudget=this.value;save();refreshBudget()" placeholder="總預算金額">';
+      else if(ty==='其他')main='<input type="text" class="ssname" value="'+esc(s.text||'')+'" oninput="ssset('+i+',\'text\',this.value)" placeholder="流程名稱">';
+      else if(defs.length)main='<div class="checks">'+defs.map(x=>'<label><input type="checkbox" '+(s[x[0]]?'checked':'')+' onchange="ssset('+i+',\''+x[0]+'\',this.checked)"> '+x[1]+'</label>').join('')+'</div>';
+      else main='<span class="scd">'+esc(ty)+'</span>';
       return '<div class="sstep"><b>'+esc(ty)+'</b>'+main+'<button class="rmv" onclick="ssrm('+i+')">×</button></div>';
     }
-    const val=ty==='總預算'?money(num(P.totalBudget)):(s.date?esc(s.date):'未進行');
-    return '<div class="schip'+((ty==='總預算'?P.totalBudget:s.date)?' on':'')+'"><span class="scn">'+esc(ty==='其他'?(s.text||'其他'):ty)+'</span><span class="scd">'+val+'</span></div>';
+    let detail='';
+    if(ty==='總預算')detail='<span class="scd">'+money(num(P.totalBudget))+'</span>';
+    else if(ty==='其他')detail='<span class="scd">'+esc(s.text||'尚未填寫')+'</span>';
+    else if(defs.length)detail='<div class="tags">'+defs.map(x=>'<span class="tag'+(s[x[0]]?' on':'')+'">'+(s[x[0]]?'✓ ':'')+x[1]+'</span>').join('')+'</div>';
+    else detail='<span class="scd">'+esc(ty)+'</span>';
+    return '<div class="schip"><span class="scn">'+esc(ty)+'</span>'+detail+'</div>';
   }).join('');
-  const add=editing?'<div class="adder"><select id="ssAdd"><option value="">＋ 新增內部流程…</option><option>簽呈</option><option>核准</option><option>合約</option><option>總預算</option><option>其他</option></select><button class="miniadd" onclick="ssadd()">加入</button></div>':'';
+  const add=editing?'<div class="adder"><select id="ssAdd"><option value="">＋ 新增內部流程…</option><option>簽呈</option><option>合約</option><option>總預算</option><option>其他</option></select><button class="miniadd" onclick="ssadd()">加入</button></div>':'';
   return (cards?'<div class="ssrow">'+cards+'</div>':'<div style="color:#B0ACA4;font-size:13px">尚未新增內部流程</div>')+add;
 }
 function pseti(ci,pi,k,v){const c=P.vendorQuotes[ci];ensureProc(c);c.procItems[pi][k]=v;save();}
-function paddi(ci){const e=document.getElementById('procAdd_'+ci),ty=e&&e.value;if(!ty)return;const c=P.vendorQuotes[ci];ensureProc(c);c.procItems.push({type:ty,text:'',sign:'',seal:'',archive:'',apply:'',transfer:'',date:''});save();render();}
+function paddi(ci){const e=document.getElementById('procAdd_'+ci),ty=e&&e.value;if(!ty)return;const c=P.vendorQuotes[ci];ensureProc(c);const it={type:ty,text:''};(PROC_TYPES[ty]||[]).forEach(x=>it[x[0]]=false);c.procItems.push(it);save();render();}
 function prmi(ci,pi){const c=P.vendorQuotes[ci];ensureProc(c);c.procItems.splice(pi,1);save();render();}
 function procCard(c,ci){
   ensureProc(c);const v=c.rows[c.sel]||{};
   const head='<div class="th"><span class="tt">'+esc(c.cat||'工項')+'　·　'+esc(v.n||'（未填廠商）')+'</span><span class="badge" style="background:#EEF4FB;color:#3C6FA8">'+money(num(v.a))+'</span></div>';
-  const df=(pi,k,label)=>editing?'<div class="pfld"><span class="pl">'+label+'</span><input type="date" value="'+esc((c.procItems[pi][k]||'').replace(/\//g,"-"))+'" onchange="pseti('+ci+','+pi+',\''+k+'\',this.value)"></div>':'<div class="pfld"><span class="pl">'+label+'</span><span class="pv'+(c.procItems[pi][k]?' on':'')+'">'+(c.procItems[pi][k]?esc(c.procItems[pi][k]):'—')+'</span></div>';
   const blocks=c.procItems.map((it,pi)=>{
+    const defs=PROC_TYPES[it.type]||[];
     let fields='';
-    if(it.type==='合約')fields=df(pi,'sign','簽約日')+df(pi,'seal','用印日')+df(pi,'archive','歸檔日');
-    else if(it.type==='訂金'||it.type==='尾款')fields=df(pi,'apply','申請日')+df(pi,'transfer','轉帳日');
-    else fields=(editing?'<input type="text" value="'+esc(it.text||'')+'" oninput="pseti('+ci+','+pi+',\'text\',this.value)" placeholder="流程名稱">':'<div class="pv">'+esc(it.text||'其他')+'</div>')+df(pi,'date','日期');
-    return '<div class="pblock"><div class="pbt">'+esc(it.type||'其他')+(editing?'<button class="rmv" style="float:right" onclick="prmi('+ci+','+pi+')">×</button>':'')+'</div>'+fields+'</div>';
+    if(defs.length){
+      fields=editing?'<div class="checks">'+defs.map(x=>'<label><input type="checkbox" '+(it[x[0]]?'checked':'')+' onchange="pseti('+ci+','+pi+',\''+x[0]+'\',this.checked)"> '+x[1]+'</label>').join('')+'</div>':'<div class="tags">'+defs.map(x=>'<span class="tag'+(it[x[0]]?' on':'')+'">'+(it[x[0]]?'✓ ':'')+x[1]+'</span>').join('')+'</div>';
+    }else fields=editing?'<input type="text" value="'+esc(it.text||'')+'" oninput="pseti('+ci+','+pi+',\'text\',this.value)" placeholder="流程名稱">':'<div class="pv">'+esc(it.text||'其他')+'</div>';
+    return '<div class="pblock"><div class="pbt">'+esc(it.type||'其他')+(editing?'<button class="rmv flow-x" aria-label="刪除此流程" onclick="prmi('+ci+','+pi+')">×</button>':'')+'</div>'+fields+'</div>';
   }).join('');
   const add=editing?'<div class="adder"><select id="procAdd_'+ci+'"><option value="">＋ 新增工項流程…</option><option>合約</option><option>訂金</option><option>尾款</option><option>其他</option></select><button class="miniadd" onclick="paddi('+ci+')">加入</button></div>':'';
   return '<div class="tcard">'+head+(blocks?'<div class="prow">'+blocks+'</div>':'<div class="hint">尚未新增工項流程</div>')+add+'</div>';
@@ -329,7 +355,7 @@ function flowHTML(){
   const items=P.vendorQuotes.map((c,ci)=>({c,ci})).filter(x=>x.c.sel>=0);
   h+='<div class="flab" style="margin-top:22px">工項流程</div>';
   h+=items.length?items.map(x=>procCard(x.c,x.ci)).join(''):'<div style="color:#B0ACA4;font-size:13px;padding:8px 0">尚無確認配合的廠商——到「🧾 廠商報價」點廠商前的「選定」，這裡就會自動列出，跑合約／訂金／尾款流程。</div>';
-  h+=editing?'<div class="hint">填日期＝已進行該步驟（例：合約簽約日、訂金申請日）。廠商流程只列出「廠商報價」中已選定的廠商。</div>':'';
+  h+=editing?'<div class="hint">勾選已完成的步驟；每個合約／訂金／尾款／其他流程右上角都有「×」可刪除。廠商流程只列出「廠商報價」中已選定的廠商。</div>':'';
   return h;
 }
 
@@ -407,12 +433,20 @@ function toggleArchive(){
   save();updateArchiveUI();try{if(window.parent&&window.parent!==window)window.parent.postMessage({t:'engProChanged'},'*');}catch(e){}
 }
 function updateArchiveUI(){const b=document.getElementById('archBtn'),badge=document.getElementById('archBadge');if(P.archived){b.textContent='↩️ 還原';badge.innerHTML='<span class="arch-badge">📦 已結案</span>';}else{b.textContent='📦 結案';badge.innerHTML='';}}
-function exportPdf(){
-  const wasEdit=editing;editing=false;render();
-  const wrap=document.createElement('div');wrap.style.cssText='padding:18px;background:#fff;width:1120px;font-family:sans-serif';
-  wrap.innerHTML='<div style="font-size:20px;font-weight:800;color:#2E5B8F;margin-bottom:10px">'+esc(P.name)+'</div>'+document.getElementById('root').innerHTML;
-  editing=wasEdit;render();document.body.appendChild(wrap);
-  html2pdf().set({margin:8,filename:(P.name||'專案')+'.pdf',image:{type:'jpeg',quality:.95},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}}).from(wrap).save().then(()=>wrap.remove()).catch(()=>wrap.remove());
+function pdfReportHTML(){
+  const tb=num(P.totalBudget),act=actTotal(),remain=tb!=null?tb-act:null,ratio=tb&&tb>0?(Math.round(act/tb*1000)/10)+'%':'—';
+  const selected=(P.vendorQuotes||[]).filter(c=>c.sel>=0&&c.rows&&c.rows[c.sel]).map(c=>({cat:c.cat||'工項',vendor:c.rows[c.sel].n||'—',amount:num(c.rows[c.sel].a)}));
+  const vendorRows=selected.length?selected.map(x=>'<tr><td>'+esc(x.cat)+'</td><td>'+esc(x.vendor)+'</td><td>'+money(x.amount)+'</td></tr>').join(''):'<tr><td colspan="3" style="text-align:center;color:#9AA4AE">尚無選定廠商</td></tr>';
+  const metrics=[['專案名稱',esc(P.name||'未命名專案')],['總預算',money(tb)],['實際支出',money(act)],['餘額',money(remain)],['實際支出／總預算',ratio]].map(x=>'<div class="pdf-metric"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');
+  return '<div class="pdf-title">'+esc(P.name||'未命名專案')+'</div><div class="pdf-sub">'+(P.archived?'專案結案報告':'專案進度報告')+'・A4 橫式預覽</div><div class="pdf-summary">'+metrics+'</div><div class="pdf-section">甘特圖</div>'+ganttHTML()+'<div class="pdf-section">已選定廠商報價</div><table class="pdf-vendors"><tr><th>工項</th><th>廠商</th><th style="width:24%">選定報價金額</th></tr>'+vendorRows+'</table>';
+}
+function openPdfPreview(){document.getElementById('pdfSheet').innerHTML=pdfReportHTML();document.getElementById('pdfPreview').classList.add('on');document.body.style.overflow='hidden';}
+function closePdfPreview(){document.getElementById('pdfPreview').classList.remove('on');document.body.style.overflow='';}
+function downloadPdf(){
+  const sheet=document.getElementById('pdfSheet'),oldStyle=sheet.getAttribute('style')||'';sheet.style.width='1120px';sheet.style.maxWidth='none';sheet.style.boxShadow='none';
+  const suffix=P.archived?'_結案報告':'_專案進度';
+  const restore=()=>sheet.setAttribute('style',oldStyle);
+  html2pdf().set({margin:8,filename:(P.name||'專案')+suffix+'.pdf',image:{type:'jpeg',quality:.95},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'landscape'},pagebreak:{mode:['css','legacy']}}).from(sheet).save().then(restore).catch(restore);
 }
 function boot(){
   loadData();
