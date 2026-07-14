@@ -49,7 +49,7 @@ body{margin:0;font-family:"Microsoft JhengHei","PingFang TC","Segoe UI",sans-ser
 .dcell .dow{font-size:9px;margin-top:3px;font-weight:700}
 .dcell.off{background:#F4F1EB;color:#B79E76}
 .dcell.holiday{background:#FBE9E6;color:#A44B43;font-weight:800}
-.tlabel{position:absolute;top:-2px;font-size:10.5px;color:#D9534F;font-weight:800;z-index:3;white-space:nowrap}
+.dcell.today{background:#DCEBFA!important;color:#24598E!important;font-weight:800;box-shadow:inset 0 0 0 2px #4E83BA;z-index:3}
 .grow{display:flex;align-items:center;height:44px;border-bottom:1px solid #F1F3F6}.grow:last-child{border-bottom:0}
 .glabel{width:220px;flex-shrink:0;padding-right:12px}
 .glabel .t{font-size:13.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -57,7 +57,6 @@ body{margin:0;font-family:"Microsoft JhengHei","PingFang TC","Segoe UI",sans-ser
 .gtrack{position:relative;height:100%;flex-shrink:0}
 .gtrack .wknd{position:absolute;top:0;bottom:0;background:#FAF7F1}
 .gtrack .wknd.holiday{background:#FBE9E6}
-.gtrack .tline{position:absolute;top:0;bottom:0;width:2px;background:#D9534F;opacity:.6;z-index:2}
 .bar{position:absolute;top:50%;transform:translateY(-50%);height:22px;border-radius:11px;box-shadow:0 2px 6px rgba(46,91,143,.28);display:flex;align-items:center;padding:0 9px;font-size:10.5px;color:#fff;font-weight:700;white-space:nowrap;overflow:hidden;z-index:1}
 .bar.ing{background:linear-gradient(180deg,#5A88BE,#3C6FA8)}.bar.pre{background:#DCE7F3;color:#3C6FA8;border:1px dashed #7D9FC5;box-shadow:none}.bar.done{background:linear-gradient(180deg,#79AE94,#5E8C72)}
 .legend{font-size:12px;color:var(--soft);margin-top:14px}
@@ -245,24 +244,23 @@ function ganttHTML(){
     const nd=mE.getDate(),W=nd*DW,x=d=>(d.getDate()-1)*DW;
     let days='',wknd='';
     for(let d=new Date(mS);d<=mE;d=new Date(+d+DAY)){
-      const o=off(d),hol=HOLS[iso(d)]===1;
+      const o=off(d),hol=HOLS[iso(d)]===1,isToday=+d===+today;
       const wname=['日','一','二','三','四','五','六'][d.getDay()];
-      days+='<div class="dcell'+(o?' off':'')+(hol?' holiday':'')+'" style="left:'+x(d)+'px;width:'+DW+'px"><span>'+d.getDate()+'</span><span class="dow">'+wname+'</span></div>';
+      days+='<div class="dcell'+(o?' off':'')+(hol?' holiday':'')+(isToday?' today':'')+'" style="left:'+x(d)+'px;width:'+DW+'px"><span>'+d.getDate()+'</span><span class="dow">'+wname+'</span></div>';
       if(o)wknd+='<div class="wknd'+(hol?' holiday':'')+'" style="left:'+x(d)+'px;width:'+DW+'px"></div>';
     }
-    const inMonth=today>=mS&&today<=mE,tx=inMonth?x(today):0,tline=inMonth?'<div class="tline" style="left:'+tx+'px"></div>':'';
     let rows='';
     tasks.filter(t=>t.e>=mS&&t.s<=mE).forEach(t=>{
       const clipS=t.s<mS?mS:t.s,clipE=t.e>mE?mE:t.e,left=x(clipS),width=((clipE-clipS)/DAY+1)*DW;
       const wd=wdays(t.s,t.e),sd=(t.s.getMonth()+1)+'/'+t.s.getDate(),ed=(t.e.getMonth()+1)+'/'+t.e.getDate();
       const meta=sd+'–'+ed+'・'+wd+'工作天';
-      rows+='<div class="grow"><div class="glabel"><div class="t">'+esc(t.name)+'</div><div class="d">'+meta+'</div></div><div class="gtrack" style="width:'+W+'px">'+wknd+tline+'<div class="bar '+(t.done?'done':(t.confirmed?'ing':'pre'))+'" style="left:'+left+'px;width:'+width+'px">'+(width>60?sd+' → '+ed:'')+'</div></div></div>';
+      rows+='<div class="grow"><div class="glabel"><div class="t">'+esc(t.name)+'</div><div class="d">'+meta+'</div></div><div class="gtrack" style="width:'+W+'px">'+wknd+'<div class="bar '+(t.done?'done':(t.confirmed?'ing':'pre'))+'" style="left:'+left+'px;width:'+width+'px">'+(width>60?sd+' → '+ed:'')+'</div></div></div>';
     });
     const monthKey=cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0');
     const holtags=(HOL_LABELS[monthKey]||[]).map(h=>'<span class="holtag">'+h[0]+'　'+h[1]+'</span>').join('');
-    blocks+='<section class="gmonth" style="min-width:'+(220+W)+'px"><div class="gmonth-head"><div class="gmonth-title">'+cur.getFullYear()+' 年 '+(cur.getMonth()+1)+' 月</div><div class="holtags">'+holtags+'</div></div><div style="display:flex"><div style="width:220px;flex-shrink:0"></div><div style="position:relative;width:'+W+'px;flex-shrink:0">'+(inMonth?'<div class="tlabel" style="left:'+tx+'px">今日</div>':'')+'<div class="days">'+days+'</div></div></div>'+rows+'</section>';
+    blocks+='<section class="gmonth" style="min-width:'+(220+W)+'px"><div class="gmonth-head"><div class="gmonth-title">'+cur.getFullYear()+' 年 '+(cur.getMonth()+1)+' 月</div><div class="holtags">'+holtags+'</div></div><div style="display:flex"><div style="width:220px;flex-shrink:0"></div><div style="position:relative;width:'+W+'px;flex-shrink:0"><div class="days">'+days+'</div></div></div>'+rows+'</section>';
   }
-  return '<div class="gantt">'+blocks+'</div><div class="legend">月份由上往下排列・淡紅＝特殊假日　淡藍虛線＝預排　■ 藍＝已確認　■ 綠＝完成　■ 米色＝週末　紅線＝今日</div>';
+  return '<div class="gantt">'+blocks+'</div><div class="legend">月份由上往下排列・藍色日期格＝今天　淡紅＝特殊假日　淡藍虛線＝預排　■ 藍＝已確認　■ 綠＝完成　■ 米色＝週末</div>';
 }
 function schEditHTML(){
   const rows=(P.tasks||[]).map((t,i)=>{
