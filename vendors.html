@@ -3,124 +3,138 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>廠商管理</title>
+<title>廠商資料｜設計工程平台</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:"Microsoft JhengHei","PingFang TC",sans-serif;background:#FAF9F7;color:#4A5158;padding:0 0 60px}
-.top{background:#2E5B8F;color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
-.top h1{font-size:17px;margin:0;flex:1}
-.btn{border:0;border-radius:7px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
-.btn.add{background:#9CAF88;color:#fff}
-.btn.pri{background:#2E5B8F;color:#fff}
-.btn.gho{background:#fff;color:#5F6B76;border:1px solid #C7D5E4}
-.btn.del{background:#fff;color:#B5564E;border:1px solid #E3B7B3}
-.wrap{max-width:1000px;margin:0 auto;padding:18px}
-.catblk{margin-bottom:22px}
-.cathd{font-size:13px;font-weight:800;color:#8A7B5C;background:#F1EBDD;border-radius:8px 8px 0 0;padding:8px 14px}
-.card{background:#fff;border:1px solid #E2DED8;border-top:0;padding:14px 16px;display:flex;gap:16px;flex-wrap:wrap}
-.card+.card{border-top:1px dashed #ECE7DF}
-.card:last-child{border-radius:0 0 8px 8px}
-.f{min-width:150px}
-.f .lb{font-size:11px;color:#9A948C;margin-bottom:2px}
-.f .vl{font-size:14px;color:#3A4652;font-weight:600}
-.f.big{flex:1;min-width:220px}
-.bank{background:#F5F7FA;border:1px solid #DDE6EF;border-radius:6px;padding:8px 12px;font-size:13px;color:#3E5772}
-.acts{margin-left:auto;display:flex;gap:8px;align-items:flex-start}
-.empty{text-align:center;color:#9A948C;padding:60px 20px;font-size:14px;line-height:2}
-.mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:20;align-items:flex-start;justify-content:center;overflow:auto;padding:30px 14px}
-.mask.on{display:flex}
-.modal{background:#fff;border-radius:12px;width:560px;max-width:100%;padding:20px 22px}
-.modal h2{font-size:16px;color:#2E5B8F;margin:0 0 14px}
-.row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-label{display:block;flex:1;min-width:150px;font-size:12px;color:#7A756D;font-weight:700}
-label input,label select,label textarea{width:100%;margin-top:4px;border:1px solid #CFD6DE;border-radius:6px;padding:8px 10px;font-size:14px;font-family:inherit;color:#3A4652}
-label textarea{resize:vertical;min-height:44px}
-.modacts{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
-.sec{font-size:12px;font-weight:800;color:#8A9BA8;margin:8px 0 4px;border-top:1px solid #EEE;padding-top:10px}
+:root{--blue:#2E5B8F;--green:#76977E;--ink:#3F4C58;--muted:#84909B;--line:#DFE5EB;--paper:#FFF;--bg:#F4F6F8;--warn:#B77A28;--danger:#B5564E}
+body{margin:0;font-family:"Microsoft JhengHei","PingFang TC",sans-serif;background:var(--bg);color:var(--ink);padding:0 0 74px}
+.top{background:var(--blue);color:#fff;padding:15px 22px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:6;box-shadow:0 2px 8px #173c6630}
+.top h1{font-size:18px;margin:0;flex:1}.top small{font-size:12px;font-weight:500;opacity:.75;margin-left:8px}
+.btn{border:0;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn.add{background:#A7BE91;color:#24422E}.btn.pri{background:var(--blue);color:#fff}.btn.gho{background:#fff;color:#596875;border:1px solid #C8D3DD}.btn.del{background:#fff;color:var(--danger);border:1px solid #E4BAB6}
+.wrap{max-width:1180px;margin:0 auto;padding:20px}
+.intro{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:14px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;box-shadow:0 5px 18px #324d6810}
+.intro .copy{flex:1;min-width:250px}.intro h2{font-size:15px;color:var(--blue);margin:0 0 4px}.intro p{font-size:12px;color:var(--muted);margin:0;line-height:1.7}
+.stats{display:flex;gap:9px;flex-wrap:wrap}.stat{background:#F4F7FA;border:1px solid #E1E8EF;border-radius:9px;padding:8px 12px;min-width:88px}.stat b{display:block;color:var(--blue);font-size:18px}.stat span{font-size:11px;color:var(--muted)}
+.tools{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:16px;display:grid;grid-template-columns:minmax(220px,1fr) 210px auto;gap:10px;align-items:center}
+.field{width:100%;border:1px solid #CBD5DF;border-radius:8px;padding:10px 12px;font:14px inherit;color:var(--ink);background:#fff}.result{font-size:12px;color:var(--muted);text-align:right;padding-right:4px}
+.catblk{margin-bottom:18px}.cathd{font-size:13px;font-weight:800;color:var(--blue);background:#EAF0F6;border:1px solid #D5E0EB;border-radius:10px 10px 0 0;padding:9px 14px;display:flex;justify-content:space-between}.cathd span{font-weight:600;color:#8496A8}
+.card{background:var(--paper);border:1px solid var(--line);border-top:0;padding:14px 16px;display:grid;grid-template-columns:minmax(190px,1.2fr) minmax(145px,.8fr) minmax(145px,.8fr) minmax(220px,1.4fr) auto;gap:14px;align-items:start}
+.card:last-child{border-radius:0 0 10px 10px}.card+.card{border-top:1px dashed #E7EBEF}.f{min-width:0}.lb{font-size:10px;color:#97A1AA;margin-bottom:3px;letter-spacing:.04em}.vl{font-size:13px;color:#3A4652;font-weight:600;line-height:1.55;overflow-wrap:anywhere}.vendor-name{font-size:15px;color:#294F7B}.code{font-size:10px;background:#EEF3F8;color:#66809A;border-radius:4px;padding:2px 5px;margin-left:5px;vertical-align:2px}
+.detail{grid-column:1/5;display:flex;gap:9px;flex-wrap:wrap}.pill{font-size:11px;color:#64727E;background:#F5F7F9;border:1px solid #E2E7EB;padding:5px 8px;border-radius:6px}.bank{color:#3E5772;background:#F2F6FA;border-color:#D7E2ED}.ok{color:#4E704F;background:#EDF5E8;border-color:#D4E5CC}.wait{color:#91601F;background:#FFF6E4;border-color:#ECD8AE}.none{color:#8B6C68;background:#FAEFED;border-color:#E9D2CE}
+.acts{grid-column:5;grid-row:1/3;display:flex;gap:7px;align-items:flex-start}.empty{text-align:center;color:#8E99A3;padding:70px 20px;font-size:14px;line-height:2;background:#fff;border:1px solid var(--line);border-radius:12px}
+.mask{display:none;position:fixed;inset:0;background:rgba(24,38,52,.45);z-index:20;align-items:flex-start;justify-content:center;overflow:auto;padding:28px 14px}.mask.on{display:flex}
+.modal{background:#fff;border-radius:14px;width:720px;max-width:100%;padding:20px 22px;box-shadow:0 20px 60px #18263545}.modal h2{font-size:17px;color:var(--blue);margin:0 0 14px}.row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+label{display:block;flex:1;min-width:170px;font-size:12px;color:#706F6B;font-weight:700}label input,label select,label textarea{width:100%;margin-top:5px;border:1px solid #CBD4DD;border-radius:7px;padding:9px 10px;font-size:14px;font-family:inherit;color:var(--ink);background:#fff}label textarea{resize:vertical;min-height:62px}.sec{font-size:12px;font-weight:800;color:#71869B;margin:12px 0 8px;border-top:1px solid #EDF0F2;padding-top:12px}.hint{font-size:11px;color:#9A948C;font-weight:500;margin-top:4px}.modacts{display:flex;justify-content:flex-end;gap:10px;margin-top:10px}
+@media(max-width:820px){.tools{grid-template-columns:1fr}.result{text-align:left}.card{grid-template-columns:1fr 1fr}.detail{grid-column:1/3}.acts{grid-column:1/3;grid-row:auto}.top small{display:none}}
+@media(max-width:520px){.wrap{padding:12px}.card{grid-template-columns:1fr}.detail,.acts{grid-column:1}.top{padding:12px}.top h1{font-size:16px}}
 </style>
 </head>
 <body>
-<div class="top"><h1>🏢 廠商管理</h1><button class="btn add" onclick="openForm()">＋ 新增廠商</button></div>
-<div class="wrap" id="list"></div>
+<div class="top"><h1>🏢 廠商資料 <small>設計工程平台</small></h1><button class="btn add" onclick="openForm()">＋ 新增廠商</button></div>
+<main class="wrap">
+  <section class="intro">
+    <div class="copy"><h2>廠商主檔</h2><p>廠商可依工種搜尋與編輯；匯款資訊僅顯示銀行與帳號末四碼。完整帳號及附件不會放在公開網站程式碼中。</p></div>
+    <div class="stats"><div class="stat"><b id="sTotal">0</b><span>廠商總數</span></div><div class="stat"><b id="sCats">0</b><span>工種分類</span></div><div class="stat"><b id="sBank">0</b><span>有匯款資料</span></div></div>
+  </section>
+  <section class="tools">
+    <input class="field" id="q" placeholder="搜尋廠商、窗口、電話、服務項目…" oninput="render()">
+    <select class="field" id="catFilter" onchange="render()"><option value="">全部工種</option></select>
+    <div class="result" id="resultCount"></div>
+  </section>
+  <div id="list"></div>
+</main>
 
-<div class="mask" id="mask">
+<div class="mask" id="mask" onclick="if(event.target===this)closeForm()">
   <div class="modal">
     <h2 id="mtitle">新增廠商</h2>
-    <div class="row">
-      <label>廠商名稱*<input id="f_name" placeholder="例：大順水電行"></label>
-      <label>分類<input id="f_cat" list="catlist" placeholder="例：水電"><datalist id="catlist"></datalist></label>
-    </div>
+    <div class="row"><label>廠商名稱*<input id="f_name"></label><label>平台主分類<input id="f_cat" list="catlist"><datalist id="catlist"></datalist></label><label>狀態<select id="f_status"><option>啟用</option><option>停用</option><option>待確認</option></select></label></div>
     <div class="sec">聯絡資訊</div>
-    <div class="row">
-      <label>聯絡人<input id="f_person"></label>
-      <label>電話<input id="f_phone"></label>
-    </div>
-    <div class="row">
-      <label>Email / LINE<input id="f_line"></label>
-      <label>地址<input id="f_addr"></label>
-    </div>
+    <div class="row"><label>廠商窗口<input id="f_person"></label><label>聯絡電話<input id="f_phone"></label></div>
+    <div class="row"><label>LINE 名稱<input id="f_lineName"></label><label>LINE ID<input id="f_lineId"></label></div>
+    <div class="sec">服務與合作</div>
+    <div class="row"><label>服務項目／優勢特長<textarea id="f_services"></textarea></label><label>合作專案<textarea id="f_projects"></textarea></label></div>
     <div class="sec">匯款資訊</div>
-    <div class="row">
-      <label>銀行<input id="f_bank"></label>
-      <label>帳號<input id="f_acct"></label>
-      <label>戶名<input id="f_holder"></label>
-    </div>
-    <div class="row">
-      <label>備註<textarea id="f_note"></textarea></label>
-    </div>
-    <div class="modacts">
-      <button class="btn gho" onclick="closeForm()">取消</button>
-      <button class="btn pri" onclick="save()">儲存</button>
-    </div>
+    <div class="row"><label>銀行名稱<input id="f_bank"></label><label>分行<input id="f_branch"></label><label>帳號末四碼<input id="f_acctLast4" maxlength="4" inputmode="numeric"><div class="hint">平台只保存並顯示末四碼</div></label></div>
+    <div class="row"><label>戶名<input id="f_holder"></label><label>資料狀態<select id="f_bankStatus"><option value="">未設定</option><option>已確認</option><option>圖片轉錄待覆核</option><option>代墊／未提供</option><option>待補資料</option></select></label></div>
+    <div class="row"><label>整理備註<textarea id="f_note"></textarea></label></div>
+    <div class="modacts"><button class="btn gho" onclick="closeForm()">取消</button><button class="btn pri" onclick="save()">儲存</button></div>
   </div>
 </div>
 
 <script>
-const KEY='mofan_vendors_v1';
-let data=[]; try{data=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}
+const KEY='mofan_vendors_v1',SEED_KEY='design_vendor_seed_20260714_v1';
+const make=(code,name,cat,person='',phone='',services='',projects='',bank='',branch='',acctLast4='',bankStatus='',holder='',note='',lineName='',lineId='',originalCat='')=>({id:'seed_'+code,code,name,cat,person,phone,services,projects,bank,branch,acctLast4,bankStatus,holder,note,lineName,lineId,originalCat,status:'啟用'});
+const SEED=[
+make('V010','高雄市結構工程工業技師公會','鑑定','','','','','第一銀行','高雄分行','6659','已確認','高雄市結構工程工業技師公會'),
+make('V007','駿達彩色沖印有限公司','廣告','','','','','第一銀行','五福分行','3503','圖片轉錄待覆核','駿達彩色沖印有限公司'),
+make('V015','多禾多廣告工程有限公司','廣告','李畇鋐','','廣告輸出類、LED燈（輸出較便宜）','高雄捷運北站','臺灣銀行','仁武分行','3291','圖片轉錄待覆核','多禾多廣告工程有限公司','','多禾多'),
+make('V019','呈美企業行','廣告','','','','','高雄三信','陽明分社','2687','圖片轉錄待覆核','呈美企業行／陳月盆'),
+make('V020','優聯創意設計印刷有限公司','廣告','','','','','合作金庫商業銀行','鼓山分行','0280','已確認','優聯創意設計印刷有限公司'),
+make('V026','萬花筒廣告國際事業有限公司','廣告','黃于禎小姐','0981-192-208','廣告輸出（壓克力比多禾多便宜）','','','','','','','','電話及 LINE 請覆核','0981192208','0981192208'),
+make('V003','紘家企業有限公司','輕隔間','鄭睿宇先生','(07)796-3202','輕隔間','高雄捷運北站、南站','聯邦銀行','五甲分行','0588','圖片轉錄待覆核','紘家企業有限公司','','紘家輕鋼架','0923-153-999'),
+make('V009','柒肆柒室內貼膜有限公司','貼膜','劉昱廷（業務）','0958-748-747','','','陽信銀行','鼎力分行','0118','圖片轉錄待覆核','柒肆柒室內貼膜有限公司'),
+make('V024','晟弘科技有限公司','設備','','','','','華南銀行','泰山分行','9840','已確認','晟弘科技有限公司'),
+make('V022','誠銓環境美護有限公司','清潔','','','','','彰化銀行','大順分行','1400','圖片轉錄待覆核','誠銓環境美護有限公司'),
+make('V023','寶政生活館有限公司','採購','','電視保護材料','','','','','','代墊／未提供','','','', '', '採購（電視保護材料）'),
+make('V016','兆基電子有限公司','採購','','','','','','','','代墊／未提供'),
+make('V006','游鐵高空股份有限公司','高空作業車','','','','','彰化銀行','左營分行','8100','圖片轉錄待覆核','游鐵高空股份有限公司'),
+make('V017','瀧瀅有限公司','高空作業車','','','','','合作金庫商業銀行','慈德分行','1413','圖片轉錄待覆核','瀧瀅有限公司'),
+make('V021','弓騰電力實業行','水電','許譽騰老闆','','水電','高雄捷運追加水電','台北富邦銀行','鳳山分行','2839','圖片轉錄待覆核','許譽騰'),
+make('V002','栢揚國際企業社','弱電','余志祥（班哥）','0915-672-000','','','合作金庫商業銀行','九如分行','6743','圖片轉錄待覆核','栢揚國際企業社／余志祥','','班克斯'),
+make('V004','上億風管工程有限公司','風管','許宸瑄','0973-131-815','','','臺灣銀行','分行待確認','5278','圖片轉錄待覆核','上億風管工程有限公司','分行文字較模糊'),
+make('V018','邱照凱建築師事務所','室裝審查','','','','','臺灣銀行','分行待確認','7177','圖片轉錄待覆核','邱照凱建築師事務所','帳號與分行影像較模糊'),
+make('V028','建築師（邱玲宜小姐）','室裝','邱玲宜小姐','','室裝','','','','','','','建議後續確認正式事務所名稱'),
+make('V011','健鎰石材有限公司','磁磚','','長形磁磚','','華南銀行','岡山分行','1358','圖片轉錄待覆核','健鎰石材有限公司','','','','長形磁磚'),
+make('V013','明福工程行','泥作','','地排磁磚','','台新銀行','七賢分行','5661','圖片轉錄待覆核','明福工程行','','','','泥作（地排磁磚）'),
+make('V008','全界室內裝潢設計行','油漆','孫駿杰先生','0903-293-265','','','元大銀行','相昌分行（待確認）','0528','圖片轉錄待覆核','孫駿杰','分行文字較模糊','墨凡×全界工程群'),
+make('V005','富美材料科技有限公司','材料','','','','','彰化銀行','路竹分行','1500','圖片轉錄待覆核','富美材料科技有限公司'),
+make('V027','豪品自動門','自動門','','0976-079-734','自動門','','','','','','','電話及 LINE ID 請覆核','','0976079734'),
+make('V014','意境裝飾企業社','地墊','','','','','鳳山區農會','大廟分部','1640','圖片轉錄待覆核','意境裝飾企業社'),
+make('V001','隼榯機電工程有限公司','水電','洪致凱','0987-495-283','','','華南銀行','仁武分行','2485','圖片轉錄待覆核','隼榯機電工程有限公司','','洪致凱'),
+make('V025','薇豐工程','木作','榮師傅','','木作','','','','','','','廠商名稱已確認為薇豐工程'),
+make('V012','精工陶瓷股份有限公司','磁磚','','方形磁磚','','','','','','待補資料','','原 Excel 無帳戶圖片與文字資料','','','方形磁磚')
+];
+let data=[];try{data=JSON.parse(localStorage.getItem(KEY)||'[]');if(!Array.isArray(data))data=[]}catch(e){data=[]}
 let editId=null;
-const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-function persist(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}}
+const esc=t=>String(t??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const norm=t=>String(t||'').replace(/[\s（）()·・]/g,'').toLowerCase();
+const last4=t=>String(t||'').replace(/\D/g,'').slice(-4);
+function persist(){localStorage.setItem(KEY,JSON.stringify(data))}
+function seedData(){
+  const byName=new Map(data.map(v=>[norm(v.name),v]));
+  SEED.forEach(seed=>{const old=byName.get(norm(seed.name));if(!old){data.push({...seed});return}Object.keys(seed).forEach(k=>{if((old[k]===undefined||old[k]===null||old[k]==='')&&seed[k]!==''&&k!=='id')old[k]=seed[k]});if(!old.acctLast4&&old.acct)old.acctLast4=last4(old.acct)});
+  localStorage.setItem(SEED_KEY,'1');persist();
+}
+seedData();
+function statusClass(s){return /已確認/.test(s)?'ok':/待覆核/.test(s)?'wait':'none'}
 function render(){
-  const list=document.getElementById('list');
-  // categories datalist
-  const cats=[...new Set(data.map(v=>v.cat).filter(Boolean))];
+  const q=norm(document.getElementById('q').value),cf=document.getElementById('catFilter').value;
+  const cats=[...new Set(data.map(v=>v.cat||'未分類'))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+  const sel=document.getElementById('catFilter'),keep=sel.value;sel.innerHTML='<option value="">全部工種</option>'+cats.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');sel.value=cats.includes(keep)?keep:'';
   document.getElementById('catlist').innerHTML=cats.map(c=>'<option value="'+esc(c)+'">').join('');
-  if(!data.length){ list.innerHTML='<div class="empty">還沒有廠商資料<br>按右上「＋ 新增廠商」開始建立</div>'; return; }
-  const groups={};
-  data.forEach(v=>{const c=v.cat||'未分類';(groups[c]=groups[c]||[]).push(v);});
-  list.innerHTML=Object.keys(groups).sort().map(cat=>{
-    const rows=groups[cat].map(v=>{
-      const bank=(v.bank||v.acct||v.holder)?'<div class="bank">🏦 '+esc(v.bank||'')+'　'+esc(v.acct||'')+'　'+(v.holder?'戶名：'+esc(v.holder):'')+'</div>':'';
-      return '<div class="card">'
-        +'<div class="f"><div class="lb">廠商</div><div class="vl">'+esc(v.name)+'</div></div>'
-        +'<div class="f"><div class="lb">聯絡人</div><div class="vl">'+esc(v.person||'—')+'</div></div>'
-        +'<div class="f"><div class="lb">電話</div><div class="vl">'+esc(v.phone||'—')+'</div></div>'
-        +'<div class="f big"><div class="lb">Email / LINE・地址</div><div class="vl">'+esc([v.line,v.addr].filter(Boolean).join('　')||'—')+'</div></div>'
-        +(bank?'<div class="f big" style="flex-basis:100%">'+bank+(v.note?'<div style="font-size:12px;color:#9A948C;margin-top:6px">📝 '+esc(v.note)+'</div>':'')+'</div>':(v.note?'<div class="f big" style="flex-basis:100%;font-size:12px;color:#9A948C">📝 '+esc(v.note)+'</div>':''))
-        +'<div class="acts"><button class="btn gho" onclick="openForm(\''+v.id+'\')">編輯</button><button class="btn del" onclick="del(\''+v.id+'\')">刪除</button></div>'
-        +'</div>';
-    }).join('');
-    return '<div class="catblk"><div class="cathd">'+esc(cat)+'（'+groups[cat].length+'）</div>'+rows+'</div>';
-  }).join('');
+  const shown=data.filter(v=>(!cf||(v.cat||'未分類')===cf)&&(!q||norm([v.name,v.cat,v.person,v.phone,v.services,v.projects,v.lineName,v.lineId].join(' ')).includes(q)));
+  document.getElementById('sTotal').textContent=data.length;document.getElementById('sCats').textContent=cats.length;document.getElementById('sBank').textContent=data.filter(v=>v.bank||v.acctLast4||v.acct).length;document.getElementById('resultCount').textContent='顯示 '+shown.length+'／'+data.length+' 筆';
+  const list=document.getElementById('list');if(!shown.length){list.innerHTML='<div class="empty">找不到符合條件的廠商資料</div>';return}
+  const groups={};shown.forEach(v=>{const c=v.cat||'未分類';(groups[c]??=[]).push(v)});
+  list.innerHTML=Object.keys(groups).sort((a,b)=>a.localeCompare(b,'zh-Hant')).map(cat=>'<section class="catblk"><div class="cathd">'+esc(cat)+'<span>'+groups[cat].length+' 家</span></div>'+groups[cat].sort((a,b)=>a.name.localeCompare(b.name,'zh-Hant')).map(v=>{
+    const line=[v.lineName||v.line,v.lineId].filter(Boolean).join('／');const acct=v.acctLast4||last4(v.acct);const bank=[v.bank,v.branch].filter(Boolean).join(' ');const details=[];
+    if(v.services)details.push('<span class="pill">服務：'+esc(v.services)+'</span>');if(v.projects)details.push('<span class="pill">合作：'+esc(v.projects)+'</span>');if(bank||acct)details.push('<span class="pill bank">🏦 '+esc(bank)+(acct?'　•••• '+esc(acct):'')+'</span>');if(v.bankStatus)details.push('<span class="pill '+statusClass(v.bankStatus)+'">'+esc(v.bankStatus)+'</span>');if(v.note)details.push('<span class="pill">備註：'+esc(v.note)+'</span>');
+    return '<article class="card"><div class="f"><div class="lb">廠商名稱</div><div class="vl vendor-name">'+esc(v.name)+(v.code?'<span class="code">'+esc(v.code)+'</span>':'')+'</div></div><div class="f"><div class="lb">廠商窗口</div><div class="vl">'+esc(v.person||'—')+'</div></div><div class="f"><div class="lb">聯絡電話</div><div class="vl">'+esc(v.phone||'—')+'</div></div><div class="f"><div class="lb">LINE／聯絡資訊</div><div class="vl">'+esc(line||v.addr||'—')+'</div></div><div class="acts"><button class="btn gho" onclick="openForm(\''+esc(v.id)+'\')">編輯</button><button class="btn del" onclick="delVendor(\''+esc(v.id)+'\')">刪除</button></div><div class="detail">'+details.join('')+'</div></article>'
+  }).join('')+'</section>').join('')
 }
 function openForm(id){
-  editId=id||null;
-  const v=id?data.find(x=>x.id===id):{};
-  document.getElementById('mtitle').textContent=id?'編輯廠商':'新增廠商';
-  ['name','cat','person','phone','line','addr','bank','acct','holder','note'].forEach(k=>{document.getElementById('f_'+k).value=v[k]||'';});
-  document.getElementById('mask').classList.add('on');
+  editId=id||null;const v=id?(data.find(x=>x.id===id)||{}):{status:'啟用'};document.getElementById('mtitle').textContent=id?'編輯廠商':'新增廠商';
+  const fields=['name','cat','status','person','phone','lineName','lineId','services','projects','bank','branch','holder','bankStatus','note'];fields.forEach(k=>document.getElementById('f_'+k).value=v[k]||(k==='lineName'?v.line:'')||'');document.getElementById('f_acctLast4').value=v.acctLast4||last4(v.acct);document.getElementById('mask').classList.add('on');setTimeout(()=>document.getElementById('f_name').focus(),50)
 }
-function closeForm(){document.getElementById('mask').classList.remove('on');}
+function closeForm(){document.getElementById('mask').classList.remove('on')}
 function save(){
-  const g=k=>document.getElementById('f_'+k).value.trim();
-  if(!g('name')){alert('請填廠商名稱');return;}
-  const obj={id:editId||('v'+Date.now()),name:g('name'),cat:g('cat'),person:g('person'),phone:g('phone'),line:g('line'),addr:g('addr'),bank:g('bank'),acct:g('acct'),holder:g('holder'),note:g('note')};
-  if(editId){const i=data.findIndex(x=>x.id===editId);data[i]=obj;}else{data.push(obj);}
-  persist();render();closeForm();
+  const g=k=>document.getElementById('f_'+k).value.trim();if(!g('name')){alert('請填廠商名稱');return}const old=editId?(data.find(x=>x.id===editId)||{}):{};
+  const obj={...old,id:editId||('v'+Date.now()),name:g('name'),cat:g('cat'),status:g('status')||'啟用',person:g('person'),phone:g('phone'),lineName:g('lineName'),lineId:g('lineId'),services:g('services'),projects:g('projects'),bank:g('bank'),branch:g('branch'),acctLast4:last4(g('acctLast4')),holder:g('holder'),bankStatus:g('bankStatus'),note:g('note')};
+  if(editId){const i=data.findIndex(x=>x.id===editId);data[i]=obj}else data.push(obj);persist();closeForm();render()
 }
-function del(id){ if(!confirm('確定刪除此廠商？'))return; data=data.filter(x=>x.id!==id); persist(); render(); }
-render();
+function delVendor(id){const v=data.find(x=>x.id===id);if(!v||!confirm('確定刪除「'+v.name+'」？'))return;data=data.filter(x=>x.id!==id);persist();render()}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeForm()});render();
 </script>
 <script src="cats.js?v=20260713-cats"></script>
 </body>
