@@ -106,7 +106,7 @@ make('V005','富美材料科技有限公司','材料','','','','','彰化銀行'
 make('V027','豪品自動門','自動門','','0976-079-734','自動門','','','','','','','電話及 LINE ID 請覆核','','0976079734'),
 make('V014','意境裝飾企業社','地墊','','','','','鳳山區農會','大廟分部','1640','圖片轉錄待覆核','意境裝飾企業社'),
 make('V001','隼榯機電工程有限公司','水電','洪致凱','0987-495-283','','','華南銀行','仁武分行','2485','圖片轉錄待覆核','隼榯機電工程有限公司','','洪致凱'),
-make('V025','薇豐工程','木作','榮師傅','','木作'),
+make('V025','薇豐工程行','木作','榮師傅','','木作','','','','','待補資料'),
 make('V012','精工陶瓷股份有限公司','磁磚','','','方形磁磚','','','','','待補資料','','原 Excel 無帳戶圖片與文字資料','','','方形磁磚')
 ];
 let data=[];try{data=JSON.parse(localStorage.getItem(KEY)||'[]');if(!Array.isArray(data))data=[]}catch(e){data=[]}
@@ -116,7 +116,7 @@ const norm=t=>String(t||'').replace(/[\s（）()·・]/g,'').toLowerCase();
 const last4=t=>String(t||'').replace(/\D/g,'').slice(-4);
 function persist(){localStorage.setItem(KEY,JSON.stringify(data))}
 function repairShiftedSeedData(){
-  data.forEach(v=>{if(v.name==='薇豐工程'&&v.note==='廠商名稱已確認為薇豐工程')v.note=''})
+  data.forEach(v=>{if(v.code==='V025'||v.name==='薇豐工程'){v.name='薇豐工程行';v.cat=v.cat||'木作';v.person=v.person||'榮師傅';v.services=v.services||'木作';v.bankStatus=v.bankStatus||'待補資料';if(v.note==='廠商名稱已確認為薇豐工程')v.note=''}})
   const broken={V023:v=>v.phone==='電視保護材料',V011:v=>v.phone==='長形磁磚',V013:v=>v.phone==='地排磁磚',V012:v=>v.phone==='方形磁磚',V025:v=>v.note==='廠商名稱已確認為薇豐工程'};
   data.forEach(v=>{const check=broken[v.code];if(!check||!check(v)||v.id!=='seed_'+v.code)return;const seed=SEED.find(s=>s.code===v.code);['person','phone','services','projects','bank','branch','acctLast4','bankStatus','holder','note','lineName','lineId','originalCat'].forEach(k=>v[k]=seed[k]||'')})
 }
@@ -154,7 +154,7 @@ function save(){
 }
 function delVendor(id){const v=data.find(x=>x.id===id);if(!v||!confirm('確定刪除「'+v.name+'」？'))return;data=data.filter(x=>x.id!==id);persist();render()}
 function openImageDb(){return new Promise((resolve,reject)=>{if(!('indexedDB'in window)){reject(new Error('此瀏覽器不支援圖片儲存'));return}const req=indexedDB.open(IMAGE_DB,1);req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(IMAGE_STORE))db.createObjectStore(IMAGE_STORE)};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
-async function putBankImage(name,file){const db=await openImageDb();return new Promise((resolve,reject)=>{const tx=db.transaction(IMAGE_STORE,'readwrite');tx.objectStore(IMAGE_STORE).put(file,name);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}})}
+async function putBankImage(name,file){const type=file.type||(/\.png$/i.test(file.name)?'image/png':'image/jpeg'),blob=new Blob([await file.arrayBuffer()],{type});const db=await openImageDb();return new Promise((resolve,reject)=>{const tx=db.transaction(IMAGE_STORE,'readwrite');tx.objectStore(IMAGE_STORE).put(blob,name);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}})}
 async function getBankImage(name){const db=await openImageDb();return new Promise((resolve,reject)=>{const tx=db.transaction(IMAGE_STORE,'readonly'),req=tx.objectStore(IMAGE_STORE).get(name);req.onsuccess=()=>{db.close();resolve(req.result||null)};req.onerror=()=>{db.close();reject(req.error)}})}
 async function importBankImages(files){
   if(!files?.length)return;const expected=new Map(Object.values(IMAGE_MAP).map(n=>[n.toLowerCase(),n]));let imported=0,skipped=0;
@@ -162,10 +162,11 @@ async function importBankImages(files){
   }
 }
 let activeImageUrl='';
+function imageDataUrl(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error||new Error('無法讀取圖片'));reader.readAsDataURL(blob)})}
 async function openBankImage(code){
   const v=data.find(x=>x.code===code),mask=document.getElementById('bankMask'),body=document.getElementById('bankImageBody');document.getElementById('bankTitle').textContent=(v?.name||'廠商')+'｜匯款帳戶圖片';document.getElementById('bankImageNote').textContent='帳戶圖片只保存在這個瀏覽器，不會上傳到公開網站。';body.textContent='讀取中…';mask.classList.add('on');
   const fileName=IMAGE_MAP[code];if(!fileName){body.innerHTML='這筆帳戶在原 Excel 中沒有可用圖片。';return}
-  try{const blob=await getBankImage(fileName);if(!blob){body.innerHTML='尚未匯入這家廠商的帳戶圖片。<br>請按下方「匯入／更換圖片」，或使用頁面上方的「匯入帳戶圖片」一次選取全部圖片。';return}if(activeImageUrl)URL.revokeObjectURL(activeImageUrl);activeImageUrl=URL.createObjectURL(blob);body.innerHTML='<img src="'+activeImageUrl+'" alt="'+esc(v?.name||'廠商')+'匯款帳戶圖片">'}catch(e){body.textContent='圖片讀取失敗：'+e.message}
+  try{const blob=await getBankImage(fileName);if(!blob){body.innerHTML='尚未匯入這家廠商的帳戶圖片。<br>請按下方「匯入／更換圖片」，或使用頁面上方的「匯入帳戶圖片」一次選取全部圖片。';return}const dataUrl=await imageDataUrl(blob);body.innerHTML='';const img=document.createElement('img');img.alt=(v?.name||'廠商')+'匯款帳戶圖片';img.onload=()=>{document.getElementById('bankImageNote').textContent='帳戶圖片只保存在這個瀏覽器，不會上傳到公開網站。'};img.onerror=()=>{body.innerHTML='圖片無法顯示，請按下方「匯入／更換圖片」重新匯入這一張。'};img.src=dataUrl;body.appendChild(img)}catch(e){body.textContent='圖片讀取失敗：'+e.message}
 }
 function closeBankImage(){document.getElementById('bankMask').classList.remove('on');if(activeImageUrl){URL.revokeObjectURL(activeImageUrl);activeImageUrl=''}}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeForm();closeBankImage()}});render();
