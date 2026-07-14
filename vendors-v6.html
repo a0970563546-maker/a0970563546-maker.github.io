@@ -25,7 +25,7 @@ body{margin:0;font-family:"Microsoft JhengHei","PingFang TC",sans-serif;backgrou
 .acts{grid-column:5;grid-row:1/3;display:flex;gap:7px;align-items:flex-start}.empty{text-align:center;color:#8E99A3;padding:70px 20px;font-size:14px;line-height:2;background:#fff;border:1px solid var(--line);border-radius:12px}
 .mask{display:none;position:fixed;inset:0;background:rgba(24,38,52,.45);z-index:20;align-items:flex-start;justify-content:center;overflow:auto;padding:28px 14px}.mask.on{display:flex}
 .modal{background:#fff;border-radius:14px;width:720px;max-width:100%;padding:20px 22px;box-shadow:0 20px 60px #18263545}.modal h2{font-size:17px;color:var(--blue);margin:0 0 14px}.row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-.image-modal{width:860px}.image-head{display:flex;align-items:flex-start;gap:12px}.image-head h2{flex:1}.image-box{min-height:280px;border:1px solid #D9E1E8;border-radius:10px;background:#F5F7F9;display:flex;align-items:center;justify-content:center;padding:12px;color:#87939E;text-align:center;line-height:1.8}.image-box img{display:block;max-width:100%;max-height:68vh;object-fit:contain;border-radius:6px}.image-note{font-size:12px;color:#7E8993;margin:0 0 12px;line-height:1.7}.close-x{border:0;background:#EEF2F6;color:#637485;border-radius:7px;width:32px;height:32px;cursor:pointer;font-size:18px}
+.image-modal{width:860px}.image-head{display:flex;align-items:flex-start;gap:12px}.image-head h2{flex:1}.image-box{min-height:280px;border:1px solid #D9E1E8;border-radius:10px;background:#F5F7F9;display:flex;align-items:center;justify-content:center;padding:12px;color:#87939E;text-align:center;line-height:1.8}.image-box img{display:block;max-width:100%;max-height:68vh;object-fit:contain;border-radius:6px}.workspace-frame{display:block;width:100%;height:62vh;border:0;border-radius:6px;background:#F5F7F9}.image-note{font-size:12px;color:#7E8993;margin:0 0 12px;line-height:1.7}.close-x{border:0;background:#EEF2F6;color:#637485;border-radius:7px;width:32px;height:32px;cursor:pointer;font-size:18px}
 label{display:block;flex:1;min-width:170px;font-size:12px;color:#706F6B;font-weight:700}label input,label select,label textarea{width:100%;margin-top:5px;border:1px solid #CBD4DD;border-radius:7px;padding:9px 10px;font-size:14px;font-family:inherit;color:var(--ink);background:#fff}label textarea{resize:vertical;min-height:62px}.sec{font-size:12px;font-weight:800;color:#71869B;margin:12px 0 8px;border-top:1px solid #EDF0F2;padding-top:12px}.hint{font-size:11px;color:#9A948C;font-weight:500;margin-top:4px}.modacts{display:flex;justify-content:flex-end;gap:10px;margin-top:10px}
 @media(max-width:820px){.tools{grid-template-columns:1fr}.result{text-align:left}.card{grid-template-columns:1fr 1fr}.detail{grid-column:1/3}.acts{grid-column:1/3;grid-row:auto}.top small{display:none}}
 @media(max-width:520px){.wrap{padding:12px}.card{grid-template-columns:1fr}.detail,.acts{grid-column:1}.top{padding:12px}.top h1{font-size:16px}}
@@ -37,7 +37,7 @@ label{display:block;flex:1;min-width:170px;font-size:12px;color:#706F6B;font-wei
   <section class="intro">
     <div class="copy"><h2>廠商主檔</h2><p>廠商可依工種搜尋與編輯；匯款資訊僅顯示銀行與帳號末四碼。完整帳號及附件不會放在公開網站程式碼中。</p></div>
     <div class="stats"><div class="stat"><b id="sTotal">0</b><span>廠商總數</span></div><div class="stat"><b id="sCats">0</b><span>工種分類</span></div><div class="stat"><b id="sBank">0</b><span>有匯款資料</span></div></div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><div style="display:flex;gap:6px"><button class="btn pri" onclick="linkImageFolder()">連結圖片資料夾</button><button class="btn gho" onclick="document.getElementById('imageInput').click()">匯入圖片</button></div><span id="imageStatus" style="font-size:12px;color:#7E8993">檢查圖片中…</span></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="pill ok">🔒 公司 Google Workspace 圖片</span><span id="imageStatus" style="font-size:12px;color:#7E8993">已連線</span></div>
   </section>
   <section class="tools">
     <input class="field" id="q" placeholder="搜尋廠商、窗口、電話、服務項目…" oninput="render()">
@@ -68,15 +68,16 @@ label{display:block;flex:1;min-width:170px;font-size:12px;color:#706F6B;font-wei
 <div class="mask" id="bankMask" onclick="if(event.target===this)closeBankImage()">
   <div class="modal image-modal">
     <div class="image-head"><h2 id="bankTitle">匯款帳戶圖片</h2><button class="close-x" onclick="closeBankImage()" aria-label="關閉">×</button></div>
-    <p class="image-note" id="bankImageNote">帳戶圖片只保存在這個瀏覽器，不會上傳到公開網站。</p>
+    <p class="image-note" id="bankImageNote">帳戶圖片來自公司 Google Workspace，需使用公司帳號登入。</p>
     <div class="image-box" id="bankImageBody">讀取中…</div>
-    <div class="modacts"><button class="btn gho" onclick="linkImageFolder()">連結圖片資料夾</button><button class="btn gho" onclick="document.getElementById('imageInput').click()">匯入／更換圖片</button><button class="btn pri" onclick="closeBankImage()">關閉</button></div>
+    <div class="modacts"><button class="btn gho" onclick="openWorkspaceImage()">登入／另開圖片</button><button class="btn gho" onclick="reloadWorkspaceImage()">重新載入</button><button class="btn pri" onclick="closeBankImage()">關閉</button></div>
   </div>
 </div>
 
 <script>
 const KEY='mofan_vendors_v1',SEED_KEY='design_vendor_seed_20260714_v1';
 const IMAGE_DB='design_vendor_private_images_v1',IMAGE_STORE='accountImages',FOLDER_KEY='__image_folder__';
+const WORKSPACE_IMAGE_GATEWAY='https://script.google.com/macros/s/AKfycbzhLDWpltGGkDWXYsjMZdKMDQiAtjnHDILiNYMBaTxmiWHpwBnU-bZkMWdWYC_0KCAZ/exec';
 const IMAGE_MAP={V010:'V010.png',V020:'V020.png',V001:'V001.png',V002:'V002.png',V003:'V003.png',V004:'V004.png',V005:'V005.png',V006:'V006.png',V007:'V007.png',V008:'V008.png',V009:'V009.png',V013:'V013.png',V014:'V014.png',V015:'V015.png',V017:'V017.png',V018:'V018.png',V019:'V019.png',V021:'V021.png',V022:'V022.png',V011:'V011.png',V025:'V025.png'};
 const make=(code,name,cat,person='',phone='',services='',projects='',bank='',branch='',acctLast4='',bankStatus='',holder='',note='',lineName='',lineId='',originalCat='')=>({id:'seed_'+code,code,name,cat,person,phone,services,projects,bank,branch,acctLast4,bankStatus,holder,note,lineName,lineId,originalCat,status:'啟用'});
 const SEED=[
@@ -170,12 +171,15 @@ let activeBankCode='';
 function imageDataUrl(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error||new Error('無法讀取圖片'));reader.readAsDataURL(blob)})}
 async function openBankImage(code){
   activeBankCode=code;
-  const v=data.find(x=>x.code===code),mask=document.getElementById('bankMask'),body=document.getElementById('bankImageBody');document.getElementById('bankTitle').textContent=(v?.name||'廠商')+'｜匯款帳戶圖片';document.getElementById('bankImageNote').textContent='帳戶圖片只保存在這個瀏覽器，不會上傳到公開網站。';body.textContent='讀取中…';mask.classList.add('on');
+  const v=data.find(x=>x.code===code),mask=document.getElementById('bankMask'),body=document.getElementById('bankImageBody');document.getElementById('bankTitle').textContent=(v?.name||'廠商')+'｜匯款帳戶圖片';document.getElementById('bankImageNote').textContent='帳戶圖片來自公司 Google Workspace；第一次使用請按「登入／另開圖片」完成公司帳號授權。';body.innerHTML='<iframe class="workspace-frame" title="'+esc(v?.name||'廠商')+'匯款帳戶圖片" src="'+esc(workspaceImageUrl(code))+'"></iframe>';mask.classList.add('on');return;
   const fileName=IMAGE_MAP[code];if(!fileName){body.innerHTML='這筆帳戶在原 Excel 中沒有可用圖片。';return}
   try{const blob=await getBankImage(fileName);if(!blob){body.innerHTML='尚未匯入這家廠商的帳戶圖片。<br>請按下方「匯入／更換圖片」，或使用頁面上方的「匯入帳戶圖片」一次選取全部圖片。';return}const dataUrl=await imageDataUrl(blob);body.innerHTML='';const img=document.createElement('img');img.alt=(v?.name||'廠商')+'匯款帳戶圖片';img.onload=()=>{document.getElementById('bankImageNote').textContent='帳戶圖片只保存在這個瀏覽器，不會上傳到公開網站。'};img.onerror=()=>{body.innerHTML='圖片無法顯示，請按下方「匯入／更換圖片」重新匯入這一張。'};img.src=dataUrl;body.appendChild(img)}catch(e){body.textContent='圖片讀取失敗：'+e.message}
 }
+function workspaceImageUrl(code){return WORKSPACE_IMAGE_GATEWAY+'?code='+encodeURIComponent(code)}
+function openWorkspaceImage(){if(activeBankCode)window.open(workspaceImageUrl(activeBankCode),'_blank','noopener')}
+function reloadWorkspaceImage(){if(activeBankCode)openBankImage(activeBankCode)}
 function closeBankImage(){activeBankCode='';document.getElementById('bankMask').classList.remove('on')}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeForm();closeBankImage()}});render();refreshImageStatus();
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeForm();closeBankImage()}});render();
 </script>
 <script src="cats.js?v=20260713-cats"></script>
 </body>
