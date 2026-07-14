@@ -111,7 +111,7 @@ table.sch input[type=date]{border:1px solid #D3DAE2;border-radius:6px;padding:4p
 .pdf-sheet{width:1120px;max-width:100%;min-height:760px;margin:0 auto;background:#fff;color:#293746;padding:28px;box-shadow:0 10px 35px rgba(0,0,0,.24);font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif}
 .pdf-title{font-size:22px;font-weight:800;color:#2E5B8F;margin-bottom:5px}.pdf-sub{font-size:12px;color:#7F8B96;margin-bottom:16px}
 .pdf-summary{display:grid;grid-template-columns:1.4fr repeat(4,1fr);border:1px solid #DDE3EA;margin-bottom:18px}.pdf-metric{padding:10px 12px;border-right:1px solid #DDE3EA}.pdf-metric:last-child{border-right:0}.pdf-metric span{display:block;font-size:11px;color:#7F8B96;margin-bottom:4px}.pdf-metric b{font-size:16px;color:#2F4152}
-.pdf-section{font-size:15px;font-weight:800;color:#2E5B8F;margin:16px 0 8px;padding-bottom:5px;border-bottom:1px solid #DDE3EA}.pdf-vendors{width:100%;border-collapse:collapse;font-size:13px}.pdf-vendors th,.pdf-vendors td{border:1px solid #DDE3EA;padding:7px 9px;text-align:left}.pdf-vendors th{background:#F4F7FA;color:#647789}
+.pdf-section{font-size:15px;font-weight:800;color:#2E5B8F;margin:16px 0 8px;padding-bottom:5px;border-bottom:1px solid #DDE3EA}.pdf-schedule,.pdf-vendors{width:100%;border-collapse:collapse;font-size:13px}.pdf-schedule{page-break-inside:avoid;break-inside:avoid}.pdf-schedule th,.pdf-schedule td,.pdf-vendors th,.pdf-vendors td{border:1px solid #DDE3EA;padding:7px 9px;text-align:left}.pdf-schedule th,.pdf-vendors th{background:#F4F7FA;color:#647789}.pdf-schedule td:nth-child(1),.pdf-schedule td:nth-child(3),.pdf-schedule td:nth-child(4){white-space:nowrap}.pdf-schedule .date{font-weight:800;color:#2E5B8F}.pdf-table-note{font-size:11px;color:#87939E;margin:6px 0 10px}.pdf-sheet .gmonth{page-break-inside:avoid;break-inside:avoid}
 @media(max-width:760px){.pdf-summary{grid-template-columns:1fr 1fr}.pdf-metric{border-bottom:1px solid #DDE3EA}.pdf-sheet{padding:16px}.pdf-overlay{padding:8px}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -253,8 +253,8 @@ function ganttHTML(){
     tasks.filter(t=>t.e>=mS&&t.s<=mE).forEach(t=>{
       const clipS=t.s<mS?mS:t.s,clipE=t.e>mE?mE:t.e,left=x(clipS),width=((clipE-clipS)/DAY+1)*DW;
       const wd=wdays(t.s,t.e),sd=(t.s.getMonth()+1)+'/'+t.s.getDate(),ed=(t.e.getMonth()+1)+'/'+t.e.getDate();
-      const meta=sd+'–'+ed+'・'+wd+'工作天';
-      rows+='<div class="grow"><div class="glabel"><div class="t">'+esc(t.name)+'</div><div class="d">'+meta+'</div></div><div class="gtrack" style="width:'+W+'px">'+wknd+'<div class="bar '+(t.done?'done':(t.confirmed?'ing':'pre'))+'" style="left:'+left+'px;width:'+width+'px">'+(width>60?sd+' → '+ed:'')+'</div></div></div>';
+      const meta=sd+' ~ '+ed+'・'+wd+'工作天';
+      rows+='<div class="grow"><div class="glabel"><div class="t">'+esc(t.name)+'</div><div class="d">'+meta+'</div></div><div class="gtrack" style="width:'+W+'px">'+wknd+'<div class="bar '+(t.done?'done':(t.confirmed?'ing':'pre'))+'" style="left:'+left+'px;width:'+width+'px">'+(width>60?sd+' ~ '+ed:'')+'</div></div></div>';
     });
     const monthKey=cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0');
     const holtags=(HOL_LABELS[monthKey]||[]).map(h=>'<span class="holtag">'+h[0]+'　'+h[1]+'</span>').join('');
@@ -433,12 +433,21 @@ function toggleArchive(){
   save();updateArchiveUI();try{if(window.parent&&window.parent!==window)window.parent.postMessage({t:'engProChanged'},'*');}catch(e){}
 }
 function updateArchiveUI(){const b=document.getElementById('archBtn'),badge=document.getElementById('archBadge');if(P.archived){b.textContent='↩️ 還原';badge.innerHTML='<span class="arch-badge">📦 已結案</span>';}else{b.textContent='📦 結案';badge.innerHTML='';}}
+function pdfScheduleTableHTML(){
+  const rows=(P.tasks||[]).map((t,i)=>{
+    const confirmed=pd(t.confirmedStartDate)&&pd(t.confirmedEndDate),s=confirmed?pd(t.confirmedStartDate):pd(t.startDate),e=confirmed?pd(t.confirmedEndDate):pd(t.endDate);
+    const range=s&&e?(s.getMonth()+1)+'/'+s.getDate()+' ~ '+(e.getMonth()+1)+'/'+e.getDate():'日期未設定';
+    const state=t.done?'已完成':(confirmed?'確認排程':'預排');
+    return '<tr><td>'+(i+1)+'</td><td>'+esc(t.name||'未命名項目')+'</td><td class="date">'+range+'</td><td>'+state+'</td></tr>';
+  }).join('');
+  return '<table class="pdf-schedule"><tr><th style="width:8%">項次</th><th>排程項目</th><th style="width:24%">起訖日期</th><th style="width:15%">狀態</th></tr>'+(rows||'<tr><td colspan="4" style="text-align:center;color:#9AA4AE">尚無排程項目</td></tr>')+'</table><div class="pdf-table-note">日期優先顯示確認排程；尚未確認的項目則顯示預排日期。</div>';
+}
 function pdfReportHTML(){
   const tb=num(P.totalBudget),act=actTotal(),remain=tb!=null?tb-act:null,ratio=tb&&tb>0?(Math.round(act/tb*1000)/10)+'%':'—';
   const selected=[];(P.vendorQuotes||[]).forEach((c,ci)=>{if(c.sel>=0&&c.rows&&c.rows[c.sel])selected.push({no:ci+1,cat:c.cat||'工項',vendor:c.rows[c.sel].n||'—',amount:num(c.rows[c.sel].a)});});
   const vendorRows=selected.length?selected.map(x=>'<tr><td>'+x.no+'</td><td>'+esc(x.cat)+'</td><td>'+esc(x.vendor)+'</td><td>'+money(x.amount)+'</td></tr>').join(''):'<tr><td colspan="4" style="text-align:center;color:#9AA4AE">尚無選定廠商</td></tr>';
   const metrics=[['專案名稱',esc(P.name||'未命名專案')],['總預算',money(tb)],['實際支出',money(act)],['餘額',money(remain)],['實際支出／總預算',ratio]].map(x=>'<div class="pdf-metric"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');
-  return '<div class="pdf-title">'+esc(P.name||'未命名專案')+'</div><div class="pdf-sub">'+(P.archived?'專案結案報告':'專案進度報告')+'・A4 橫式預覽</div><div class="pdf-summary">'+metrics+'</div><div class="pdf-section">甘特圖</div>'+ganttHTML()+'<div class="pdf-section">已選定廠商報價</div><table class="pdf-vendors"><tr><th style="width:9%">項次</th><th>工項</th><th>廠商</th><th style="width:24%">選定報價金額</th></tr>'+vendorRows+'</table>';
+  return '<div class="pdf-title">'+esc(P.name||'未命名專案')+'</div><div class="pdf-sub">'+(P.archived?'專案結案報告':'專案進度報告')+'・A4 橫式預覽</div><div class="pdf-summary">'+metrics+'</div><div class="pdf-section">排程日期一覽</div>'+pdfScheduleTableHTML()+'<div class="pdf-section">甘特圖</div>'+ganttHTML()+'<div class="pdf-section">已選定廠商報價</div><table class="pdf-vendors"><tr><th style="width:9%">項次</th><th>工項</th><th>廠商</th><th style="width:24%">選定報價金額</th></tr>'+vendorRows+'</table>';
 }
 function openPdfPreview(){document.getElementById('pdfSheet').innerHTML=pdfReportHTML();document.getElementById('pdfPreview').classList.add('on');document.body.style.overflow='hidden';}
 function closePdfPreview(){document.getElementById('pdfPreview').classList.remove('on');document.body.style.overflow='';}
