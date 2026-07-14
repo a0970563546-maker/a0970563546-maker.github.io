@@ -102,6 +102,7 @@ const norm=t=>String(t||'').replace(/[\s（）()·・]/g,'').toLowerCase();
 const last4=t=>String(t||'').replace(/\D/g,'').slice(-4);
 function persist(){localStorage.setItem(KEY,JSON.stringify(data))}
 function repairShiftedSeedData(){
+  data.forEach(v=>{if(v.name==='薇豐工程'&&v.note==='廠商名稱已確認為薇豐工程')v.note=''})
   const broken={V023:v=>v.phone==='電視保護材料',V011:v=>v.phone==='長形磁磚',V013:v=>v.phone==='地排磁磚',V012:v=>v.phone==='方形磁磚',V025:v=>v.note==='廠商名稱已確認為薇豐工程'};
   data.forEach(v=>{const check=broken[v.code];if(!check||!check(v)||v.id!=='seed_'+v.code)return;const seed=SEED.find(s=>s.code===v.code);['person','phone','services','projects','bank','branch','acctLast4','bankStatus','holder','note','lineName','lineId','originalCat'].forEach(k=>v[k]=seed[k]||'')})
 }
