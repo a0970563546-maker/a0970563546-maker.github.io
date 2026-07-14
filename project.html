@@ -168,6 +168,28 @@ function wdays(s,e){let n=0;const d=new Date(s);while(d<=e){if(!off(d))n++;d.set
 function qs(k){const m=new RegExp('[?&]'+k+'=([^&]+)').exec(location.search);return m?decodeURIComponent(m[1]):null;}
 function num(s){const v=parseFloat(String(s==null?'':s).replace(/[^0-9.]/g,''));return isNaN(v)?null:v;}
 function money(n){return n==null?'—':n.toLocaleString();}
+function amountRaw(v){
+  const clean=String(v==null?'':v).replace(/,/g,'').replace(/[^0-9.]/g,'');
+  const parts=clean.split('.');
+  return parts.shift()+(parts.length?'.'+parts.join(''):'');
+}
+function amountText(v){
+  const raw=amountRaw(v);if(!raw)return '';
+  const parts=raw.split('.');
+  let whole=(parts[0]||'0').replace(/^0+(?=\d)/,'');
+  whole=whole.replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  return whole+(parts.length>1?'.'+parts[1]:'');
+}
+function formatAmountInput(el,setter){
+  const old=el.value,pos=el.selectionStart==null?old.length:el.selectionStart;
+  const before=amountRaw(old.slice(0,pos)),raw=amountRaw(old);
+  setter(raw);el.value=amountText(raw);
+  const next=Math.min(el.value.length,amountText(before).length);
+  try{el.setSelectionRange(next,next);}catch(e){}
+}
+function setBudgetAmount(el){formatAmountInput(el,v=>P.totalBudget=v);save();}
+function setVendorAmount(ci,ri,el){formatAmountInput(el,v=>P.vendorQuotes[ci].rows[ri].a=v);save();refreshBudget();}
+function setPettyAmount(i,el){formatAmountInput(el,v=>P.pettyCash[i].amount=v);save();refreshBudget();}
 let ALL=[],P=null,PIDX=-1,editing=false,curTab='sch',saveT=null;
 
 function loadData(){
@@ -210,7 +232,7 @@ function pettyTotal(){return (P.pettyCash||[]).reduce((s,p)=>s+(num(p.amount)||0
 function actTotal(){return confirmedVendorTotal()+pettyTotal();}
 function budgetHTML(){
   const tb=num(P.totalBudget), act=actTotal(), remain=tb!=null?tb-act:null;
-  const tbCell=editing?'<input type="text" value="'+esc(P.totalBudget||'')+'" oninput="P.totalBudget=this.value;save();refreshBudget();" placeholder="0">':money(tb);
+  const tbCell=editing?'<input type="text" inputmode="decimal" value="'+esc(amountText(P.totalBudget))+'" oninput="setBudgetAmount(this)" onblur="refreshBudget()" placeholder="0">':money(tb);
   const overAct=tb!=null&&act>tb;
   const pctW=tb&&tb>0?Math.min(100,act/tb*100):0;
   const confCats=P.vendorQuotes.filter(c=>c.sel>=0).map(c=>esc(c.cat)+(c.rows[c.sel]&&c.rows[c.sel].n?'('+esc(c.rows[c.sel].n)+')':''));
@@ -317,7 +339,7 @@ function startupHTML(){
     const defs=STARTUP_TYPES[ty]||[];
     if(editing){
       let main='';
-      if(ty==='總預算')main='<input type="text" value="'+esc(P.totalBudget||'')+'" oninput="P.totalBudget=this.value;save();refreshBudget()" placeholder="總預算金額">';
+      if(ty==='總預算')main='<input type="text" inputmode="decimal" value="'+esc(amountText(P.totalBudget))+'" oninput="setBudgetAmount(this)" onblur="refreshBudget()" placeholder="總預算金額">';
       else if(ty==='其他')main='<input type="text" class="ssname" value="'+esc(s.text||'')+'" oninput="ssset('+i+',\'text\',this.value)" placeholder="流程名稱">';
       else if(defs.length)main='<div class="checks">'+defs.map(x=>'<label><input type="checkbox" '+(s[x[0]]?'checked':'')+' onchange="ssset('+i+',\''+x[0]+'\',this.checked)"> '+x[1]+'</label>').join('')+'</div>';
       else main='<span class="scd">'+esc(ty)+'</span>';
@@ -364,8 +386,8 @@ function vendorHTML(){
   return P.vendorQuotes.map((cat,ci)=>{
     const rows=cat.rows.map((r,ri)=>{
       const selCell='<td style="text-align:center">'+((r.n||editing)?'<button type="button" class="selbtn'+(cat.sel===ri?' on':'')+'" onclick="vselToggle('+ci+','+ri+')">'+(cat.sel===ri?'✔ 選定':'選定')+'</button>':'')+'</td>';
-      if(editing) return '<tr>'+selCell+'<td><input type="text" value="'+esc(r.n)+'" oninput="vset('+ci+','+ri+',\'n\',this.value)" placeholder="廠商名稱"></td><td><input type="text" value="'+esc(r.d)+'" oninput="vset('+ci+','+ri+',\'d\',this.value)" placeholder="M/D"></td><td><input type="text" value="'+esc(r.a)+'" oninput="vset('+ci+','+ri+',\'a\',this.value)" placeholder="金額"></td><td><input type="text" value="'+esc(r.m)+'" oninput="vset('+ci+','+ri+',\'m\',this.value)" placeholder="備註"></td><td><button class="rmv" onclick="vrm('+ci+','+ri+')">×</button></td></tr>';
-      return '<tr'+(cat.sel===ri?' style="background:#EEF4FB"':'')+'>'+selCell+'<td>'+esc(r.n||'—')+'</td><td>'+esc(r.d||'—')+'</td><td>'+esc(r.a||'—')+'</td><td>'+esc(r.m||'')+'</td></tr>';
+      if(editing) return '<tr>'+selCell+'<td><input type="text" value="'+esc(r.n)+'" oninput="vset('+ci+','+ri+',\'n\',this.value)" placeholder="廠商名稱"></td><td><input type="text" value="'+esc(r.d)+'" oninput="vset('+ci+','+ri+',\'d\',this.value)" placeholder="M/D"></td><td><input type="text" inputmode="decimal" value="'+esc(amountText(r.a))+'" oninput="setVendorAmount('+ci+','+ri+',this)" placeholder="金額"></td><td><input type="text" value="'+esc(r.m)+'" oninput="vset('+ci+','+ri+',\'m\',this.value)" placeholder="備註"></td><td><button class="rmv" onclick="vrm('+ci+','+ri+')">×</button></td></tr>';
+      return '<tr'+(cat.sel===ri?' style="background:#EEF4FB"':'')+'>'+selCell+'<td>'+esc(r.n||'—')+'</td><td>'+esc(r.d||'—')+'</td><td>'+money(num(r.a))+'</td><td>'+esc(r.m||'')+'</td></tr>';
     }).join('');
     const amts=cat.rows.map(r=>num(r.a)).filter(x=>x!=null),low=amts.length?Math.min(...amts):null;
     const selAmt=(cat.sel>=0&&cat.rows[cat.sel])?num(cat.rows[cat.sel].a):null;
@@ -385,7 +407,7 @@ function expenseHTML(){
   const confRows=conf.length?conf.map(x=>'<tr><td>'+esc(x.cat)+'</td><td>'+esc(x.n||'—')+'</td><td>'+money(x.a)+'</td></tr>').join(''):'<tr><td colspan="3" style="text-align:center;color:#A8AEB6;padding:14px">尚無選定發包（到上方各工項點廠商前的「選定」）</td></tr>';
   const STA=['申請中','已核准','已支出'];
   const pcRows=(P.pettyCash||[]).map((p,i)=>editing
-    ?'<tr><td><input type="text" value="'+esc(p.name)+'" oninput="pset('+i+',\'name\',this.value)" placeholder="項目名稱"></td><td><input type="text" value="'+esc(p.amount)+'" oninput="pset('+i+',\'amount\',this.value)" placeholder="金額"></td><td><select onchange="pset('+i+',\'status\',this.value)">'+STA.map(s=>'<option'+(p.status===s?' selected':'')+'>'+s+'</option>').join('')+'</select></td><td><input type="date" value="'+esc((p.date||'').replace(/\//g,"-"))+'" onchange="pset('+i+',\'date\',this.value)"></td><td><input type="text" value="'+esc(p.note)+'" oninput="pset('+i+',\'note\',this.value)" placeholder="備註"></td><td><button class="rmv" onclick="prm('+i+')">×</button></td></tr>'
+    ?'<tr><td><input type="text" value="'+esc(p.name)+'" oninput="pset('+i+',\'name\',this.value)" placeholder="項目名稱"></td><td><input type="text" inputmode="decimal" value="'+esc(amountText(p.amount))+'" oninput="setPettyAmount('+i+',this)" placeholder="金額"></td><td><select onchange="pset('+i+',\'status\',this.value)">'+STA.map(s=>'<option'+(p.status===s?' selected':'')+'>'+s+'</option>').join('')+'</select></td><td><input type="date" value="'+esc((p.date||'').replace(/\//g,"-"))+'" onchange="pset('+i+',\'date\',this.value)"></td><td><input type="text" value="'+esc(p.note)+'" oninput="pset('+i+',\'note\',this.value)" placeholder="備註"></td><td><button class="rmv" onclick="prm('+i+')">×</button></td></tr>'
     :'<tr><td>'+esc(p.name||'—')+'</td><td>'+money(num(p.amount))+'</td><td>'+esc(p.status||'—')+'</td><td>'+esc(p.date||'—')+'</td><td>'+esc(p.note||'')+'</td></tr>').join('');
   const pcTh='<tr><th>項目</th><th style="width:16%">金額</th><th style="width:14%">申請狀態</th><th style="width:14%">日期</th><th>備註</th>'+(editing?'<th style="width:36px"></th>':'')+'</tr>';
   return '<div class="panel"><div class="sec-h">💳 實際支出明細<span class="ln"></span></div>'

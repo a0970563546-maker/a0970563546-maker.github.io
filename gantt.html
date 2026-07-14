@@ -135,7 +135,8 @@ function boot(){
   loadData();
   if(!P){ document.querySelector('.wrap').innerHTML='<div class="empty">找不到這個專案的資料<br>請先在平台開一次以完成雲端同步</div>'; return; }
   document.getElementById('title').textContent='📅 '+P.name+' · 排程';
-  document.getElementById('budget').innerHTML='<div class="budget">💰 總預算：'+esc(P.totalBudget||'—')+' 元（含稅）</div>';
+  const budgetNum=parseFloat(String(P.totalBudget||'').replace(/,/g,''));
+  document.getElementById('budget').innerHTML='<div class="budget">💰 總預算：'+(isNaN(budgetNum)?'—':budgetNum.toLocaleString())+' 元（含稅）</div>';
   renderChart(); setLockUI();
 }
 boot();
