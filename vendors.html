@@ -21,10 +21,11 @@ body{margin:0;font-family:"Microsoft JhengHei","PingFang TC",sans-serif;backgrou
 .catblk{margin-bottom:18px}.cathd{font-size:13px;font-weight:800;color:var(--blue);background:#EAF0F6;border:1px solid #D5E0EB;border-radius:10px 10px 0 0;padding:9px 14px;display:flex;justify-content:space-between}.cathd span{font-weight:600;color:#8496A8}
 .card{background:var(--paper);border:1px solid var(--line);border-top:0;padding:14px 16px;display:grid;grid-template-columns:minmax(190px,1.2fr) minmax(145px,.8fr) minmax(145px,.8fr) minmax(220px,1.4fr) auto;gap:14px;align-items:start}
 .card:last-child{border-radius:0 0 10px 10px}.card+.card{border-top:1px dashed #E7EBEF}.f{min-width:0}.lb{font-size:10px;color:#97A1AA;margin-bottom:3px;letter-spacing:.04em}.vl{font-size:13px;color:#3A4652;font-weight:600;line-height:1.55;overflow-wrap:anywhere}.vendor-name{font-size:15px;color:#294F7B}.code{font-size:10px;background:#EEF3F8;color:#66809A;border-radius:4px;padding:2px 5px;margin-left:5px;vertical-align:2px}
-.detail{grid-column:1/5;display:flex;gap:9px;flex-wrap:wrap}.pill{font-size:11px;color:#64727E;background:#F5F7F9;border:1px solid #E2E7EB;padding:5px 8px;border-radius:6px}.bank{color:#3E5772;background:#F2F6FA;border-color:#D7E2ED}.ok{color:#4E704F;background:#EDF5E8;border-color:#D4E5CC}.wait{color:#91601F;background:#FFF6E4;border-color:#ECD8AE}.none{color:#8B6C68;background:#FAEFED;border-color:#E9D2CE}
+.detail{grid-column:1/5;display:flex;gap:9px;flex-wrap:wrap}.pill{font-size:11px;color:#64727E;background:#F5F7F9;border:1px solid #E2E7EB;padding:5px 8px;border-radius:6px}.bank{color:#3E5772;background:#F2F6FA;border-color:#D7E2ED}.bank-link{font-family:inherit;cursor:pointer}.bank-link:hover{background:#E5EEF7;border-color:#AFC5DA;color:#294F7B}.ok{color:#4E704F;background:#EDF5E8;border-color:#D4E5CC}.wait{color:#91601F;background:#FFF6E4;border-color:#ECD8AE}.none{color:#8B6C68;background:#FAEFED;border-color:#E9D2CE}
 .acts{grid-column:5;grid-row:1/3;display:flex;gap:7px;align-items:flex-start}.empty{text-align:center;color:#8E99A3;padding:70px 20px;font-size:14px;line-height:2;background:#fff;border:1px solid var(--line);border-radius:12px}
 .mask{display:none;position:fixed;inset:0;background:rgba(24,38,52,.45);z-index:20;align-items:flex-start;justify-content:center;overflow:auto;padding:28px 14px}.mask.on{display:flex}
 .modal{background:#fff;border-radius:14px;width:720px;max-width:100%;padding:20px 22px;box-shadow:0 20px 60px #18263545}.modal h2{font-size:17px;color:var(--blue);margin:0 0 14px}.row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.image-modal{width:860px}.image-head{display:flex;align-items:flex-start;gap:12px}.image-head h2{flex:1}.image-box{min-height:280px;border:1px solid #D9E1E8;border-radius:10px;background:#F5F7F9;display:flex;align-items:center;justify-content:center;padding:12px;color:#87939E;text-align:center;line-height:1.8}.image-box img{display:block;max-width:100%;max-height:68vh;object-fit:contain;border-radius:6px}.image-note{font-size:12px;color:#7E8993;margin:0 0 12px;line-height:1.7}.close-x{border:0;background:#EEF2F6;color:#637485;border-radius:7px;width:32px;height:32px;cursor:pointer;font-size:18px}
 label{display:block;flex:1;min-width:170px;font-size:12px;color:#706F6B;font-weight:700}label input,label select,label textarea{width:100%;margin-top:5px;border:1px solid #CBD4DD;border-radius:7px;padding:9px 10px;font-size:14px;font-family:inherit;color:var(--ink);background:#fff}label textarea{resize:vertical;min-height:62px}.sec{font-size:12px;font-weight:800;color:#71869B;margin:12px 0 8px;border-top:1px solid #EDF0F2;padding-top:12px}.hint{font-size:11px;color:#9A948C;font-weight:500;margin-top:4px}.modacts{display:flex;justify-content:flex-end;gap:10px;margin-top:10px}
 @media(max-width:820px){.tools{grid-template-columns:1fr}.result{text-align:left}.card{grid-template-columns:1fr 1fr}.detail{grid-column:1/3}.acts{grid-column:1/3;grid-row:auto}.top small{display:none}}
 @media(max-width:520px){.wrap{padding:12px}.card{grid-template-columns:1fr}.detail,.acts{grid-column:1}.top{padding:12px}.top h1{font-size:16px}}
@@ -36,6 +37,7 @@ label{display:block;flex:1;min-width:170px;font-size:12px;color:#706F6B;font-wei
   <section class="intro">
     <div class="copy"><h2>廠商主檔</h2><p>廠商可依工種搜尋與編輯；匯款資訊僅顯示銀行與帳號末四碼。完整帳號及附件不會放在公開網站程式碼中。</p></div>
     <div class="stats"><div class="stat"><b id="sTotal">0</b><span>廠商總數</span></div><div class="stat"><b id="sCats">0</b><span>工種分類</span></div><div class="stat"><b id="sBank">0</b><span>有匯款資料</span></div></div>
+    <button class="btn gho" onclick="document.getElementById('imageInput').click()">匯入帳戶圖片</button>
   </section>
   <section class="tools">
     <input class="field" id="q" placeholder="搜尋廠商、窗口、電話、服務項目…" oninput="render()">
@@ -43,6 +45,7 @@ label{display:block;flex:1;min-width:170px;font-size:12px;color:#706F6B;font-wei
     <div class="result" id="resultCount"></div>
   </section>
   <div id="list"></div>
+  <input type="file" id="imageInput" accept="image/png,image/jpeg" multiple hidden onchange="importBankImages(this.files);this.value=''">
 </main>
 
 <div class="mask" id="mask" onclick="if(event.target===this)closeForm()">
@@ -62,8 +65,19 @@ label{display:block;flex:1;min-width:170px;font-size:12px;color:#706F6B;font-wei
   </div>
 </div>
 
+<div class="mask" id="bankMask" onclick="if(event.target===this)closeBankImage()">
+  <div class="modal image-modal">
+    <div class="image-head"><h2 id="bankTitle">匯款帳戶圖片</h2><button class="close-x" onclick="closeBankImage()" aria-label="關閉">×</button></div>
+    <p class="image-note" id="bankImageNote">帳戶圖片只保存在這個瀏覽器，不會上傳到公開網站。</p>
+    <div class="image-box" id="bankImageBody">讀取中…</div>
+    <div class="modacts"><button class="btn gho" onclick="document.getElementById('imageInput').click()">匯入／更換圖片</button><button class="btn pri" onclick="closeBankImage()">關閉</button></div>
+  </div>
+</div>
+
 <script>
 const KEY='mofan_vendors_v1',SEED_KEY='design_vendor_seed_20260714_v1';
+const IMAGE_DB='design_vendor_private_images_v1',IMAGE_STORE='accountImages';
+const IMAGE_MAP={V010:'V010.png',V020:'V020.png',V001:'V001.png',V002:'V002.png',V003:'V003.png',V004:'V004.png',V005:'V005.png',V006:'V006.png',V007:'V007.png',V008:'V008.png',V009:'V009.png',V013:'V013.png',V014:'V014.png',V015:'V015.png',V017:'V017.png',V018:'V018.png',V019:'V019.png',V021:'V021.png',V022:'V022.png',V011:'V011.png'};
 const make=(code,name,cat,person='',phone='',services='',projects='',bank='',branch='',acctLast4='',bankStatus='',holder='',note='',lineName='',lineId='',originalCat='')=>({id:'seed_'+code,code,name,cat,person,phone,services,projects,bank,branch,acctLast4,bankStatus,holder,note,lineName,lineId,originalCat,status:'啟用'});
 const SEED=[
 make('V010','高雄市結構工程工業技師公會','鑑定','','','','','第一銀行','高雄分行','6659','已確認','高雄市結構工程工業技師公會'),
@@ -124,7 +138,7 @@ function render(){
   const groups={};shown.forEach(v=>{const c=v.cat||'未分類';(groups[c]??=[]).push(v)});
   list.innerHTML=Object.keys(groups).sort((a,b)=>a.localeCompare(b,'zh-Hant')).map(cat=>'<section class="catblk"><div class="cathd">'+esc(cat)+'<span>'+groups[cat].length+' 家</span></div>'+groups[cat].sort((a,b)=>a.name.localeCompare(b.name,'zh-Hant')).map(v=>{
     const line=[v.lineName||v.line,v.lineId].filter(Boolean).join('／');const acct=v.acctLast4||last4(v.acct);const bank=[v.bank,v.branch].filter(Boolean).join(' ');const details=[];
-    if(v.services)details.push('<span class="pill">服務：'+esc(v.services)+'</span>');if(v.projects)details.push('<span class="pill">合作：'+esc(v.projects)+'</span>');if(bank||acct)details.push('<span class="pill bank">🏦 '+esc(bank)+(acct?'　•••• '+esc(acct):'')+'</span>');if(v.bankStatus)details.push('<span class="pill '+statusClass(v.bankStatus)+'">'+esc(v.bankStatus)+'</span>');if(v.note)details.push('<span class="pill">備註：'+esc(v.note)+'</span>');
+    if(v.services)details.push('<span class="pill">服務：'+esc(v.services)+'</span>');if(v.projects)details.push('<span class="pill">合作：'+esc(v.projects)+'</span>');if(bank||acct)details.push('<button type="button" class="pill bank bank-link" onclick="openBankImage(\''+esc(v.code||'')+'\')">🏦 '+esc(bank)+(acct?'　•••• '+esc(acct):'')+'　🖼</button>');if(v.bankStatus)details.push('<span class="pill '+statusClass(v.bankStatus)+'">'+esc(v.bankStatus)+'</span>');if(v.note)details.push('<span class="pill">備註：'+esc(v.note)+'</span>');
     return '<article class="card"><div class="f"><div class="lb">廠商名稱</div><div class="vl vendor-name">'+esc(v.name)+(v.code?'<span class="code">'+esc(v.code)+'</span>':'')+'</div></div><div class="f"><div class="lb">廠商窗口</div><div class="vl">'+esc(v.person||'—')+'</div></div><div class="f"><div class="lb">聯絡電話</div><div class="vl">'+esc(v.phone||'—')+'</div></div><div class="f"><div class="lb">LINE／聯絡資訊</div><div class="vl">'+esc(line||v.addr||'—')+'</div></div><div class="acts"><button class="btn gho" onclick="openForm(\''+esc(v.id)+'\')">編輯</button><button class="btn del" onclick="delVendor(\''+esc(v.id)+'\')">刪除</button></div><div class="detail">'+details.join('')+'</div></article>'
   }).join('')+'</section>').join('')
 }
@@ -139,7 +153,22 @@ function save(){
   if(editId){const i=data.findIndex(x=>x.id===editId);data[i]=obj}else data.push(obj);persist();closeForm();render()
 }
 function delVendor(id){const v=data.find(x=>x.id===id);if(!v||!confirm('確定刪除「'+v.name+'」？'))return;data=data.filter(x=>x.id!==id);persist();render()}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeForm()});render();
+function openImageDb(){return new Promise((resolve,reject)=>{if(!('indexedDB'in window)){reject(new Error('此瀏覽器不支援圖片儲存'));return}const req=indexedDB.open(IMAGE_DB,1);req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(IMAGE_STORE))db.createObjectStore(IMAGE_STORE)};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
+async function putBankImage(name,file){const db=await openImageDb();return new Promise((resolve,reject)=>{const tx=db.transaction(IMAGE_STORE,'readwrite');tx.objectStore(IMAGE_STORE).put(file,name);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}})}
+async function getBankImage(name){const db=await openImageDb();return new Promise((resolve,reject)=>{const tx=db.transaction(IMAGE_STORE,'readonly'),req=tx.objectStore(IMAGE_STORE).get(name);req.onsuccess=()=>{db.close();resolve(req.result||null)};req.onerror=()=>{db.close();reject(req.error)}})}
+async function importBankImages(files){
+  if(!files?.length)return;const expected=new Map(Object.values(IMAGE_MAP).map(n=>[n.toLowerCase(),n]));let imported=0,skipped=0;
+  try{for(const file of files){const canonical=expected.get(file.name.toLowerCase());if(!canonical){skipped++;continue}await putBankImage(canonical,file);imported++}alert('已匯入 '+imported+' 張帳戶圖片'+(skipped?'；另有 '+skipped+' 個檔案名稱無法對應':'')+'。之後點選匯款資訊即可查看。')}catch(e){alert('圖片匯入失敗：'+e.message)
+  }
+}
+let activeImageUrl='';
+async function openBankImage(code){
+  const v=data.find(x=>x.code===code),mask=document.getElementById('bankMask'),body=document.getElementById('bankImageBody');document.getElementById('bankTitle').textContent=(v?.name||'廠商')+'｜匯款帳戶圖片';document.getElementById('bankImageNote').textContent='帳戶圖片只保存在這個瀏覽器，不會上傳到公開網站。';body.textContent='讀取中…';mask.classList.add('on');
+  const fileName=IMAGE_MAP[code];if(!fileName){body.innerHTML='這筆帳戶在原 Excel 中沒有可用圖片。';return}
+  try{const blob=await getBankImage(fileName);if(!blob){body.innerHTML='尚未匯入這家廠商的帳戶圖片。<br>請按下方「匯入／更換圖片」，或使用頁面上方的「匯入帳戶圖片」一次選取全部圖片。';return}if(activeImageUrl)URL.revokeObjectURL(activeImageUrl);activeImageUrl=URL.createObjectURL(blob);body.innerHTML='<img src="'+activeImageUrl+'" alt="'+esc(v?.name||'廠商')+'匯款帳戶圖片">'}catch(e){body.textContent='圖片讀取失敗：'+e.message}
+}
+function closeBankImage(){document.getElementById('bankMask').classList.remove('on');if(activeImageUrl){URL.revokeObjectURL(activeImageUrl);activeImageUrl=''}}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeForm();closeBankImage()}});render();
 </script>
 <script src="cats.js?v=20260713-cats"></script>
 </body>
