@@ -67,7 +67,7 @@ iframe{border:0;width:100%;height:100%;flex:1;background:#fff}
 </div>
 <script>
 const ENG="https://a0970563546-maker.github.io/engmanagement/";
-const PROJECT_BUILD="20260714-amount-input-fix";
+const PROJECT_BUILD="20260715-holidays-2027";
 function openSide(){document.getElementById('side').classList.add('open');document.getElementById('mask').classList.add('open');}
 function closeSide(){document.getElementById('side').classList.remove('open');document.getElementById('mask').classList.remove('open');}
 const frame=document.getElementById('frame'), ttl=document.getElementById('ttl');
@@ -94,7 +94,7 @@ function projRow(p,i,withCheck){
 }
 function updateCompare(){
   const ids=[...document.querySelectorAll('#projList .pcheck:checked')].map(c=>c.dataset.id);
-  if(ids.length){ nav('https://a0970563546-maker.github.io/allgantt.html?ids='+ids.join(','),'排程比對（'+ids.length+' 案）',null); }
+  if(ids.length){ nav('https://a0970563546-maker.github.io/allgantt.html?ids='+ids.join(',')+'&v=20260715-holidays-2027','排程比對（'+ids.length+' 案）',null); }
 }
 function renderProjects(){
   const projs=getProjects(), arch=getArchived();
