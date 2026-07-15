@@ -108,7 +108,25 @@ function renderProjects(){
 renderProjects();
 // auto-refresh sidebar when a project is changed (e.g. archived) from the iframe
 window.addEventListener('storage',function(e){if(e.key==='engMgmtProData')renderProjects();});
-window.addEventListener('message',function(e){if(e.data&&e.data.t==='engProChanged')renderProjects();});
+let vendorCloudBridge=null;
+window.addEventListener('message',function(e){
+  const message=e.data||{};
+  const frame=document.getElementById('frame');
+  if(message.source==='mofan-vendor-cloud'){
+    let trusted=false;
+    try{const host=new URL(e.origin).hostname;trusted=host==='script.google.com'||host.endsWith('.googleusercontent.com')}catch(error){}
+    if(!trusted)return;
+    vendorCloudBridge=e.source;
+    if(frame&&frame.contentWindow)frame.contentWindow.postMessage(message,location.origin);
+    return;
+  }
+  if(message.source==='mofan-vendor-platform'){
+    if(e.origin!==location.origin||e.source!==frame.contentWindow||!vendorCloudBridge)return;
+    vendorCloudBridge.postMessage(message,'*');
+    return;
+  }
+  if(message.t==='engProChanged')renderProjects();
+});
 // refresh from cloud if configured
 (function(){
   let cu=null;try{cu=localStorage.getItem('engMgmtCloudUrl');}catch(e){}
