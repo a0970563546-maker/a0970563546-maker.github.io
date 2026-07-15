@@ -918,6 +918,12 @@ document.getElementById("yarnBall").innerHTML = `
 </svg>`;
 
 /* ---------- init ---------- */
+window.addEventListener('message',function(event){
+  if(event.origin===location.origin&&event.data&&event.data.t==='workspaceDataSynced'){
+    data=load();
+    render();
+  }
+});
 initControls();
 render();
 checkReminders();
