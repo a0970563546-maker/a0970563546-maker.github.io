@@ -133,6 +133,37 @@
   .btn.danger{background:#fee2e2; color:#b91c1c}
   .btn.line{background:#fff; border:1px solid var(--line); color:var(--ink)}
 
+  /* meeting notes use a docked panel so the list remains usable */
+  .sheet-head{display:flex; align-items:center; gap:10px; margin-bottom:16px}
+  .sheet-head h2{flex:1; margin:2px 0}
+  .meeting-tools{display:none; align-items:center; gap:4px}
+  .meeting-tools .icon-btn{font-size:14px; font-weight:700; padding:7px 9px}
+  .meeting-only{display:none}
+  .overlay.meeting-mode{
+    background:transparent; align-items:stretch; justify-content:flex-end; pointer-events:none;
+  }
+  .overlay.meeting-mode .sheet{
+    pointer-events:auto; width:min(470px,100%); max-width:470px; height:100%; max-height:none;
+    border-radius:18px 0 0 18px; padding:18px 20px 22px;
+    box-shadow:-12px 0 34px rgba(15,23,42,.16); animation:slideIn .22s ease;
+  }
+  .overlay.meeting-mode .meeting-tools{display:flex}
+  .overlay.meeting-mode .standard-only{display:none}
+  .overlay.meeting-mode .meeting-only{display:block}
+  .overlay.meeting-mode #f_note{min-height:calc(100vh - 500px); resize:none; line-height:1.7}
+  .meeting-save-state{font-size:12px; color:#16a34a; margin:5px 2px 0; min-height:18px}
+  .meeting-restore{
+    position:fixed; right:18px; bottom:22px; z-index:49; display:none; border:1px solid #bfdbfe;
+    border-radius:12px; background:#fff; color:var(--brand-d); padding:11px 15px; font-weight:700;
+    box-shadow:0 8px 24px rgba(15,23,42,.18); cursor:pointer;
+  }
+  .meeting-restore.on{display:block}
+  @keyframes slideIn{from{transform:translateX(36px);opacity:.65}to{transform:none;opacity:1}}
+  @media(max-width:599px){
+    .overlay.meeting-mode .sheet{width:100%;max-width:none;border-radius:0;padding-bottom:24px}
+    .overlay.meeting-mode #f_note{min-height:38vh}
+  }
+
   /* doc checklist */
   .doclist{border:1px solid var(--line); border-radius:11px; padding:8px; max-height:180px; overflow:auto}
   .docrow{display:flex; align-items:center; gap:8px; padding:5px 4px}
@@ -271,7 +302,13 @@
 <!-- form modal -->
 <div class="overlay" id="overlay">
   <div class="sheet">
-    <h2 id="formTitle">新增事項</h2>
+    <div class="sheet-head">
+      <h2 id="formTitle">新增事項</h2>
+      <div class="meeting-tools" id="meetingPanelTools">
+        <button class="icon-btn" type="button" onclick="minimizeMeetingPanel()" title="收合會議記錄">— 收合</button>
+        <button class="icon-btn" type="button" onclick="closeForm()" title="關閉會議記錄">✕</button>
+      </div>
+    </div>
     <input type="hidden" id="f_id">
     <div class="field">
       <label>事項標題 *</label>
@@ -301,7 +338,7 @@
       </div>
     </div>
 
-    <div class="field">
+    <div class="field standard-only">
       <label>資料項目清單（可追蹤多份文件，逐項勾選）</label>
       <div class="doclist" id="docList"></div>
       <div class="docadd">
@@ -311,8 +348,9 @@
     </div>
 
     <div class="field">
-      <label>備註 / 進度記錄</label>
+      <label id="noteLabel">備註 / 進度記錄</label>
       <textarea id="f_note" placeholder="送審文號、補正事項、會議結論、待確認重點…"></textarea>
+      <div class="meeting-save-state meeting-only" id="meetingSaveState">✓ 已自動儲存草稿</div>
     </div>
     <div class="sheet-act">
       <button class="btn danger" id="delBtn" onclick="delItem()" style="display:none">刪除</button>
@@ -321,6 +359,8 @@
     </div>
   </div>
 </div>
+
+<button class="meeting-restore" id="meetingRestore" type="button" onclick="restoreMeetingPanel()">📝 會議記錄</button>
 
 <!-- cloud sync modal -->
 <div class="overlay" id="cloudOverlay">
@@ -374,6 +414,7 @@ const STATUS = ["待處理","進行中","已送出","已結案"];
 const STATUS_MAP = {"待審查/待回覆":"進行中","已完成":"已結案","已擱置":"待處理"};
 const KEY = "design_todo_v1";
 const DRAFT_KEY = "design_todo_draft_v1";
+const MEETING_CAT = "會議記錄";
 const REMIND_HOUR = 10; // 每日提醒時間：早上10點
 // 台灣國定假日（含補假）。2026年已取消補班，故無補班日需扣除。
 const HOLIDAYS = [
@@ -549,14 +590,38 @@ function addPerson(){
 }
 
 let draftTimer=null;
+function isMeetingForm(){ return f_cat.value===MEETING_CAT; }
+function setMeetingSaveState(text){
+  const el=document.getElementById("meetingSaveState");
+  if(el) el.textContent=text;
+}
+function syncFormMode(){
+  const meeting=isMeetingForm();
+  const overlay=document.getElementById("overlay");
+  overlay.classList.toggle("meeting-mode",meeting);
+  document.getElementById("noteLabel").textContent=meeting?"會議內容":"備註 / 進度記錄";
+  f_note.placeholder=meeting?"輸入討論重點、決議事項、待辦與後續追蹤…":"送審文號、補正事項、會議結論、待確認重點…";
+  if(meeting) setMeetingSaveState("✓ 已自動儲存草稿");
+}
 function formDraft(){
   return {id:f_id.value||'',title:f_title.value,cat:f_cat.value,status:f_status.value,due:f_due.value,
     note:f_note.value,docs:formDocs.map(d=>({...d})),people:formPeople.map(p=>({...p})),
     docInput:document.getElementById('docInput').value,peopleInput:document.getElementById('peopleInput').value};
 }
+function persistFormDraftNow(){
+  clearTimeout(draftTimer);
+  try{
+    localStorage.setItem(DRAFT_KEY,JSON.stringify(formDraft()));
+    if(isMeetingForm()) setMeetingSaveState("✓ 已自動儲存草稿");
+  }catch(e){
+    if(isMeetingForm()) setMeetingSaveState("草稿儲存失敗");
+  }
+}
 function saveFormDraft(){
   if(!document.getElementById('overlay').classList.contains('on'))return;
-  clearTimeout(draftTimer);draftTimer=setTimeout(()=>{try{localStorage.setItem(DRAFT_KEY,JSON.stringify(formDraft()));}catch(e){}},120);
+  clearTimeout(draftTimer);
+  if(isMeetingForm()) setMeetingSaveState("正在儲存草稿…");
+  draftTimer=setTimeout(persistFormDraftNow,120);
 }
 function clearFormDraft(){clearTimeout(draftTimer);try{localStorage.removeItem(DRAFT_KEY);}catch(e){}}
 function restoreFormDraft(id){
@@ -570,6 +635,7 @@ function restoreFormDraft(id){
 
 function openForm(id){
   closeMenu();
+  document.getElementById("meetingRestore").classList.remove("on");
   if(id){
     const it=data.find(i=>i.id===id); if(!it) return;
     document.getElementById("formTitle").textContent="編輯事項";
@@ -587,21 +653,41 @@ function openForm(id){
     document.getElementById("delBtn").style.display="none";
   }
   restoreFormDraft(id||'');
+  syncFormMode();
   renderPeople(); renderDocs();
   document.getElementById("overlay").classList.add("on");
 }
-function closeForm(){ clearFormDraft(); document.getElementById("overlay").classList.remove("on"); }
+function closeForm(){
+  clearFormDraft();
+  document.getElementById("overlay").classList.remove("on","meeting-mode");
+  document.getElementById("meetingRestore").classList.remove("on");
+}
+function minimizeMeetingPanel(){
+  if(!isMeetingForm()) return;
+  persistFormDraftNow();
+  document.getElementById("overlay").classList.remove("on");
+  document.getElementById("meetingRestore").classList.add("on");
+}
+function restoreMeetingPanel(){
+  document.getElementById("meetingRestore").classList.remove("on");
+  syncFormMode();
+  document.getElementById("overlay").classList.add("on");
+}
 
 function saveItem(){
   const title=f_title.value.trim();
   if(!title){ f_title.focus(); f_title.style.borderColor="#b91c1c"; return; }
   const id=f_id.value;
+  const meeting=isMeetingForm();
   const fields={title, cat:f_cat.value, status:f_status.value,
     due:f_due.value, note:f_note.value.trim(),
-    docs:formDocs.map(d=>({...d})), people:formPeople.map(p=>({...p}))};
+    docs:meeting?[]:formDocs.map(d=>({...d})), people:formPeople.map(p=>({...p}))};
   if(id){ Object.assign(data.find(i=>i.id===id), fields); }
   else{ data.push({id:uid(), ...fields, remind:"none", done:false, created:Date.now()}); }
-  clearFormDraft(); document.getElementById("overlay").classList.remove("on"); save();
+  clearFormDraft();
+  document.getElementById("overlay").classList.remove("on","meeting-mode");
+  document.getElementById("meetingRestore").classList.remove("on");
+  save();
 }
 function delItem(){
   const id=f_id.value; if(!id) return;
@@ -827,8 +913,14 @@ document.getElementById("overlay").onclick=(e)=>{ if(e.target.id==="overlay") e.
 document.getElementById("remindOverlay").onclick=(e)=>{ if(e.target.id==="remindOverlay") closeRemind(); };
 document.getElementById("cloudOverlay").onclick=(e)=>{ if(e.target.id==="cloudOverlay") closeCloud(); };
 document.getElementById('overlay').addEventListener('input',e=>{if(e.target===f_title)f_title.style.borderColor='';saveFormDraft();});
-document.getElementById('overlay').addEventListener('change',saveFormDraft);
-window.addEventListener('beforeunload',()=>{if(document.getElementById('overlay').classList.contains('on')){clearTimeout(draftTimer);try{localStorage.setItem(DRAFT_KEY,JSON.stringify(formDraft()));}catch(e){}}});
+document.getElementById('overlay').addEventListener('change',e=>{
+  if(e.target===f_cat) syncFormMode();
+  saveFormDraft();
+});
+window.addEventListener('beforeunload',()=>{
+  const panelOpen=document.getElementById('overlay').classList.contains('on')||document.getElementById('meetingRestore').classList.contains('on');
+  if(panelOpen) persistFormDraftNow();
+});
 
 /* ===== cat SVGs ===== */
 document.getElementById("goldCat").innerHTML = `
@@ -926,6 +1018,11 @@ window.addEventListener('message',function(event){
 });
 initControls();
 render();
+// 重新整理或暫時離開後，自動恢復尚未完成的會議記錄草稿。
+try{
+  const pendingDraft=JSON.parse(localStorage.getItem(DRAFT_KEY)||'null');
+  if(pendingDraft&&pendingDraft.cat===MEETING_CAT) openForm(pendingDraft.id||'');
+}catch(e){}
 checkReminders();
 setInterval(checkReminders, 60000);
 // 雲端同步啟動
