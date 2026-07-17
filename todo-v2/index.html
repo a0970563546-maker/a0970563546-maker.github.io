@@ -875,15 +875,31 @@ function normalizeArr(arr){
   });
   return arr;
 }
+function mergeLocalProjectMeetings(remoteItems){
+  const merged=remoteItems.slice(),ids=new Set(merged.map(it=>String(it.id)));
+  let stored=[];try{stored=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}
+  // data 是本頁雲端讀取前的畫面資料；stored 是專案頁剛寫入的本機資料。兩者都要保留。
+  const candidates=[...(Array.isArray(data)?data:[]),...(Array.isArray(stored)?stored:[])];
+  candidates.forEach(it=>{
+    if(!it||it.cat!==MEETING_CAT||!it.projectId||!it.id||ids.has(String(it.id)))return;
+    merged.push({...it});ids.add(String(it.id));
+  });
+  return merged;
+}
 function cloudPull(){
   if(!cloudUrl) return;
   setSync("loading");
   fetch(cloudUrl).then(r=>r.json()).then(arr=>{
     if(Array.isArray(arr)){
-      const json=JSON.stringify(arr);
-      if(json!==lastSyncJson){
-        lastSyncJson=json; skipPush=true;
-        data=normalizeArr(arr); render();
+      const remoteJson=JSON.stringify(arr);
+      if(remoteJson!==lastSyncJson){
+        data=normalizeArr(mergeLocalProjectMeetings(arr));
+        const mergedJson=JSON.stringify(data);
+        lastSyncJson=remoteJson;skipPush=false;
+        try{localStorage.setItem(KEY,mergedJson);}catch(e){}
+        render();
+        // 若本機有專案會議而舊雲端尚未包含，立即把合併後結果補回雲端。
+        if(mergedJson!==remoteJson)cloudPush();
       }
     }
     setSync("synced");
