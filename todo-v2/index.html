@@ -96,6 +96,8 @@
   .c-act{display:flex; flex-direction:column; gap:4px; align-items:center}
   .icon-btn{border:0; background:transparent; cursor:pointer; font-size:17px; padding:4px; color:var(--muted); border-radius:8px}
   .icon-btn:active{background:#f1f5f9}
+  .icon-btn.delete{color:#b91c1c}
+  .icon-btn.delete:active{background:#fef2f2}
   .icon-btn.bell-on{filter:none}
   .empty{text-align:center; color:var(--muted); padding:50px 20px}
   .empty .big{font-size:40px; margin-bottom:10px}
@@ -396,7 +398,7 @@
       <label>提醒日期</label>
       <input type="date" id="r_date">
     </div>
-    <div class="note-tip">此為「網頁內提醒」，只有在你打開這個網頁時才會跳通知（需先到「⋯」選單授權）。<br>👉 想要「關掉網頁也會準時通知」，請改用卡片上的 📅 按鈕加入 Google 日曆。</div>
+    <div class="note-tip">此為「網頁內提醒」，只有在你打開這個網頁時才會跳通知（需先到「⋯」選單授權）。</div>
     <div class="sheet-act" style="margin-top:14px">
       <button class="btn line" onclick="closeRemind()">取消</button>
       <button class="btn" onclick="saveRemind()">儲存</button>
@@ -554,7 +556,7 @@ function cardHTML(it){
       ${it.note?`<div class="c-note">📝 ${esc(it.note)}</div>`:`<div class="c-note" style="opacity:.5">📝 （尚無備註 / 進度記錄）</div>`}
     </div>
     <div class="c-act">
-      <button class="icon-btn" title="加入 Google 日曆（手機/電腦關閉也會提醒）" onclick="event.stopPropagation();gcal('${it.id}')">📅</button>
+      <button class="icon-btn delete" title="刪除" aria-label="刪除 ${esc(it.title)}" onclick="event.stopPropagation();quickDelete('${it.id}')">🗑️</button>
       <button class="icon-btn" title="網頁內提醒（需開著網頁）" onclick="event.stopPropagation();openRemind('${it.id}')">${it.remind&&it.remind!=='none'?'🔔':'🔕'}</button>
       <button class="icon-btn" title="編輯" onclick="event.stopPropagation();openForm('${it.id}')">✏️</button>
     </div>
@@ -564,6 +566,12 @@ function esc(s){ return (s||"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">
 
 /* ---------- actions ---------- */
 function toggle(id){ const it=data.find(i=>i.id===id); if(it){it.done=!it.done; save();} }
+function quickDelete(id){
+  const it=data.find(i=>i.id===id); if(!it) return;
+  if(confirm(`確定要刪除「${it.title||'這筆待辦'}」嗎？\n此動作無法復原。`)){
+    data=data.filter(i=>i.id!==id); save();
+  }
+}
 
 /* ---------- doc checklist (in form) ---------- */
 function renderDocs(){
