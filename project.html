@@ -106,6 +106,23 @@ table.sch input[type=date]{border:1px solid #D3DAE2;border-radius:6px;padding:4p
 .hint{font-size:12px;color:#A8AEB6;margin-top:8px}
 .empty{text-align:center;color:var(--soft);padding:40px 20px;font-size:14px;line-height:2}
 .flow-x{float:right;border-radius:50%;width:26px;height:26px;padding:0;font-size:16px;line-height:24px}
+/* project meeting notes share the same records as the todo tracker */
+.meeting-btn{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.35)}
+.meeting-dock{display:none;position:fixed;inset:0;z-index:90;background:transparent;pointer-events:none}
+.meeting-dock.on{display:block}
+.meeting-panel{pointer-events:auto;position:absolute;top:0;right:0;width:min(480px,100%);height:100%;overflow:auto;background:#fff;border-radius:18px 0 0 18px;padding:20px;box-shadow:-12px 0 34px rgba(15,23,42,.18)}
+.meeting-head{display:flex;align-items:center;gap:8px;margin-bottom:14px}.meeting-head h2{margin:0;flex:1;font-size:20px;color:var(--blue)}
+.meeting-icon{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;padding:7px 9px;font-weight:800;cursor:pointer}
+.meeting-project{font-size:12px;font-weight:800;color:#3E6A3E;background:#EAF1E6;border-radius:999px;padding:5px 10px;display:inline-block;margin-bottom:12px}
+.meeting-history{border:1px solid var(--line);border-radius:12px;padding:8px;max-height:190px;overflow:auto;margin-bottom:14px;background:#F8FAFC}
+.meeting-row{display:flex;align-items:center;gap:8px;padding:9px;border-radius:9px;cursor:pointer}.meeting-row:hover,.meeting-row.on{background:#EAF0F7}.meeting-row-main{flex:1;min-width:0}.meeting-row-title{font-size:13px;font-weight:800;color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.meeting-row-date{font-size:11px;color:var(--soft);margin-top:2px}
+.meeting-empty{padding:18px 8px;text-align:center;color:var(--soft);font-size:13px}
+.meeting-new{width:100%;border:1px dashed #AFC3D8;background:#fff;color:var(--blue);border-radius:9px;padding:8px;font-weight:800;cursor:pointer;margin-top:6px}
+.meeting-field{margin-bottom:13px}.meeting-field label{display:block;font-size:13px;font-weight:800;color:#60788E;margin-bottom:5px}.meeting-field input,.meeting-field textarea{width:100%;border:1px solid #D3DAE2;border-radius:10px;padding:10px 11px;font:inherit;color:var(--ink)}.meeting-field textarea{min-height:260px;resize:vertical;line-height:1.7}
+.meeting-state{font-size:12px;color:#5E8C72;min-height:18px;margin-top:4px}.meeting-actions{display:flex;gap:8px;justify-content:flex-end;align-items:center}.meeting-actions .danger{margin-right:auto;background:#fff;color:#B5564E;border:1px solid #E3B7B3}
+.meeting-save{background:var(--blue);color:#fff}.meeting-cancel{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.meeting-restore{display:none;position:fixed;right:18px;bottom:22px;z-index:89;border:1px solid #BFDBFE;border-radius:12px;background:#fff;color:var(--blue);padding:11px 15px;font-weight:800;box-shadow:0 8px 24px rgba(15,23,42,.18);cursor:pointer}.meeting-restore.on{display:block}
+@media(max-width:599px){.meeting-panel{width:100%;border-radius:0}.meeting-field textarea{min-height:34vh}}
 .pdf-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(20,33,50,.72);padding:18px;overflow:auto}
 .pdf-overlay.on{display:block}.pdf-dialog{max-width:1180px;margin:0 auto}.pdf-actions{position:sticky;top:0;z-index:2;display:flex;justify-content:flex-end;gap:10px;padding:10px 0}
 .pdf-sheet{width:1120px;max-width:100%;min-height:760px;margin:0 auto;background:#fff;color:#293746;padding:28px;box-shadow:0 10px 35px rgba(0,0,0,.24);font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif}
@@ -123,6 +140,7 @@ table.sch input[type=date]{border:1px solid #D3DAE2;border-radius:6px;padding:4p
     <span id="archBadge"></span>
     <span class="spacer"></span>
     <span class="savenote" id="savenote"></span>
+    <button class="btn meeting-btn" onclick="openProjectMeetings()">📝 會議記錄</button>
     <button class="btn archbtn" id="archBtn" onclick="toggleArchive()">📦 結案</button>
     <button class="btn pdf" onclick="openPdfPreview()">🖨 A4 PDF</button>
     <button class="btn lockbtn" id="lock" onclick="toggleEdit()">✏️ 編輯</button>
@@ -135,6 +153,27 @@ table.sch input[type=date]{border:1px solid #D3DAE2;border-radius:6px;padding:4p
   </div>
 </div>
 <div class="wrap" id="root"><div class="empty">載入中…</div></div>
+<div class="meeting-dock" id="meetingDock">
+  <aside class="meeting-panel" aria-label="專案會議記錄">
+    <div class="meeting-head">
+      <h2>📝 專案會議記錄</h2>
+      <button class="meeting-icon" type="button" onclick="minimizeProjectMeetings()">— 收合</button>
+      <button class="meeting-icon" type="button" onclick="closeProjectMeetings()">✕</button>
+    </div>
+    <div class="meeting-project" id="meetingProjectName"></div>
+    <div class="meeting-history" id="meetingHistory"></div>
+    <input type="hidden" id="meetingId">
+    <div class="meeting-field"><label>會議標題 *</label><input id="meetingTitle" placeholder="例如：業主週會、工程協調會"></div>
+    <div class="meeting-field"><label>會議日期</label><input type="date" id="meetingDate"></div>
+    <div class="meeting-field"><label>會議內容</label><textarea id="meetingNote" placeholder="輸入討論重點、決議事項、待辦與後續追蹤…"></textarea><div class="meeting-state" id="meetingState">✓ 草稿會自動儲存</div></div>
+    <div class="meeting-actions">
+      <button class="btn danger" id="meetingDelete" type="button" onclick="deleteProjectMeeting()" style="display:none">刪除</button>
+      <button class="btn meeting-cancel" type="button" onclick="newProjectMeeting()">新增一筆</button>
+      <button class="btn meeting-save" type="button" onclick="saveProjectMeeting()">儲存會議記錄</button>
+    </div>
+  </aside>
+</div>
+<button class="meeting-restore" id="meetingRestore" type="button" onclick="restoreProjectMeetings()">📝 專案會議</button>
 <div class="pdf-overlay" id="pdfPreview" onclick="if(event.target===this)closePdfPreview()">
   <div class="pdf-dialog">
     <div class="pdf-actions"><button class="btn" onclick="closePdfPreview()">關閉預覽</button><button class="btn pdf" onclick="downloadPdf()">⬇ 下載 A4 PDF</button></div>
@@ -199,6 +238,8 @@ function setBudgetAmount(el){formatAmountInput(el,v=>P.totalBudget=v);save();}
 function setVendorAmount(ci,ri,el){formatAmountInput(el,v=>P.vendorQuotes[ci].rows[ri].a=v);save();refreshBudget();}
 function setPettyAmount(i,el){formatAmountInput(el,v=>P.pettyCash[i].amount=v);save();refreshBudget();}
 let ALL=[],P=null,PIDX=-1,editing=false,curTab='sch',saveT=null;
+const TODO_KEY='design_todo_v1',MEETING_CAT='會議記錄';
+let meetingDraftTimer=null;
 
 function loadData(){
   try{ALL=JSON.parse(localStorage.getItem('engMgmtProData')||'[]');}catch(e){ALL=[];}
@@ -233,6 +274,56 @@ function cloudSave(){
   }else{n.textContent='✅ 已存（本機）';n.className='savenote ok';}
 }
 function save(){ALL[PIDX]=P;clearTimeout(saveT);saveT=setTimeout(cloudSave,600);}
+
+/* 專案會議：直接讀寫待辦追蹤的同一筆資料 */
+function meetingUid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function meetingToday(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function meetingDraftKey(){return 'project_meeting_draft_v1_'+String(P&&P.id||'');}
+function readTodos(){try{const a=JSON.parse(localStorage.getItem(TODO_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
+function writeTodos(items){localStorage.setItem(TODO_KEY,JSON.stringify(items));try{if(window.parent&&window.parent!==window)window.parent.postMessage({t:'engProChanged'},location.origin);}catch(e){}}
+function projectMeetings(){return readTodos().filter(x=>x.cat===MEETING_CAT&&String(x.projectId||'')===String(P.id)).sort((a,b)=>String(b.due||'').localeCompare(String(a.due||''))||(b.created||0)-(a.created||0));}
+function setMeetingState(text){document.getElementById('meetingState').textContent=text;}
+function meetingFormData(){return {id:meetingId.value||'',title:meetingTitle.value,date:meetingDate.value,note:meetingNote.value};}
+function persistMeetingDraftNow(){
+  clearTimeout(meetingDraftTimer);const draft=meetingFormData();
+  if(!draft.id&&!draft.title.trim()&&!draft.note.trim()){try{localStorage.removeItem(meetingDraftKey());}catch(e){}setMeetingState('✓ 草稿會自動儲存');return;}
+  try{localStorage.setItem(meetingDraftKey(),JSON.stringify(draft));setMeetingState('✓ 草稿已自動儲存');}catch(e){setMeetingState('草稿儲存失敗');}
+}
+function saveMeetingDraft(){
+  clearTimeout(meetingDraftTimer);setMeetingState('正在儲存草稿…');
+  meetingDraftTimer=setTimeout(persistMeetingDraftNow,140);
+}
+function clearMeetingDraft(){clearTimeout(meetingDraftTimer);try{localStorage.removeItem(meetingDraftKey());}catch(e){}}
+function renderMeetingHistory(){
+  const items=projectMeetings(),box=document.getElementById('meetingHistory'),active=meetingId.value;
+  box.innerHTML=(items.length?items.map(x=>'<div class="meeting-row'+(String(x.id)===String(active)?' on':'')+'" onclick="editProjectMeeting(\''+x.id+'\')"><div class="meeting-row-main"><div class="meeting-row-title">'+esc(x.title||'未命名會議')+'</div><div class="meeting-row-date">'+esc(x.due||'未填日期')+'</div></div><span>›</span></div>').join(''):'<div class="meeting-empty">尚無會議記錄</div>')+'<button class="meeting-new" type="button" onclick="newProjectMeeting()">＋ 新增會議記錄</button>';
+}
+function fillMeetingForm(item){
+  meetingId.value=item&&item.id||'';meetingTitle.value=item&&item.title||'';meetingDate.value=item&&item.due||meetingToday();meetingNote.value=item&&item.note||'';
+  meetingDelete.style.display=item&&item.id?'block':'none';setMeetingState(item&&item.id?'✓ 已載入會議記錄':'✓ 草稿會自動儲存');renderMeetingHistory();
+}
+function newProjectMeeting(){clearMeetingDraft();fillMeetingForm(null);meetingTitle.focus();}
+function editProjectMeeting(id){const item=readTodos().find(x=>String(x.id)===String(id));if(item)fillMeetingForm(item);}
+function openProjectMeetings(){
+  if(!P)return;meetingProjectName.textContent='專案：'+P.name;meetingRestore.classList.remove('on');meetingDock.classList.add('on');
+  const items=projectMeetings();let draft=null;try{draft=JSON.parse(localStorage.getItem(meetingDraftKey())||'null');}catch(e){}
+  if(draft){meetingId.value=draft.id||'';meetingTitle.value=draft.title||'';meetingDate.value=draft.date||meetingToday();meetingNote.value=draft.note||'';meetingDelete.style.display=draft.id?'block':'none';setMeetingState('✓ 已恢復未完成草稿');renderMeetingHistory();}
+  else fillMeetingForm(items[0]||null);
+}
+function minimizeProjectMeetings(){persistMeetingDraftNow();meetingDock.classList.remove('on');meetingRestore.classList.add('on');}
+function restoreProjectMeetings(){meetingRestore.classList.remove('on');meetingDock.classList.add('on');renderMeetingHistory();}
+function closeProjectMeetings(){persistMeetingDraftNow();meetingDock.classList.remove('on');meetingRestore.classList.remove('on');}
+function saveProjectMeeting(){
+  const title=meetingTitle.value.trim();if(!title){meetingTitle.focus();meetingTitle.style.borderColor='#B91C1C';return;}
+  const items=readTodos(),id=meetingId.value,old=items.find(x=>String(x.id)===String(id));
+  const fields={title,cat:MEETING_CAT,status:old&&old.status||'進行中',due:meetingDate.value,note:meetingNote.value.trim(),docs:[],people:old&&old.people||[],projectId:String(P.id),projectName:P.name,remind:old&&old.remind||'none',done:old?!!old.done:false,created:old&&old.created||Date.now()};
+  if(old)Object.assign(old,fields);else{fields.id=meetingUid();items.push(fields);meetingId.value=fields.id;}
+  writeTodos(items);clearMeetingDraft();meetingDelete.style.display='block';setMeetingState('✓ 已同步到待辦追蹤');renderMeetingHistory();
+}
+function deleteProjectMeeting(){
+  const id=meetingId.value;if(!id||!confirm('刪除這筆會議記錄？待辦追蹤中的同一筆資料也會刪除。'))return;
+  writeTodos(readTodos().filter(x=>String(x.id)!==String(id)));clearMeetingDraft();fillMeetingForm(projectMeetings()[0]||null);
+}
 
 /* budget */
 function confirmedVendorTotal(){return P.vendorQuotes.reduce((s,c)=>{const v=(c.sel>=0&&c.rows[c.sel])?num(c.rows[c.sel].a):null;return s+(v||0);},0);}
@@ -492,7 +583,10 @@ function boot(){
   if(!P){document.getElementById('root').innerHTML='<div class="empty">找不到這個專案<br>請先在平台開一次以完成雲端同步</div>';return;}
   document.getElementById('title').textContent='📐 '+P.name;
   setLock();updateArchiveUI();render();
+  ['meetingTitle','meetingDate','meetingNote'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{meetingTitle.style.borderColor='';saveMeetingDraft();}));
 }
+window.addEventListener('beforeunload',()=>{if(document.getElementById('meetingDock').classList.contains('on')||document.getElementById('meetingRestore').classList.contains('on'))persistMeetingDraftNow();});
+window.addEventListener('storage',e=>{if(e.key===TODO_KEY&&P&&(meetingDock.classList.contains('on')||meetingRestore.classList.contains('on')))renderMeetingHistory();});
 boot();
 </script>
 <script src="cats.js?v=20260713-cats"></script>
