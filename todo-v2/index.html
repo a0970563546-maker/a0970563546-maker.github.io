@@ -152,6 +152,8 @@
   .overlay.meeting-mode .meeting-only{display:block}
   .overlay.meeting-mode #f_note{min-height:calc(100vh - 500px); resize:none; line-height:1.7}
   .meeting-save-state{font-size:12px; color:#16a34a; margin:5px 2px 0; min-height:18px}
+  .meeting-project-context{font-size:12.5px;font-weight:800;color:#3e6a3e;background:#eaf1e6;border-radius:999px;padding:7px 11px;margin:0 0 13px;display:none}
+  .overlay.meeting-mode .meeting-project-context.on{display:block}
   .meeting-restore{
     position:fixed; right:18px; bottom:22px; z-index:49; display:none; border:1px solid #bfdbfe;
     border-radius:12px; background:#fff; color:var(--brand-d); padding:11px 15px; font-weight:700;
@@ -309,6 +311,7 @@
         <button class="icon-btn" type="button" onclick="closeForm()" title="關閉會議記錄">✕</button>
       </div>
     </div>
+    <div class="meeting-project-context" id="meetingProjectContext"></div>
     <input type="hidden" id="f_id">
     <div class="field">
       <label>事項標題 *</label>
@@ -453,6 +456,7 @@ function load(){
     if(it.remind===undefined) it.remind="none";
     if(STATUS_MAP[it.status]) it.status=STATUS_MAP[it.status];
     if(!it.people){ it.people = it.owner ? [{t:it.owner, done:false}] : []; }
+    if(it.projectId!==undefined)it.projectId=String(it.projectId);
     delete it.pri; delete it.seq; delete it.owner;
   });
   return arr;
@@ -496,7 +500,7 @@ function render(){
     if(sf==="active" && it.done) return false;
     if(sf==="done" && !it.done) return false;
     if(q){
-      const blob=(it.title+" "+(it.note||"")+" "+it.cat+" "+it.status+" "+(it.docs||[]).map(d=>d.t).join(" ")+" "+(it.people||[]).map(p=>p.t).join(" ")).toLowerCase();
+      const blob=(it.title+" "+(it.note||"")+" "+it.cat+" "+it.status+" "+(it.projectName||"")+" "+(it.docs||[]).map(d=>d.t).join(" ")+" "+(it.people||[]).map(p=>p.t).join(" ")).toLowerCase();
       if(!blob.includes(q)) return false;
     }
     return true;
@@ -544,6 +548,7 @@ function cardHTML(it){
       <div class="c-title">${esc(it.title)}</div>
       <div class="c-meta">
         <span class="tag" style="background:${c.color}22;color:${c.color}">${c.label}</span>
+        ${it.projectName?`<span class="tag" style="background:#eaf1e6;color:#3e6a3e">📐 ${esc(it.projectName)}</span>`:""}
         ${di?`<span class="date ${di.today?'today':''}">📅 ${di.txt}</span>`:""}
       </div>
       ${it.note?`<div class="c-note">📝 ${esc(it.note)}</div>`:`<div class="c-note" style="opacity:.5">📝 （尚無備註 / 進度記錄）</div>`}
@@ -599,6 +604,10 @@ function syncFormMode(){
   const meeting=isMeetingForm();
   const overlay=document.getElementById("overlay");
   overlay.classList.toggle("meeting-mode",meeting);
+  const item=data.find(i=>String(i.id)===String(f_id.value));
+  const context=document.getElementById("meetingProjectContext");
+  context.textContent=item&&item.projectName?"📐 所屬專案："+item.projectName:"";
+  context.classList.toggle("on",!!(meeting&&item&&item.projectName));
   document.getElementById("noteLabel").textContent=meeting?"會議內容":"備註 / 進度記錄";
   f_note.placeholder=meeting?"輸入討論重點、決議事項、待辦與後續追蹤…":"送審文號、補正事項、會議結論、待確認重點…";
   if(meeting) setMeetingSaveState("✓ 已自動儲存草稿");
@@ -661,6 +670,7 @@ function closeForm(){
   clearFormDraft();
   document.getElementById("overlay").classList.remove("on","meeting-mode");
   document.getElementById("meetingRestore").classList.remove("on");
+  document.getElementById("meetingProjectContext").classList.remove("on");
 }
 function minimizeMeetingPanel(){
   if(!isMeetingForm()) return;
@@ -670,6 +680,7 @@ function minimizeMeetingPanel(){
 }
 function restoreMeetingPanel(){
   document.getElementById("meetingRestore").classList.remove("on");
+  document.getElementById("meetingProjectContext").classList.remove("on");
   syncFormMode();
   document.getElementById("overlay").classList.add("on");
 }
