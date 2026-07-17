@@ -280,7 +280,13 @@ function meetingUid(){return Date.now().toString(36)+Math.random().toString(36).
 function meetingToday(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function meetingDraftKey(){return 'project_meeting_draft_v1_'+String(P&&P.id||'');}
 function readTodos(){try{const a=JSON.parse(localStorage.getItem(TODO_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
-function writeTodos(items){localStorage.setItem(TODO_KEY,JSON.stringify(items));try{if(window.parent&&window.parent!==window)window.parent.postMessage({t:'engProChanged'},location.origin);}catch(e){}}
+function writeTodos(items){
+  const json=JSON.stringify(items);localStorage.setItem(TODO_KEY,json);
+  // 專案頁新增會議後，同步寫入待辦頁既有的 Apps Script，避免待辦頁重新讀取舊雲端資料時覆蓋新會議。
+  let todoCloud='';try{todoCloud=localStorage.getItem('todo_cloud_url')||'';}catch(e){}
+  if(todoCloud)fetch(todoCloud,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:json,mode:'no-cors',keepalive:true}).catch(()=>{});
+  try{if(window.parent&&window.parent!==window)window.parent.postMessage({t:'engProChanged'},location.origin);}catch(e){}
+}
 function projectMeetings(){return readTodos().filter(x=>x.cat===MEETING_CAT&&String(x.projectId||'')===String(P.id)).sort((a,b)=>String(b.due||'').localeCompare(String(a.due||''))||(b.created||0)-(a.created||0));}
 function setMeetingState(text){document.getElementById('meetingState').textContent=text;}
 function meetingFormData(){return {id:meetingId.value||'',title:meetingTitle.value,date:meetingDate.value,note:meetingNote.value};}
