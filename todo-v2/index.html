@@ -154,6 +154,15 @@
   .overlay.meeting-mode .meeting-only{display:block}
   .overlay.meeting-mode #f_note{min-height:calc(100vh - 500px); resize:none; line-height:1.7}
   .meeting-save-state{font-size:12px; color:#16a34a; margin:5px 2px 0; min-height:18px}
+  .meeting-pdf-sheet{position:fixed;left:-10000px;top:0;box-sizing:border-box;width:794px;min-height:1123px;background:#fff;color:#243447;padding:58px 62px;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;line-height:1.75}
+  .meeting-pdf-head{border-bottom:3px solid #3e6a3e;padding-bottom:16px;margin-bottom:24px}
+  .meeting-pdf-kicker{font-size:13px;font-weight:800;color:#3e6a3e;letter-spacing:2px;margin-bottom:6px}
+  .meeting-pdf-title{font-size:28px;font-weight:900;color:#22354a;line-height:1.35}
+  .meeting-pdf-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;margin-bottom:28px;padding:16px 18px;background:#f4f8f3;border:1px solid #dce9d8;border-radius:10px;font-size:14px}
+  .meeting-pdf-meta span{color:#718096}.meeting-pdf-meta b{color:#2d4053}
+  .meeting-pdf-section{font-size:17px;font-weight:900;color:#3e6a3e;margin:0 0 12px;padding-bottom:7px;border-bottom:1px solid #d9e2e8}
+  .meeting-pdf-content{font-size:15px;white-space:pre-wrap;overflow-wrap:anywhere;min-height:480px}
+  .meeting-pdf-empty{color:#94a3b8}.meeting-pdf-foot{margin-top:42px;padding-top:10px;border-top:1px solid #d9e2e8;color:#94a3b8;font-size:11px;text-align:right}
   .meeting-project-context{font-size:12.5px;font-weight:800;color:#3e6a3e;background:#eaf1e6;border-radius:999px;padding:7px 11px;margin:0 0 13px;display:none}
   .overlay.meeting-mode .meeting-project-context.on{display:block}
   .meeting-restore{
@@ -235,6 +244,7 @@
     .cat.gold{width:118px} .cat.grey{width:128px} .playground{height:150px}
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 <!-- ▼ 統一導覽列（三系統共用）▼ -->
@@ -359,6 +369,7 @@
     </div>
     <div class="sheet-act">
       <button class="btn danger" id="delBtn" onclick="delItem()" style="display:none">刪除</button>
+      <button class="btn line" id="meetingPdfBtn" onclick="exportMeetingPdf(f_id.value)" style="display:none">📄 PDF</button>
       <button class="btn line" onclick="closeForm()">取消</button>
       <button class="btn" onclick="saveItem()">儲存</button>
     </div>
@@ -556,6 +567,7 @@ function cardHTML(it){
       ${it.note?`<div class="c-note">📝 ${esc(it.note)}</div>`:`<div class="c-note" style="opacity:.5">📝 （尚無備註 / 進度記錄）</div>`}
     </div>
     <div class="c-act">
+      ${it.cat===MEETING_CAT?`<button class="icon-btn" title="匯出會議記錄 PDF" aria-label="匯出 ${esc(it.title)} PDF" onclick="event.stopPropagation();exportMeetingPdf('${it.id}')">📄</button>`:""}
       <button class="icon-btn delete" title="刪除" aria-label="刪除 ${esc(it.title)}" onclick="event.stopPropagation();quickDelete('${it.id}')">🗑️</button>
       <button class="icon-btn" title="網頁內提醒（需開著網頁）" onclick="event.stopPropagation();openRemind('${it.id}')">${it.remind&&it.remind!=='none'?'🔔':'🔕'}</button>
       <button class="icon-btn" title="編輯" onclick="event.stopPropagation();openForm('${it.id}')">✏️</button>
@@ -571,6 +583,21 @@ function quickDelete(id){
   if(confirm(`確定要刪除「${it.title||'這筆待辦'}」嗎？\n此動作無法復原。`)){
     data=data.filter(i=>i.id!==id); save();
   }
+}
+function meetingPdfDate(value){
+  if(!value)return "未填日期";
+  const p=String(value).split("-");return p.length===3?`${p[0]} 年 ${Number(p[1])} 月 ${Number(p[2])} 日`:value;
+}
+function meetingPdfFileName(title){return String(title||"會議記錄").replace(/[\\/:*?"<>|]/g,"_").trim()+".pdf";}
+function exportMeetingPdf(id){
+  const it=data.find(i=>String(i.id)===String(id));
+  if(!it||it.cat!==MEETING_CAT)return;
+  if(typeof html2pdf!=="function"){alert("PDF 元件尚未載入，請確認網路連線後重新整理頁面。");return;}
+  const now=new Date(),stamp=`${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,"0")}/${String(now.getDate()).padStart(2,"0")} ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+  const sheet=document.createElement("section");sheet.className="meeting-pdf-sheet";
+  sheet.innerHTML=`<header class="meeting-pdf-head"><div class="meeting-pdf-kicker">MEETING MINUTES｜會議記錄</div><div class="meeting-pdf-title">${esc(it.title||"未命名會議")}</div></header><div class="meeting-pdf-meta"><div><span>所屬專案</span><br><b>${esc(it.projectName||"未指定專案")}</b></div><div><span>會議日期</span><br><b>${esc(meetingPdfDate(it.due))}</b></div><div><span>狀態</span><br><b>${esc(it.status||"進行中")}</b></div><div><span>匯出時間</span><br><b>${esc(stamp)}</b></div></div><h2 class="meeting-pdf-section">會議內容</h2><div class="meeting-pdf-content ${it.note?"":"meeting-pdf-empty"}">${esc(it.note||"尚無會議內容")}</div><footer class="meeting-pdf-foot">由設計工程平台產生</footer>`;
+  document.body.appendChild(sheet);
+  html2pdf().set({margin:[12,10,12,10],filename:meetingPdfFileName(it.title),image:{type:"jpeg",quality:.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["css","legacy"]}}).from(sheet).save().then(()=>sheet.remove()).catch(()=>{sheet.remove();alert("PDF 匯出失敗，請稍後再試。");});
 }
 
 /* ---------- doc checklist (in form) ---------- */
@@ -616,6 +643,7 @@ function syncFormMode(){
   const context=document.getElementById("meetingProjectContext");
   context.textContent=item&&item.projectName?"📐 所屬專案："+item.projectName:"";
   context.classList.toggle("on",!!(meeting&&item&&item.projectName));
+  document.getElementById("meetingPdfBtn").style.display=meeting&&item&&item.cat===MEETING_CAT?"":"none";
   document.getElementById("noteLabel").textContent=meeting?"會議內容":"備註 / 進度記錄";
   f_note.placeholder=meeting?"輸入討論重點、決議事項、待辦與後續追蹤…":"送審文號、補正事項、會議結論、待確認重點…";
   if(meeting) setMeetingSaveState("✓ 已自動儲存草稿");
