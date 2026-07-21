@@ -865,7 +865,7 @@ function loadSamples(){
 /* ---------- 雲端同步（Google 試算表 + Apps Script，與工程系統相同方式）---------- */
 const CLOUD_KEY="todo_cloud_url";
 let cloudUrl=""; try{cloudUrl=localStorage.getItem(CLOUD_KEY)||"";}catch(e){}
-let lastSyncJson="", skipPush=false, pushTimer=null;
+let lastSyncJson="", skipPush=false, pushTimer=null, forceRemoteReplace=false;
 function setSync(s){
   const el=document.getElementById("syncBadge"); if(!el) return;
   const m={loading:"☁️ 讀取中…",syncing:"🔄 同步中…",synced:"✅ 已同步",error:"⚠ 連線失敗",off:""};
@@ -901,7 +901,8 @@ function cloudPull(){
     if(Array.isArray(arr)){
       const remoteJson=JSON.stringify(arr);
       if(remoteJson!==lastSyncJson){
-        data=normalizeArr(mergeLocalProjectMeetings(arr));
+        data=normalizeArr(forceRemoteReplace?arr:mergeLocalProjectMeetings(arr));
+        forceRemoteReplace=false;
         const mergedJson=JSON.stringify(data);
         lastSyncJson=remoteJson;skipPush=false;
         try{localStorage.setItem(KEY,mergedJson);}catch(e){}
@@ -930,9 +931,10 @@ function openCloud(){ closeMenu(); document.getElementById("cloudInput").value=c
 function closeCloud(){ document.getElementById("cloudOverlay").classList.remove("on"); }
 function saveCloud(){
   const u=document.getElementById("cloudInput").value.trim();
+  const changed=u!==cloudUrl;
   try{ if(u)localStorage.setItem(CLOUD_KEY,u); else localStorage.removeItem(CLOUD_KEY); }catch(e){}
   cloudUrl=u; closeCloud();
-  if(u){ lastSyncJson=""; skipPush=false; cloudPull(); } else setSync("off");
+  if(u){ lastSyncJson=""; skipPush=false; forceRemoteReplace=changed; cloudPull(); } else setSync("off");
 }
 
 /* ---------- menu ---------- */
