@@ -60,7 +60,7 @@ iframe{border:0;width:100%;height:100%;flex:1;background:#fff}
   <button class="it" data-src="https://a0970563546-maker.github.io/vendors-v6.html?v=20260715-vendor-cloud">🏢 廠商管理</button>
 
   <div class="grp">圖檔</div>
-  <button class="it" data-src="https://a0970563546-maker.github.io/drawings.html?v=20260713-cats">🗂️ 圖檔資訊</button>
+  <button class="it" data-src="https://a0970563546-maker.github.io/drawings.html?v=20260723-cloud-sync">🗂️ 圖檔資訊</button>
 
   <div class="foot">設計工程平台<br>資料雲端同步・直接編輯</div>
 </div>
@@ -81,9 +81,59 @@ cloudButton.textContent='☁ 公司雲端：正在連線…';
 document.querySelector('.foot').appendChild(cloudButton);
 function setPortalCloudState(text,kind=''){cloudButton.textContent='☁ 公司雲端：'+text;cloudButton.className='cloudctl'+(kind?' '+kind:'')}
 function readLocalArray(key){try{const value=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(value)?value:[]}catch(error){return[]}}
+const DRAWINGS_KEY='mofan_drawings_v1';
+const DRAWINGS_PROP='__sharedDrawingsV1';
+function drawingStamp(item){return Number(item&&item._updatedAt)||0}
+function mergeDrawings(){
+  const merged=new Map();
+  Array.from(arguments).forEach(list=>(Array.isArray(list)?list:[]).forEach(item=>{
+    if(!item||item.id==null)return;
+    const next=Object.assign({},item,{id:String(item.id)}),previous=merged.get(next.id);
+    if(!previous||drawingStamp(next)>=drawingStamp(previous))merged.set(next.id,next);
+  }));
+  return Array.from(merged.values());
+}
+function extractDrawings(projects){
+  return mergeDrawings.apply(null,(Array.isArray(projects)?projects:[]).map(project=>project&&project[DRAWINGS_PROP]));
+}
+function embedDrawings(projects,drawings){
+  return (Array.isArray(projects)?projects:[]).map(project=>Object.assign({},project,{[DRAWINGS_PROP]:drawings}));
+}
 function portalCloudCall(action,payload){return new Promise((resolve,reject)=>{if(!portalCloudReady||!portalCloudTarget){reject(new Error('公司雲端尚未連線'));return}const id='portal_'+Date.now()+'_'+(++portalCloudSeq);portalCloudPending.set(id,{resolve,reject});portalCloudTarget.postMessage({source:'mofan-portal-platform',action,id,payload},'*');setTimeout(()=>{if(portalCloudPending.has(id)){portalCloudPending.delete(id);reject(new Error('公司雲端回應逾時'))}},30000)})}
 async function bootstrapPortalCloud(){setPortalCloudState('同步專案與待辦中…');try{const result=await portalCloudCall('bootstrapWorkspaceData',{projects:readLocalArray('engMgmtProData'),todos:readLocalArray('design_todo_v1')});if(result&&Array.isArray(result.projects)){localStorage.setItem('engMgmtProData',JSON.stringify(result.projects));renderProjects()}if(result&&Array.isArray(result.todos))localStorage.setItem('design_todo_v1',JSON.stringify(result.todos));setPortalCloudState('已同步','ok');if(frame&&frame.contentWindow)frame.contentWindow.postMessage({t:'workspaceDataSynced'},location.origin)}catch(error){setPortalCloudState('請連接公司帳號','err')}}
 function queuePortalCloudSave(){if(!portalCloudReady)return;clearTimeout(portalCloudSaveTimer);portalCloudSaveTimer=setTimeout(async()=>{try{await portalCloudCall('saveWorkspaceData',{projects:readLocalArray('engMgmtProData'),todos:readLocalArray('design_todo_v1')});setPortalCloudState('已同步','ok')}catch(error){setPortalCloudState('同步失敗，請重試','err')}},500)}
+async function bootstrapPortalCloud(){
+  setPortalCloudState('同步專案、待辦與圖檔中…');
+  try{
+    const localProjects=readLocalArray('engMgmtProData');
+    const localDrawings=mergeDrawings(extractDrawings(localProjects),readLocalArray(DRAWINGS_KEY));
+    const seededProjects=embedDrawings(localProjects,localDrawings);
+    const result=await portalCloudCall('bootstrapWorkspaceData',{projects:seededProjects,todos:readLocalArray('design_todo_v1')});
+    let projects=result&&Array.isArray(result.projects)?result.projects:seededProjects;
+    const drawings=mergeDrawings(localDrawings,extractDrawings(projects));
+    const sharedProjects=embedDrawings(projects,drawings);
+    localStorage.setItem('engMgmtProData',JSON.stringify(sharedProjects));
+    localStorage.setItem(DRAWINGS_KEY,JSON.stringify(drawings));
+    renderProjects();
+    if(result&&Array.isArray(result.todos))localStorage.setItem('design_todo_v1',JSON.stringify(result.todos));
+    if(sharedProjects.length)await portalCloudCall('saveWorkspaceData',{projects:sharedProjects,todos:readLocalArray('design_todo_v1')});
+    setPortalCloudState('已同步','ok');
+    if(frame&&frame.contentWindow)frame.contentWindow.postMessage({t:'workspaceDataSynced',drawings},location.origin);
+  }catch(error){setPortalCloudState('請連接公司帳號','err')}
+}
+function queuePortalCloudSave(){
+  if(!portalCloudReady)return;
+  clearTimeout(portalCloudSaveTimer);
+  portalCloudSaveTimer=setTimeout(async()=>{
+    try{
+      const drawings=readLocalArray(DRAWINGS_KEY);
+      const projects=embedDrawings(readLocalArray('engMgmtProData'),drawings);
+      localStorage.setItem('engMgmtProData',JSON.stringify(projects));
+      await portalCloudCall('saveWorkspaceData',{projects,todos:readLocalArray('design_todo_v1')});
+      setPortalCloudState('已同步','ok');
+    }catch(error){setPortalCloudState('同步失敗，請重試','err')}
+  },500);
+}
 function openPortalCloudLogin(){window.open(WORKSPACE_GATEWAY+'?mode=bridge&client=portal','mofanPortalWorkspace');const bridge=document.getElementById('portalCloudFrame');bridge.src=WORKSPACE_GATEWAY+'?mode=bridge&client=portal&v='+Date.now();setPortalCloudState('等待公司帳號授權…')}
 cloudButton.addEventListener('click',openPortalCloudLogin);
 function initPortalCloud(){document.getElementById('portalCloudFrame').src=WORKSPACE_GATEWAY+'?mode=bridge&client=portal&v='+Date.now()}
@@ -128,7 +178,7 @@ renderProjects();
 // auto-refresh sidebar when a project is changed (e.g. archived) from the iframe
 window.addEventListener('storage',function(e){
   if(e.key==='engMgmtProData')renderProjects();
-  if(e.key==='engMgmtProData'||e.key==='design_todo_v1')queuePortalCloudSave();
+  if(e.key==='engMgmtProData'||e.key==='design_todo_v1'||e.key===DRAWINGS_KEY)queuePortalCloudSave();
 });
 let vendorCloudBridge=null;
 window.addEventListener('message',function(e){
@@ -164,6 +214,7 @@ window.addEventListener('message',function(e){
     return;
   }
   if(message.t==='engProChanged')renderProjects();
+  if(message.t==='drawingsChanged'&&e.origin===location.origin&&e.source===frame.contentWindow)queuePortalCloudSave();
 });
 initPortalCloud();
 // refresh from cloud if configured

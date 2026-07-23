@@ -33,10 +33,11 @@ label input,label textarea{width:100%;margin-top:4px;border:1px solid #CFD6DE;bo
 label textarea{resize:vertical;min-height:44px}
 .modacts{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
 .hint{font-size:11px;color:#A8A29A;margin-top:2px;font-weight:400}
+.syncstate{font-size:12px;font-weight:700;color:#EAF2E5;white-space:nowrap}
 </style>
 </head>
 <body>
-<div class="top"><h1>🗂️ 圖檔資訊</h1><button class="btn add" onclick="openForm()">＋ 新增圖檔</button></div>
+<div class="top"><h1>🗂️ 圖檔資訊</h1><span class="syncstate" id="syncState">☁ 由工作平台同步</span><button class="btn add" onclick="openForm()">＋ 新增圖檔</button></div>
 <div class="wrap" id="list"></div>
 
 <div class="mask" id="mask">
@@ -69,18 +70,19 @@ const KEY='mofan_drawings_v1';
 let data=[]; try{data=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}
 let editId=null;
 const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-function persist(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}}
+function persist(notify=true){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}if(notify&&window.parent!==window)window.parent.postMessage({t:'drawingsChanged'},location.origin)}
 function projOptions(){
-  const set=new Set(data.map(d=>d.proj).filter(Boolean));
+  const set=new Set(data.filter(d=>!d._deleted).map(d=>d.proj).filter(Boolean));
   try{const eng=JSON.parse(localStorage.getItem('engMgmtProData')||'[]');if(Array.isArray(eng))eng.forEach(p=>{if(!p.isDaily&&!p.archived&&p.name)set.add(p.name);});}catch(e){}
   document.getElementById('projlist').innerHTML=[...set].map(p=>'<option value="'+esc(p)+'">').join('');
 }
 function render(){
   projOptions();
   const list=document.getElementById('list');
-  if(!data.length){ list.innerHTML='<div class="empty">還沒有圖檔資料<br>按右上「＋ 新增圖檔」開始登錄</div>'; return; }
+  const visibleData=data.filter(d=>!d._deleted);
+  if(!visibleData.length){ list.innerHTML='<div class="empty">還沒有圖檔資料<br>按右上「＋ 新增圖檔」開始登錄</div>'; return; }
   const groups={};
-  data.forEach(d=>{const p=d.proj||'未分類';(groups[p]=groups[p]||[]).push(d);});
+  visibleData.forEach(d=>{const p=d.proj||'未分類';(groups[p]=groups[p]||[]).push(d);});
   list.innerHTML=Object.keys(groups).sort().map(proj=>{
     const rows=groups[proj].map(d=>{
       const link=d.link?'<a href="'+esc(d.link)+'" target="_blank" rel="noopener">開啟 ↗</a>':'—';
@@ -102,11 +104,21 @@ function closeForm(){document.getElementById('mask').classList.remove('on');}
 function save(){
   const g=k=>document.getElementById('f_'+k).value.trim();
   if(!g('name')){alert('請填圖名');return;}
-  const obj={id:editId||('d'+Date.now()),no:g('no'),name:g('name'),proj:g('proj'),ver:g('ver'),date:g('date'),link:g('link'),note:g('note')};
+  const obj={id:editId||('d'+Date.now()),no:g('no'),name:g('name'),proj:g('proj'),ver:g('ver'),date:g('date'),link:g('link'),note:g('note'),_updatedAt:Date.now()};
   if(editId){const i=data.findIndex(x=>x.id===editId);data[i]=obj;}else{data.push(obj);}
   persist();render();closeForm();
 }
-function del(id){ if(!confirm('確定刪除此圖檔紀錄？'))return; data=data.filter(x=>x.id!==id); persist(); render(); }
+function del(id){ if(!confirm('確定刪除此圖檔紀錄？'))return; const i=data.findIndex(x=>x.id===id);if(i>=0)data[i]=Object.assign({},data[i],{_deleted:true,_updatedAt:Date.now()});persist();render(); }
+window.addEventListener('message',event=>{
+  if(event.origin!==location.origin)return;
+  const message=event.data||{};
+  if(message.t==='workspaceDataSynced'&&Array.isArray(message.drawings)){
+    data=message.drawings;
+    persist(false);
+    render();
+    document.getElementById('syncState').textContent='☁ 已同步';
+  }
+});
 render();
 </script>
 <script src="cats.js?v=20260713-cats"></script>
