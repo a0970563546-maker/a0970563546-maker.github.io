@@ -267,13 +267,18 @@ function ensureProject(p){
 function cloudSave(){
   try{localStorage.setItem('engMgmtProData',JSON.stringify(ALL));}catch(e){}
   const n=document.getElementById('savenote');
+  if(window.parent&&window.parent!==window){
+    window.parent.postMessage({t:'projectDataChanged',projectId:String(P&&P.id||'')},location.origin);
+    n.textContent='☁️ 已送出共同雲端同步';n.className='savenote ok';
+    return;
+  }
   let cu=null;try{cu=localStorage.getItem('engMgmtCloudUrl');}catch(e){}
   if(cu){n.textContent='☁️ 同步中…';n.className='savenote ing';
     fetch(cu,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(ALL),mode:'no-cors'})
       .then(()=>{n.textContent='✅ 已同步';n.className='savenote ok';}).catch(()=>{n.textContent='⚠️ 本機已存';n.className='savenote ing';});
   }else{n.textContent='✅ 已存（本機）';n.className='savenote ok';}
 }
-function save(){ALL[PIDX]=P;clearTimeout(saveT);saveT=setTimeout(cloudSave,600);}
+function save(){P._updatedAt=Date.now();ALL[PIDX]=P;clearTimeout(saveT);saveT=setTimeout(cloudSave,600);}
 
 /* 專案會議：直接讀寫待辦追蹤的同一筆資料 */
 function meetingUid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
@@ -591,8 +596,25 @@ function boot(){
   setLock();updateArchiveUI();render();
   ['meetingTitle','meetingDate','meetingNote'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{meetingTitle.style.borderColor='';saveMeetingDraft();}));
 }
+function refreshProjectFromSharedData(){
+  if(editing)return;
+  const previousId=P&&P.id;
+  loadData();
+  if(!P||String(P.id)!==String(previousId||P.id))return;
+  document.getElementById('title').textContent='📐 '+P.name;
+  updateArchiveUI();render();
+  const note=document.getElementById('savenote');
+  note.textContent='☁️ 已載入共同雲端資料';note.className='savenote ok';
+}
 window.addEventListener('beforeunload',()=>{if(document.getElementById('meetingDock').classList.contains('on')||document.getElementById('meetingRestore').classList.contains('on'))persistMeetingDraftNow();});
-window.addEventListener('storage',e=>{if(e.key===TODO_KEY&&P&&(meetingDock.classList.contains('on')||meetingRestore.classList.contains('on')))renderMeetingHistory();});
+window.addEventListener('storage',e=>{
+  if(e.key==='engMgmtProData')refreshProjectFromSharedData();
+  if(e.key===TODO_KEY&&P&&(meetingDock.classList.contains('on')||meetingRestore.classList.contains('on')))renderMeetingHistory();
+});
+window.addEventListener('message',e=>{
+  if(e.origin!==location.origin)return;
+  if((e.data||{}).t==='workspaceDataSynced')refreshProjectFromSharedData();
+});
 boot();
 </script>
 <script src="cats.js?v=20260713-cats"></script>

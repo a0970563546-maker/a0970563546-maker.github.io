@@ -71,7 +71,7 @@ iframe{border:0;width:100%;height:100%;flex:1;background:#fff}
 </div>
 <script>
 const ENG="https://a0970563546-maker.github.io/engmanagement/";
-const PROJECT_BUILD="20260715-holidays-2027";
+const PROJECT_BUILD="20260724-full-cloud";
 const WORKSPACE_GATEWAY="https://script.google.com/macros/s/AKfycbwKlTRyXZEuby9oR3GMs_zJJtFUSqML1xhfQgQN52frOrHGmi-8DFioKvMbFCYqinjK/exec";
 let portalCloudTarget=null,portalCloudReady=false,portalCloudSeq=0,portalCloudSaveTimer=null;
 const portalCloudPending=new Map();
@@ -99,9 +99,21 @@ function extractDrawings(projects){
 function embedDrawings(projects,drawings){
   return (Array.isArray(projects)?projects:[]).map(project=>Object.assign({},project,{[DRAWINGS_PROP]:drawings}));
 }
+function projectKey(project,index){
+  if(project&&project.id!=null)return 'id:'+String(project.id);
+  return 'fallback:'+String(project&&project.isDaily||false)+':'+String(project&&project.name||'')+':'+index;
+}
+function projectStamp(project){return Number(project&&project._updatedAt)||0}
+function mergeProjects(localProjects,remoteProjects){
+  const merged=new Map();
+  [localProjects,remoteProjects].forEach(list=>(Array.isArray(list)?list:[]).forEach((project,index)=>{
+    if(!project)return;
+    const key=projectKey(project,index),previous=merged.get(key);
+    if(!previous||projectStamp(project)>=projectStamp(previous))merged.set(key,Object.assign({},project));
+  }));
+  return Array.from(merged.values());
+}
 function portalCloudCall(action,payload){return new Promise((resolve,reject)=>{if(!portalCloudReady||!portalCloudTarget){reject(new Error('公司雲端尚未連線'));return}const id='portal_'+Date.now()+'_'+(++portalCloudSeq);portalCloudPending.set(id,{resolve,reject});portalCloudTarget.postMessage({source:'mofan-portal-platform',action,id,payload},'*');setTimeout(()=>{if(portalCloudPending.has(id)){portalCloudPending.delete(id);reject(new Error('公司雲端回應逾時'))}},30000)})}
-async function bootstrapPortalCloud(){setPortalCloudState('同步專案與待辦中…');try{const result=await portalCloudCall('bootstrapWorkspaceData',{projects:readLocalArray('engMgmtProData'),todos:readLocalArray('design_todo_v1')});if(result&&Array.isArray(result.projects)){localStorage.setItem('engMgmtProData',JSON.stringify(result.projects));renderProjects()}if(result&&Array.isArray(result.todos))localStorage.setItem('design_todo_v1',JSON.stringify(result.todos));setPortalCloudState('已同步','ok');if(frame&&frame.contentWindow)frame.contentWindow.postMessage({t:'workspaceDataSynced'},location.origin)}catch(error){setPortalCloudState('請連接公司帳號','err')}}
-function queuePortalCloudSave(){if(!portalCloudReady)return;clearTimeout(portalCloudSaveTimer);portalCloudSaveTimer=setTimeout(async()=>{try{await portalCloudCall('saveWorkspaceData',{projects:readLocalArray('engMgmtProData'),todos:readLocalArray('design_todo_v1')});setPortalCloudState('已同步','ok')}catch(error){setPortalCloudState('同步失敗，請重試','err')}},500)}
 async function bootstrapPortalCloud(){
   setPortalCloudState('同步專案、待辦與圖檔中…');
   try{
@@ -109,7 +121,8 @@ async function bootstrapPortalCloud(){
     const localDrawings=mergeDrawings(extractDrawings(localProjects),readLocalArray(DRAWINGS_KEY));
     const seededProjects=embedDrawings(localProjects,localDrawings);
     const result=await portalCloudCall('bootstrapWorkspaceData',{projects:seededProjects,todos:readLocalArray('design_todo_v1')});
-    let projects=result&&Array.isArray(result.projects)?result.projects:seededProjects;
+    const remoteProjects=result&&Array.isArray(result.projects)?result.projects:[];
+    let projects=mergeProjects(seededProjects,remoteProjects);
     const drawings=mergeDrawings(localDrawings,extractDrawings(projects));
     const sharedProjects=embedDrawings(projects,drawings);
     localStorage.setItem('engMgmtProData',JSON.stringify(sharedProjects));
@@ -213,7 +226,7 @@ window.addEventListener('message',function(e){
     vendorCloudBridge.postMessage(message,'*');
     return;
   }
-  if(message.t==='engProChanged')renderProjects();
+  if(message.t==='engProChanged'||message.t==='projectDataChanged'){renderProjects();queuePortalCloudSave();}
   if(message.t==='drawingsChanged'&&e.origin===location.origin&&e.source===frame.contentWindow)queuePortalCloudSave();
 });
 initPortalCloud();

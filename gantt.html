@@ -74,6 +74,11 @@ function loadData(){
 function cloudSave(){
   try{localStorage.setItem('engMgmtProData',JSON.stringify(ALL));}catch(e){}
   const note=document.getElementById('savenote');
+  if(window.parent&&window.parent!==window){
+    window.parent.postMessage({t:'projectDataChanged',projectId:String(P&&P.id||'')},location.origin);
+    note.textContent='☁️ 已送出共同雲端同步';note.className='savenote ok';
+    return;
+  }
   let cu=null;try{cu=localStorage.getItem('engMgmtCloudUrl');}catch(e){}
   if(cu){ note.textContent='☁️ 同步中…';note.className='savenote ing';
     fetch(cu,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(ALL),mode:'no-cors'})
@@ -116,7 +121,7 @@ function upd(i,k,v){ P.tasks[i][k]=v; save(); if(k!=='name')renderChart(); }
 function addTask(){ P.tasks=P.tasks||[]; const today=iso(new Date()); P.tasks.push({id:'t'+Date.now(),name:'新項目',startDate:today,endDate:today,done:false,taskBudget:'',detail:'',steps:[]}); save(); renderEditor(); renderChart(); }
 function rmTask(i){ if(!confirm('刪除這個排程項目？'))return; P.tasks.splice(i,1); save(); renderEditor(); renderChart(); }
 let saveT=null;
-function save(){ ALL[PIDX]=P; clearTimeout(saveT); saveT=setTimeout(cloudSave,600); }
+function save(){ P._updatedAt=Date.now();ALL[PIDX]=P;clearTimeout(saveT);saveT=setTimeout(cloudSave,600); }
 function toggleLock(){
   editing=!editing;
   document.getElementById('editor').classList.toggle('on',editing);
@@ -139,6 +144,17 @@ function boot(){
   document.getElementById('budget').innerHTML='<div class="budget">💰 總預算：'+(isNaN(budgetNum)?'—':budgetNum.toLocaleString())+' 元（含稅）</div>';
   renderChart(); setLockUI();
 }
+function refreshFromSharedData(){
+  if(editing)return;
+  loadData();
+  if(!P)return;
+  document.getElementById('title').textContent='📅 '+P.name+' · 排程';
+  const budgetNum=parseFloat(String(P.totalBudget||'').replace(/,/g,''));
+  document.getElementById('budget').innerHTML='<div class="budget">💰 總預算：'+(isNaN(budgetNum)?'—':budgetNum.toLocaleString())+' 元（含稅）</div>';
+  renderChart();setLockUI();
+}
+window.addEventListener('storage',e=>{if(e.key==='engMgmtProData')refreshFromSharedData();});
+window.addEventListener('message',e=>{if(e.origin===location.origin&&(e.data||{}).t==='workspaceDataSynced')refreshFromSharedData();});
 boot();
 </script>
 <script src="cats.js?v=20260713-cats"></script>
