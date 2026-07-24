@@ -62,6 +62,7 @@
     background:#fff; color:var(--muted); font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;
   }
   .chip.on{background:var(--brand); color:#fff; border-color:var(--brand)}
+  .chip.quote-filter:not(.on){background:#fffaf0;color:#8a5a00;border-color:#f3d99b}
   .toolbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:4px}
   .toolbar select{
     padding:8px 10px; border:1px solid var(--line); border-radius:10px; background:#fff;
@@ -192,8 +193,9 @@
   .docadd{display:flex; gap:8px; margin-top:8px}
   .docadd input{flex:1}
   .docadd button{flex:0 0 auto; padding:0 14px}
-  .quote-toggle{display:flex!important;align-items:center;gap:10px;border:1px solid var(--line);border-radius:11px;padding:12px;cursor:pointer;color:var(--ink)!important}
-  .quote-toggle input{width:19px!important;height:19px;flex:0 0 auto}
+  .quote-toggle{display:inline-flex!important;width:max-content;max-width:100%;align-items:center;gap:7px;border:1px solid var(--line);border-radius:9px;padding:7px 10px;cursor:pointer;color:var(--ink)!important;background:#f8fafc;font-size:13px!important}
+  .quote-toggle input{width:16px!important;height:16px;flex:0 0 auto;margin:0}
+  .quote-toggle:has(input:checked){background:#fffaf0;border-color:#f3d99b;color:#7a5208!important}
   .quote-section{display:none;margin-top:10px}
   .quote-section.on{display:block}
   .quote-add{display:grid;grid-template-columns:minmax(220px,1fr) auto;gap:8px;margin-top:8px}
@@ -459,6 +461,7 @@ const STATUS_MAP = {"待審查/待回覆":"進行中","已完成":"已結案","�
 const KEY = "design_todo_v1";
 const DRAFT_KEY = "design_todo_draft_v1";
 const MEETING_CAT = "會議記錄";
+const QUOTE_FILTER = "__quote_tracking__";
 const REMIND_HOUR = 10; // 每日提醒時間：早上10點
 // 台灣國定假日（含補假）。2026年已取消補班，故無補班日需扣除。
 const HOLIDAYS = [
@@ -519,6 +522,9 @@ function initControls(){
   const chips=document.getElementById("chips");
   chips.innerHTML=`<span class="chip ${filterCat==='all'?'on':''}" onclick="setCat('all')">全部</span>`;
   CATS.forEach(c=>{
+    if(c.k==="其他"){
+      chips.innerHTML+=`<span class="chip quote-filter ${filterCat===QUOTE_FILTER?'on':''}" onclick="setCat('${QUOTE_FILTER}')">📁 報價追蹤</span>`;
+    }
     chips.innerHTML+=`<span class="chip ${filterCat===c.k?'on':''}" onclick="setCat('${c.k}')">${c.label}</span>`;
   });
 }
@@ -540,7 +546,9 @@ function render(){
   const sort=document.getElementById("sort").value;
 
   let items=data.filter(it=>{
-    if(filterCat!=="all" && it.cat!==filterCat) return false;
+    if(filterCat===QUOTE_FILTER){
+      if(!it.needsQuote) return false;
+    }else if(filterCat!=="all" && it.cat!==filterCat) return false;
     if(sf==="active" && it.done) return false;
     if(sf==="done" && !it.done) return false;
     if(q){
@@ -771,7 +779,7 @@ function openForm(id){
     document.getElementById("delBtn").style.display="block";
   }else{
     document.getElementById("formTitle").textContent="新增事項";
-    f_id.value=""; f_title.value=""; f_cat.value=filterCat==="all"?CATS[0].k:filterCat;
+    f_id.value=""; f_title.value=""; f_cat.value=filterCat==="all"?CATS[0].k:(filterCat===QUOTE_FILTER?"一般待辦":filterCat);
     f_status.value=STATUS[0]; f_due.value="";
     f_note.value=""; formDocs=[]; formPeople=[]; formQuotes=[];
     document.getElementById("f_needs_quote").checked=false;
