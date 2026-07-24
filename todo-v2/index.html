@@ -92,6 +92,8 @@
   .quote-links{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
   .quote-btn{display:inline-flex;align-items:center;border:1px solid #cfe0f3;background:#eef6ff;color:#285a8e;border-radius:9px;padding:7px 10px;font:700 12px inherit;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none}
   .quote-btn:hover{background:#dfeeff}
+  .quote-status.waiting{background:#fff7db;color:#8a5a00}
+  .quote-status.ready{background:#e8f7ed;color:#287a45}
   .date{font-size:12.5px; font-weight:700; padding:3px 8px; border-radius:6px; background:#f1f5f9; color:#475569}
   .date.today{background:#fef3c7; color:#92400e}
   .docbar{margin-top:8px}
@@ -190,7 +192,11 @@
   .docadd{display:flex; gap:8px; margin-top:8px}
   .docadd input{flex:1}
   .docadd button{flex:0 0 auto; padding:0 14px}
-  .quote-add{display:grid;grid-template-columns:minmax(150px,.7fr) minmax(220px,1.3fr) auto;gap:8px;margin-top:8px}
+  .quote-toggle{display:flex!important;align-items:center;gap:10px;border:1px solid var(--line);border-radius:11px;padding:12px;cursor:pointer;color:var(--ink)!important}
+  .quote-toggle input{width:19px!important;height:19px;flex:0 0 auto}
+  .quote-section{display:none;margin-top:10px}
+  .quote-section.on{display:block}
+  .quote-add{display:grid;grid-template-columns:minmax(220px,1fr) auto;gap:8px;margin-top:8px}
   .quote-add input{min-width:0}
   .quote-row-link{font-size:12px;color:#60758a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   @media(max-width:650px){.quote-add{grid-template-columns:1fr}.quote-add button{min-height:42px}}
@@ -370,13 +376,17 @@
     </div>
 
     <div class="field standard-only">
-      <label>報價單（連結你原本放在雲端的檔案）</label>
-      <div class="note-tip" style="margin-bottom:8px">支援 Google Drive、OneDrive、Dropbox 等分享連結；請確認兩個使用帳號都有檢視權限。</div>
-      <div class="doclist" id="quoteList"></div>
-      <div class="quote-add">
-        <input id="quoteNameInput" placeholder="報價單名稱，例如：南站B4圍籬報價">
-        <input id="quoteUrlInput" type="url" inputmode="url" placeholder="https://drive.google.com/...">
-        <button class="btn ghost" type="button" onclick="addQuote()">＋ 加入</button>
+      <label class="quote-toggle">
+        <input id="f_needs_quote" type="checkbox" onchange="syncQuoteSection();saveFormDraft()">
+        <span>此待辦需要報價</span>
+      </label>
+      <div class="quote-section" id="quoteSection">
+        <div class="note-tip" style="margin-bottom:8px">貼上報價資料夾的分享連結；請確認 a0970563546@gmail.com 與 ling@mofan.co.com 都有檢視權限。</div>
+        <div class="doclist" id="quoteList"></div>
+        <div class="quote-add">
+          <input id="quoteUrlInput" type="url" inputmode="url" placeholder="貼上 Google Drive 資料夾分享連結">
+          <button class="btn ghost" type="button" onclick="addQuote()">儲存連結</button>
+        </div>
       </div>
     </div>
 
@@ -486,6 +496,7 @@ function load(){
     if(it.cat==="工程進場") it.cat="工程相關";
     if(!it.docs) it.docs=[];
     if(!Array.isArray(it.quotes)) it.quotes=[];
+    if(it.needsQuote===undefined) it.needsQuote=it.quotes.length>0;
     if(it.remind===undefined) it.remind="none";
     if(STATUS_MAP[it.status]) it.status=STATUS_MAP[it.status];
     if(!it.people){ it.people = it.owner ? [{t:it.owner, done:false}] : []; }
@@ -533,7 +544,7 @@ function render(){
     if(sf==="active" && it.done) return false;
     if(sf==="done" && !it.done) return false;
     if(q){
-      const blob=(it.title+" "+(it.note||"")+" "+it.cat+" "+it.status+" "+(it.projectName||"")+" "+(it.docs||[]).map(d=>d.t).join(" ")+" "+(it.people||[]).map(p=>p.t).join(" ")+" "+(it.quotes||[]).map(q=>q.name).join(" ")).toLowerCase();
+      const blob=(it.title+" "+(it.note||"")+" "+it.cat+" "+it.status+" "+(it.projectName||"")+" "+(it.docs||[]).map(d=>d.t).join(" ")+" "+(it.people||[]).map(p=>p.t).join(" ")+" "+(it.needsQuote?"報價 ":"")+(it.quotes||[]).map(q=>q.url).join(" ")).toLowerCase();
       if(!blob.includes(q)) return false;
     }
     return true;
@@ -583,9 +594,10 @@ function cardHTML(it){
         <span class="tag" style="background:${c.color}22;color:${c.color}">${c.label}</span>
         ${it.projectName?`<span class="tag" style="background:#eaf1e6;color:#3e6a3e">📐 ${esc(it.projectName)}</span>`:""}
         ${di?`<span class="date ${di.today?'today':''}">📅 ${di.txt}</span>`:""}
+        ${it.needsQuote?`<span class="tag quote-status ${(it.quotes||[]).length?'ready':'waiting'}">${(it.quotes||[]).length?'📁 已有報價':'⏳ 等待報價'}</span>`:""}
       </div>
       ${it.note?`<div class="c-note">📝 ${esc(it.note)}</div>`:`<div class="c-note" style="opacity:.5">📝 （尚無備註 / 進度記錄）</div>`}
-      ${(it.quotes||[]).length?`<div class="quote-links">${it.quotes.map(quoteLinkHTML).join("")}</div>`:""}
+      ${it.needsQuote&&(it.quotes||[]).length?`<div class="quote-links">${it.quotes.map(quoteLinkHTML).join("")}</div>`:""}
     </div>
     <div class="c-act">
       ${it.cat===MEETING_CAT?`<button class="icon-btn" title="匯出會議記錄 PDF" aria-label="匯出 ${esc(it.title)} PDF" onclick="event.stopPropagation();exportMeetingPdf('${it.id}')">📄</button>`:""}
@@ -612,10 +624,9 @@ function safeCloudUrl(value){
   }catch(error){return ""}
 }
 function quoteLinkHTML(quote){
-  const name=quote&&quote.name||"開啟報價單";
   const url=safeCloudUrl(quote&&quote.url);
-  if(!url)return `<button class="quote-btn" type="button" onclick="event.stopPropagation();alert('這份報價單的連結無效，請編輯待辦後重新貼上網址。')">⚠️ ${esc(name)}</button>`;
-  return `<a class="quote-btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer" title="開啟 ${esc(name)}" onclick="event.stopPropagation()">📄 ${esc(name)}</a>`;
+  if(!url)return `<button class="quote-btn" type="button" onclick="event.stopPropagation();alert('報價資料夾連結無效，請編輯待辦後重新貼上網址。')">⚠️ 報價連結無效</button>`;
+  return `<a class="quote-btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer" title="開啟報價資料夾" onclick="event.stopPropagation()">📁 開啟報價資料夾</a>`;
 }
 function openQuote(id,index){
   const it=data.find(i=>String(i.id)===String(id));
@@ -677,22 +688,24 @@ function setMeetingSaveState(text){
 }
 function renderQuotes(){
   const box=document.getElementById("quoteList");
-  if(!formQuotes.length){box.innerHTML=`<div class="doc-empty">尚未加入報價單</div>`;return}
+  if(!formQuotes.length){box.innerHTML=`<div class="doc-empty">等待取得報價，目前尚未加入資料夾連結</div>`;return}
   box.innerHTML=formQuotes.map((q,i)=>`<div class="docrow">
-      <span class="dt" style="padding-left:4px">📄 ${esc(q.name||"報價單")}</span>
+      <span class="dt" style="padding-left:4px">📁 報價資料夾</span>
       <span class="quote-row-link">${esc(q.url)}</span>
       <span class="x" onclick="formQuotes.splice(${i},1);renderQuotes();saveFormDraft()">×</span>
     </div>`).join("");
 }
 function addQuote(){
-  const nameInput=document.getElementById("quoteNameInput");
   const urlInput=document.getElementById("quoteUrlInput");
-  const name=nameInput.value.trim()||"報價單";
   const url=safeCloudUrl(urlInput.value);
-  if(!url){urlInput.focus();urlInput.style.borderColor="#b91c1c";alert("請貼上完整的報價單網址，例如 https://drive.google.com/...");return}
-  formQuotes.push({name,url});
-  nameInput.value="";urlInput.value="";urlInput.style.borderColor="";
+  if(!url){urlInput.focus();urlInput.style.borderColor="#b91c1c";alert("請貼上完整的報價資料夾網址，例如 https://drive.google.com/drive/folders/...");return}
+  formQuotes=[{url}];
+  urlInput.value="";urlInput.style.borderColor="";
   renderQuotes();saveFormDraft();
+}
+function syncQuoteSection(){
+  const section=document.getElementById("quoteSection");
+  if(section)section.classList.toggle("on",!!document.getElementById("f_needs_quote").checked&&!isMeetingForm());
 }
 function syncFormMode(){
   const meeting=isMeetingForm();
@@ -705,13 +718,14 @@ function syncFormMode(){
   document.getElementById("meetingPdfBtn").style.display=meeting&&item&&item.cat===MEETING_CAT?"":"none";
   document.getElementById("noteLabel").textContent=meeting?"會議內容":"備註 / 進度記錄";
   f_note.placeholder=meeting?"輸入討論重點、決議事項、待辦與後續追蹤…":"送審文號、補正事項、會議結論、待確認重點…";
+  syncQuoteSection();
   if(meeting) setMeetingSaveState("✓ 已自動儲存草稿");
 }
 function formDraft(){
   return {id:f_id.value||'',title:f_title.value,cat:f_cat.value,status:f_status.value,due:f_due.value,
-    note:f_note.value,docs:formDocs.map(d=>({...d})),people:formPeople.map(p=>({...p})),quotes:formQuotes.map(q=>({...q})),
+    note:f_note.value,docs:formDocs.map(d=>({...d})),people:formPeople.map(p=>({...p})),needsQuote:document.getElementById('f_needs_quote').checked,quotes:formQuotes.map(q=>({...q})),
     docInput:document.getElementById('docInput').value,peopleInput:document.getElementById('peopleInput').value,
-    quoteNameInput:document.getElementById('quoteNameInput').value,quoteUrlInput:document.getElementById('quoteUrlInput').value};
+    quoteUrlInput:document.getElementById('quoteUrlInput').value};
 }
 function persistFormDraftNow(){
   clearTimeout(draftTimer);
@@ -735,8 +749,9 @@ function restoreFormDraft(id){
   f_title.value=d.title||'';f_cat.value=d.cat||f_cat.value;f_status.value=d.status||f_status.value;f_due.value=d.due||'';f_note.value=d.note||'';
   formDocs=Array.isArray(d.docs)?d.docs:[];formPeople=Array.isArray(d.people)?d.people:[];
   formQuotes=Array.isArray(d.quotes)?d.quotes:[];
+  document.getElementById('f_needs_quote').checked=d.needsQuote===undefined?formQuotes.length>0:!!d.needsQuote;
   document.getElementById('docInput').value=d.docInput||'';document.getElementById('peopleInput').value=d.peopleInput||'';
-  document.getElementById('quoteNameInput').value=d.quoteNameInput||'';document.getElementById('quoteUrlInput').value=d.quoteUrlInput||'';
+  document.getElementById('quoteUrlInput').value=d.quoteUrlInput||'';
   return true;
 }
 
@@ -752,12 +767,14 @@ function openForm(id){
     formDocs=(it.docs||[]).map(d=>({...d}));
     formPeople=(it.people||[]).map(p=>({...p}));
     formQuotes=(it.quotes||[]).map(q=>({...q}));
+    document.getElementById("f_needs_quote").checked=it.needsQuote===undefined?formQuotes.length>0:!!it.needsQuote;
     document.getElementById("delBtn").style.display="block";
   }else{
     document.getElementById("formTitle").textContent="新增事項";
     f_id.value=""; f_title.value=""; f_cat.value=filterCat==="all"?CATS[0].k:filterCat;
     f_status.value=STATUS[0]; f_due.value="";
     f_note.value=""; formDocs=[]; formPeople=[]; formQuotes=[];
+    document.getElementById("f_needs_quote").checked=false;
     document.getElementById("delBtn").style.display="none";
   }
   restoreFormDraft(id||'');
@@ -792,6 +809,7 @@ function saveItem(){
   const fields={title, cat:f_cat.value, status:f_status.value,
     due:f_due.value, note:f_note.value.trim(),
     docs:meeting?[]:formDocs.map(d=>({...d})), people:formPeople.map(p=>({...p})),
+    needsQuote:meeting?false:document.getElementById("f_needs_quote").checked,
     quotes:meeting?[]:formQuotes.map(q=>({...q}))};
   if(id){ Object.assign(data.find(i=>i.id===id), fields); }
   else{ data.push({id:uid(), ...fields, remind:"none", done:false, created:Date.now()}); }
@@ -858,7 +876,8 @@ function gcal(id){
   if(it.note) details+="\n備註／進度："+it.note;
   if(it.people&&it.people.length) details+="\n協作窗口："+it.people.map(p=>p.t).join("、");
   if(it.docs&&it.docs.length) details+="\n資料："+it.docs.map(d=>(d.done?"✓":"□")+d.t).join("、");
-  if(it.quotes&&it.quotes.length) details+="\n報價單："+it.quotes.map(q=>(q.name||"報價單")+" "+q.url).join("、");
+  if(it.needsQuote) details+="\n報價狀態："+((it.quotes&&it.quotes.length)?"已有報價":"等待報價");
+  if(it.quotes&&it.quotes.length) details+="\n報價資料夾："+it.quotes.map(q=>q.url).join("、");
   const url="https://calendar.google.com/calendar/render?action=TEMPLATE"
     +"&text="+encodeURIComponent("【待辦】"+it.title)
     +"&dates="+start+"/"+end
@@ -893,14 +912,15 @@ function checkReminders(){
 function exportJSON(){ closeMenu(); dl(JSON.stringify(data,null,2), "待辦備份_"+stamp()+".json", "application/json"); }
 function exportCSV(){
   closeMenu();
-  const head=["事項","類別","狀態","日期","協作窗口","資料完成","資料清單","報價單","備註/進度記錄","完成"];
+  const head=["事項","類別","狀態","日期","協作窗口","資料完成","資料清單","報價狀態","報價資料夾","備註/進度記錄","完成"];
   const rows=data.map(i=>{
     const docs=i.docs||[]; const dn=docs.filter(d=>d.done).length;
     const ppl=i.people||[];
     return [i.title,catOf(i.cat).label,i.status,i.due||"",
       ppl.map(p=>p.t).join(" / "),
       docs.length?(dn+"/"+docs.length):"", docs.map(d=>(d.done?"✓":"□")+d.t).join(" / "),
-      (i.quotes||[]).map(q=>(q.name||"報價單")+" "+q.url).join(" / "),
+      i.needsQuote?((i.quotes||[]).length?"已有報價":"等待報價"):"",
+      (i.quotes||[]).map(q=>q.url).join(" / "),
       (i.note||"").replace(/\n/g," "), i.done?"是":"否"];
   });
   const csv=[head,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\r\n");
@@ -914,7 +934,7 @@ function importJSON(e){
       const arr=JSON.parse(r.result); if(!Array.isArray(arr)) throw 0;
       if(confirm("匯入 "+arr.length+" 筆。\n確定=合併到現有資料，取消=放棄")){
         const ids=new Set(data.map(i=>i.id));
-        arr.forEach(it=>{ if(it.cat==="工程進場")it.cat="工程相關"; if(!it.docs)it.docs=[]; if(!Array.isArray(it.quotes))it.quotes=[]; if(STATUS_MAP[it.status])it.status=STATUS_MAP[it.status]; if(!it.people){it.people=it.owner?[{t:it.owner,done:false}]:[];} delete it.seq; delete it.owner; if(!it.remind)it.remind="none"; if(!it.id||ids.has(it.id)) it.id=uid(); data.push(it); });
+        arr.forEach(it=>{ if(it.cat==="工程進場")it.cat="工程相關"; if(!it.docs)it.docs=[]; if(!Array.isArray(it.quotes))it.quotes=[]; if(it.needsQuote===undefined)it.needsQuote=it.quotes.length>0; if(STATUS_MAP[it.status])it.status=STATUS_MAP[it.status]; if(!it.people){it.people=it.owner?[{t:it.owner,done:false}]:[];} delete it.seq; delete it.owner; if(!it.remind)it.remind="none"; if(!it.id||ids.has(it.id)) it.id=uid(); data.push(it); });
         save(); alert("匯入完成！");
       }
     }catch(err){ alert("檔案格式不正確"); }
@@ -971,6 +991,7 @@ function normalizeArr(arr){
     if(it.cat==="工程進場")it.cat="工程相關";
     if(!it.docs)it.docs=[];
     if(!Array.isArray(it.quotes))it.quotes=[];
+    if(it.needsQuote===undefined)it.needsQuote=it.quotes.length>0;
     if(!it.people)it.people=it.owner?[{t:it.owner}]:[];
     if(it.remind===undefined)it.remind="none";
     if(STATUS_MAP[it.status])it.status=STATUS_MAP[it.status];
